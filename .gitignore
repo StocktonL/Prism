@@ -1,10 +1,29 @@
 node_modules/
 dist/
+build/
+
+# Environment variables — never commit real secrets
 .env
 .env.local
 .env.*.local
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite / tooling
 .vite/
+*.tsbuildinfo
+
+# Test coverage
 coverage/
+
+# Editor
+.idea/
+.vscode/settings.json
