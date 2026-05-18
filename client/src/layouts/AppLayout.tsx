@@ -5,6 +5,7 @@ import {
   Users,
   Megaphone,
   ShieldCheck,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ const navItems: NavItem[] = [
   { label: 'Eligibility', to: '/eligibility', icon: <ShieldCheck className="h-4 w-4" /> },
   { label: 'Patients', to: '/patients', icon: <Users className="h-4 w-4" /> },
   { label: 'Campaigns', to: '/campaigns', icon: <Megaphone className="h-4 w-4" /> },
+  { label: 'Claims', to: '/claims', icon: <FileText className="h-4 w-4" /> },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -26,6 +28,7 @@ const pageTitles: Record<string, string> = {
   '/eligibility': 'Eligibility Verification',
   '/patients': 'Patients',
   '/campaigns': 'Campaigns',
+  '/claims': 'Claims',
 }
 
 export default function AppLayout() {

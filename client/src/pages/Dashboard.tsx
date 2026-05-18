@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import {
   Users,
   Megaphone,
@@ -35,18 +36,22 @@ const aiSuggestions = [
     bg: 'bg-rose-50',
     badge: 'bg-rose-100 text-rose-700',
     badgeLabel: 'High Priority',
+    nav: '/campaigns',
+    navState: { openModal: true, campaignType: 'End of Year Benefits' },
   },
   {
     id: 2,
     priority: 'high',
     label: 'Trunk Show Ready',
-    insight: '189 patients are benefit-eligible and haven\'t visited in 12+ months — perfect trunk show audience.',
+    insight: "189 patients are benefit-eligible and haven't visited in 12+ months — perfect trunk show audience.",
     action: 'Launch trunk show campaign',
     reach: '189 patients',
     icon: <Zap className="h-5 w-5 text-amber-500" />,
     bg: 'bg-amber-50',
     badge: 'bg-amber-100 text-amber-700',
     badgeLabel: 'High Priority',
+    nav: '/campaigns',
+    navState: { openModal: true, campaignType: 'Trunk Show' },
   },
   {
     id: 3,
@@ -59,12 +64,15 @@ const aiSuggestions = [
     bg: 'bg-teal-50',
     badge: 'bg-teal-100 text-teal-700',
     badgeLabel: 'Medium Priority',
+    nav: '/campaigns',
+    navState: { openModal: true, campaignType: 'Mid-Year Reminder' },
   },
 ]
 
 const campaignTypes = [
   {
     title: 'Trunk Show',
+    type: 'Trunk Show' as const,
     description: 'Drive foot traffic for a vendor frame event',
     borderColor: 'border-amber-200 hover:border-amber-400',
     iconBg: 'bg-amber-50',
@@ -72,6 +80,7 @@ const campaignTypes = [
   },
   {
     title: 'End of Year Benefits',
+    type: 'End of Year Benefits' as const,
     description: 'Remind patients their benefits expire Dec 31',
     borderColor: 'border-rose-200 hover:border-rose-400',
     iconBg: 'bg-rose-50',
@@ -79,6 +88,7 @@ const campaignTypes = [
   },
   {
     title: 'Mid-Year Reminder',
+    type: 'Mid-Year Reminder' as const,
     description: 'Re-engage patients with benefits still available',
     borderColor: 'border-teal-200 hover:border-teal-400',
     iconBg: 'bg-teal-50',
@@ -86,6 +96,7 @@ const campaignTypes = [
   },
   {
     title: 'Custom Campaign',
+    type: 'Custom Campaign' as const,
     description: 'Build your own message and patient list',
     borderColor: 'border-slate-200 hover:border-slate-400',
     iconBg: 'bg-slate-100',
@@ -101,6 +112,12 @@ function greeting() {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
+
+  function launchCampaign(type: string) {
+    navigate('/campaigns', { state: { openModal: true, campaignType: type } })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -128,6 +145,27 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Benefits expiring card */}
+      <Card className="border-amber-200 bg-amber-50/50 shadow-sm">
+        <CardContent className="flex items-center justify-between p-5">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-amber-100">
+              <CalendarClock className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">312 patients have benefits expiring by Dec 31</p>
+              <p className="text-xs text-amber-700">Run eligibility verification to confirm current coverage and unused allowances.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate('/eligibility')}
+            className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors shadow-sm whitespace-nowrap"
+          >
+            Set up eligibility <ChevronRight className="h-3 w-3" />
+          </button>
+        </CardContent>
+      </Card>
+
       {/* AI Suggestions */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
@@ -146,6 +184,7 @@ export default function Dashboard() {
             <div
               key={s.id}
               className="flex items-start gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:bg-white hover:border-slate-200 hover:shadow-sm cursor-pointer"
+              onClick={() => navigate(s.nav, { state: s.navState })}
             >
               <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
                 {s.icon}
@@ -158,7 +197,10 @@ export default function Dashboard() {
                 <p className="text-xs text-slate-500 leading-relaxed">{s.insight}</p>
                 <p className="mt-2 text-xs font-medium text-slate-400">Reach: {s.reach}</p>
               </div>
-              <button className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm whitespace-nowrap">
+              <button
+                className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm whitespace-nowrap"
+                onClick={(e) => { e.stopPropagation(); navigate(s.nav, { state: s.navState }) }}
+              >
                 {s.action} <ChevronRight className="h-3 w-3" />
               </button>
             </div>
@@ -173,6 +215,7 @@ export default function Dashboard() {
           {campaignTypes.map((c) => (
             <button
               key={c.title}
+              onClick={() => launchCampaign(c.type)}
               className={`flex flex-col items-start gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all duration-150 shadow-sm hover:shadow-md ${c.borderColor}`}
             >
               <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.iconBg}`}>

@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
+import Claims from './pages/Claims'
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="eligibility" element={<Eligibility />} />
             <Route path="patients" element={<Patients />} />
             <Route path="campaigns" element={<Campaigns />} />
+            <Route path="claims" element={<Claims />} />
           </Route>
         </Routes>
       </BrowserRouter>
