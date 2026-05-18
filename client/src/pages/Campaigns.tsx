@@ -43,7 +43,7 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     name: 'End of Year Benefits Reminder',
     type: 'End of Year Benefits',
     status: 'Active',
-    message: 'Hi [Name], your vision benefits expire Dec 31. You have $150 in unused frame allowance. Call us at (555) 800-2020 to schedule before your benefits run out!',
+    message: 'Hi {{first_name}}, your {{carrier}} benefits expire Dec 31. You have {{frame_allowance}} for frames and {{contacts_allowance}} for contacts still available. Call (555) 800-2020 before they expire!',
     patientsReached: 312,
     smsDelivered: 298,
     smsFailed: 14,
@@ -56,7 +56,7 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     name: 'Trunk Show — Spring Frames',
     type: 'Trunk Show',
     status: 'Completed',
-    message: 'Hi [Name], join us this Saturday for our exclusive spring trunk show! Try on hundreds of new frames and use your vision benefits. RSVP: (555) 800-2020.',
+    message: 'Hi {{first_name}}, join us this Saturday for our exclusive spring trunk show! You have {{frame_allowance}} in unused {{carrier}} frame benefits. Try on hundreds of new frames — RSVP: (555) 800-2020.',
     patientsReached: 189,
     smsDelivered: 185,
     smsFailed: 4,
@@ -69,7 +69,7 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     name: 'Mid-Year Check-In',
     type: 'Mid-Year Reminder',
     status: 'Scheduled',
-    message: "Hi [Name], it's been 6 months since your last visit and you still have full benefits remaining. Schedule your eye exam today — call (555) 800-2020.",
+    message: "Hi {{first_name}}, you still have {{frame_allowance}} remaining on your {{carrier}} frame benefit and your exam is covered. Don't let it go to waste — call (555) 800-2020 today.",
     patientsReached: 94,
     smsDelivered: 0,
     smsFailed: 0,
@@ -99,7 +99,7 @@ const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.Rea
     icon: <ShoppingBag className="h-5 w-5 text-amber-600" />,
     iconBg: 'bg-amber-50',
     borderColor: 'border-amber-300',
-    defaultMessage: 'Hi [Name], join us this Saturday for our exclusive trunk show! Try on hundreds of new frames and use your vision benefits. RSVP: (555) 800-2020.',
+    defaultMessage: 'Hi {{first_name}}, join us this Saturday for our exclusive trunk show! You have {{frame_allowance}} in unused frame benefits. Try on hundreds of new frames — RSVP: (555) 800-2020.',
   },
   {
     type: 'End of Year Benefits',
@@ -107,7 +107,7 @@ const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.Rea
     icon: <CalendarRange className="h-5 w-5 text-rose-600" />,
     iconBg: 'bg-rose-50',
     borderColor: 'border-rose-300',
-    defaultMessage: 'Hi [Name], your vision benefits expire Dec 31. You have unused allowance remaining. Call us at (555) 800-2020 to schedule before your benefits run out!',
+    defaultMessage: 'Hi {{first_name}}, your {{carrier}} benefits expire Dec 31. You have {{frame_allowance}} for frames and {{contacts_allowance}} for contacts still available. Call (555) 800-2020 before they expire!',
   },
   {
     type: 'Mid-Year Reminder',
@@ -115,7 +115,7 @@ const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.Rea
     icon: <Bell className="h-5 w-5 text-teal-600" />,
     iconBg: 'bg-teal-50',
     borderColor: 'border-teal-300',
-    defaultMessage: "Hi [Name], it's been a while since your last visit and you still have vision benefits available. Schedule your eye exam today — call (555) 800-2020.",
+    defaultMessage: "Hi {{first_name}}, you still have {{frame_allowance}} remaining on your {{carrier}} frame benefit and your exam is covered. Don't let it go to waste — call (555) 800-2020 today.",
   },
   {
     type: 'Custom Campaign',
@@ -126,6 +126,25 @@ const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.Rea
     defaultMessage: '',
   },
 ]
+
+const MERGE_TAGS = [
+  { tag: '{{first_name}}', label: 'First Name', preview: 'Sarah' },
+  { tag: '{{carrier}}', label: 'Carrier', preview: 'VSP' },
+  { tag: '{{frame_allowance}}', label: 'Frame $', preview: '$150' },
+  { tag: '{{contacts_allowance}}', label: 'Contacts $', preview: '$130' },
+  { tag: '{{lens_benefit}}', label: 'Lens Benefit', preview: 'covered lenses' },
+  { tag: '{{benefit_expiry}}', label: 'Expiry Date', preview: 'Dec 31' },
+]
+
+function previewMessage(msg: string) {
+  return msg
+    .replace(/{{first_name}}/g, 'Sarah')
+    .replace(/{{carrier}}/g, 'VSP')
+    .replace(/{{frame_allowance}}/g, '$150')
+    .replace(/{{contacts_allowance}}/g, '$130')
+    .replace(/{{lens_benefit}}/g, 'covered lenses')
+    .replace(/{{benefit_expiry}}/g, 'Dec 31')
+}
 
 const CRITERIA_OPTIONS: { key: CriteriaKey; label: string; reach: number }[] = [
   { key: 'all', label: 'All patients', reach: PATIENTS.length },
@@ -294,15 +313,37 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label className="text-xs font-medium text-slate-700">Message</label>
-                  <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>{message.length}/{MAX_CHARS}</span>
+                  <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>{message.length}/{MAX_CHARS} chars</span>
+                </div>
+                {/* Merge tag buttons */}
+                <div className="mb-2 flex flex-wrap gap-1.5">
+                  {MERGE_TAGS.map((t) => (
+                    <button
+                      key={t.tag}
+                      type="button"
+                      onClick={() => setMessage((m) => m + t.tag)}
+                      className="rounded-md border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 transition-colors"
+                      title={`Inserts patient's ${t.label} from verified benefits`}
+                    >
+                      + {t.label}
+                    </button>
+                  ))}
                 </div>
                 <textarea
-                  className="input-field min-h-[100px] resize-none"
+                  className="input-field min-h-[90px] resize-none font-mono text-xs"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Enter your SMS message..."
                 />
-                <p className="mt-1 text-xs text-slate-400">Use [Name] to personalize. Messages over 160 characters count as 2 SMS.</p>
+                {/* Live preview */}
+                {message && (
+                  <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <p className="mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Live preview — how Sarah's message will read:</p>
+                    <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(message)}</p>
+                    <p className="mt-1.5 text-xs text-teal-600 font-medium">Hard dollar amounts pulled from each patient's verified benefits at send time.</p>
+                  </div>
+                )}
+                <p className="mt-1.5 text-xs text-slate-400">Messages over 160 characters count as 2 SMS.</p>
               </div>
               <div>
                 <label className="mb-2 block text-xs font-medium text-slate-700">Schedule</label>
@@ -423,14 +464,19 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
         <div className="flex-1 space-y-5 px-6 py-5">
           {/* Message preview */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Message Preview</p>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Message Template</p>
+            <div className="rounded-lg border border-slate-100 bg-white p-3 mb-2">
+              <p className="text-xs font-mono text-slate-500 leading-relaxed">{campaign.message}</p>
+            </div>
+            <p className="mb-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Personalized example — Sarah Mitchell (VSP)</p>
+            <div className="rounded-lg border border-teal-200 bg-white p-3">
               <div className="flex items-center gap-2 mb-2">
                 <MessageSquare className="h-4 w-4 text-teal-600" />
-                <span className="text-xs font-medium text-slate-500">SMS from Prism Practice</span>
+                <span className="text-xs font-medium text-teal-600">SMS from Prism Practice</span>
               </div>
-              <p className="text-sm text-slate-700 leading-relaxed">{campaign.message}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(campaign.message)}</p>
             </div>
+            <p className="mt-2 text-xs text-teal-600">Each patient receives their actual verified benefit amounts at send time.</p>
           </div>
 
           {/* Delivery stats */}
