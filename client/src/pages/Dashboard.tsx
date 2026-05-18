@@ -1,56 +1,88 @@
-import { Users, Megaphone, ShieldCheck, MessageSquare, TrendingUp, ArrowRight } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Users,
+  Megaphone,
+  ShieldCheck,
+  MessageSquare,
+  Sparkles,
+  ArrowRight,
+  CalendarClock,
+  TrendingUp,
+  ChevronRight,
+  Zap,
+} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
-interface StatCard {
-  title: string
-  value: string
-  trend: string
-  trendUp: boolean
-  icon: React.ReactNode
-  iconBg: string
-}
+const stats = [
+  { title: 'Total Patients', value: '2,847', icon: <Users className="h-5 w-5 text-blue-600" />, bg: 'bg-blue-50' },
+  { title: 'Active Campaigns', value: '4', icon: <Megaphone className="h-5 w-5 text-violet-600" />, bg: 'bg-violet-50' },
+  { title: 'Verifications Today', value: '38', icon: <ShieldCheck className="h-5 w-5 text-teal-600" />, bg: 'bg-teal-50' },
+  { title: 'SMS Sent This Month', value: '1,204', icon: <MessageSquare className="h-5 w-5 text-amber-600" />, bg: 'bg-amber-50' },
+]
 
-const stats: StatCard[] = [
+const aiSuggestions = [
   {
-    title: 'Total Patients',
-    value: '2,847',
-    trend: '+12 this month',
-    trendUp: true,
-    icon: <Users className="h-5 w-5 text-blue-600" />,
-    iconBg: 'bg-blue-50',
+    id: 1,
+    priority: 'high',
+    label: 'End of Year Opportunity',
+    insight: '312 patients have unused frame benefits expiring Dec 31.',
+    action: 'Send end-of-year reminder',
+    reach: '312 patients',
+    icon: <CalendarClock className="h-5 w-5 text-rose-500" />,
+    bg: 'bg-rose-50',
+    badge: 'bg-rose-100 text-rose-700',
+    badgeLabel: 'High Priority',
   },
   {
-    title: 'Active Campaigns',
-    value: '4',
-    trend: '1 ending soon',
-    trendUp: false,
-    icon: <Megaphone className="h-5 w-5 text-violet-600" />,
-    iconBg: 'bg-violet-50',
+    id: 2,
+    priority: 'high',
+    label: 'Trunk Show Ready',
+    insight: '189 patients are benefit-eligible and haven\'t visited in 12+ months — perfect trunk show audience.',
+    action: 'Launch trunk show campaign',
+    reach: '189 patients',
+    icon: <Zap className="h-5 w-5 text-amber-500" />,
+    bg: 'bg-amber-50',
+    badge: 'bg-amber-100 text-amber-700',
+    badgeLabel: 'High Priority',
   },
   {
-    title: 'Verifications Today',
-    value: '38',
-    trend: '+6 vs yesterday',
-    trendUp: true,
-    icon: <ShieldCheck className="h-5 w-5 text-teal-600" />,
-    iconBg: 'bg-teal-50',
-  },
-  {
-    title: 'SMS Sent',
-    value: '1,204',
-    trend: '96.2% delivery rate',
-    trendUp: true,
-    icon: <MessageSquare className="h-5 w-5 text-amber-600" />,
-    iconBg: 'bg-amber-50',
+    id: 3,
+    priority: 'medium',
+    label: 'Mid-Year Check-In',
+    insight: '94 patients hit the 6-month mark since their last visit and still have full benefits remaining.',
+    action: 'Send mid-year reminder',
+    reach: '94 patients',
+    icon: <TrendingUp className="h-5 w-5 text-teal-500" />,
+    bg: 'bg-teal-50',
+    badge: 'bg-teal-100 text-teal-700',
+    badgeLabel: 'Medium Priority',
   },
 ]
 
-const recentActivity = [
-  { id: 1, event: 'Eligibility verified', detail: 'Sarah M.', time: '2 min ago', dot: 'bg-teal-500' },
-  { id: 2, event: 'Campaign sent', detail: 'Recall — Q2 2026', time: '14 min ago', dot: 'bg-violet-500' },
-  { id: 3, event: 'New patient added', detail: 'James T.', time: '1 hr ago', dot: 'bg-blue-500' },
-  { id: 4, event: 'Eligibility verified', detail: 'Linda K.', time: '2 hr ago', dot: 'bg-teal-500' },
-  { id: 5, event: 'SMS delivered', detail: 'End-of-year benefits reminder', time: '3 hr ago', dot: 'bg-amber-500' },
+const campaignTypes = [
+  {
+    title: 'Trunk Show',
+    description: 'Drive foot traffic for a vendor frame event',
+    color: 'border-amber-200 hover:border-amber-400 hover:bg-amber-50',
+    icon: '🛍️',
+  },
+  {
+    title: 'End of Year',
+    description: 'Remind patients their benefits expire Dec 31',
+    color: 'border-rose-200 hover:border-rose-400 hover:bg-rose-50',
+    icon: '📅',
+  },
+  {
+    title: 'Mid-Year Reminder',
+    description: 'Re-engage patients with benefits still available',
+    color: 'border-teal-200 hover:border-teal-400 hover:bg-teal-50',
+    icon: '📣',
+  },
+  {
+    title: 'Custom Campaign',
+    description: 'Build your own message and patient list',
+    color: 'border-slate-200 hover:border-slate-400 hover:bg-slate-50',
+    icon: '✏️',
+  },
 ]
 
 function greeting() {
@@ -64,77 +96,88 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
-        <p className="mt-1 text-sm text-slate-500">Here's what's happening at your practice today.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
+          <p className="mt-1 text-sm text-slate-500">Here's what Prism recommends for your practice today.</p>
+        </div>
       </div>
 
-      {/* Stat cards */}
+      {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title} className="border-slate-200 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${stat.iconBg}`}>
+            <CardContent className="flex items-center gap-4 pt-5">
+              <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${stat.bg}`}>
                 {stat.icon}
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{stat.value}</div>
-              <p className={`mt-2 flex items-center gap-1 text-xs font-medium ${stat.trendUp ? 'text-teal-600' : 'text-amber-600'}`}>
-                <TrendingUp className="h-3 w-3" />
-                {stat.trend}
-              </p>
+              <div>
+                <p className="text-xs font-medium text-slate-500">{stat.title}</p>
+                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Bottom row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-base">Recent Activity</CardTitle>
-              <CardDescription>Latest events across your practice</CardDescription>
+      {/* AI Suggestions */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-0">
-              {recentActivity.map((item, i) => (
-                <li key={item.id} className={`flex items-center gap-3 py-3 ${i < recentActivity.length - 1 ? 'border-b border-slate-100' : ''}`}>
-                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${item.dot}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-800">{item.event}</p>
-                    <p className="truncate text-xs text-slate-500">{item.detail}</p>
-                  </div>
-                  <span className="flex-shrink-0 text-xs text-slate-400">{item.time}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* Benefits expiring soon */}
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Benefits Expiring Soon</CardTitle>
-            <CardDescription>Patients with benefits ending in 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50">
-                <ShieldCheck className="h-6 w-6 text-teal-500" />
+            <div>
+              <CardTitle className="text-base">AI Suggestions</CardTitle>
+              <CardDescription className="text-xs">Based on your verification history and patient benefit data</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {aiSuggestions.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-start gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:bg-white hover:border-slate-200 hover:shadow-sm cursor-pointer"
+            >
+              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
+                {s.icon}
               </div>
-              <p className="mt-3 text-sm font-medium text-slate-700">Connect your insurance verification</p>
-              <p className="mt-1 text-xs text-slate-400">Once set up, we'll automatically track expiring benefits and help you reach patients before they lapse.</p>
-              <button className="mt-4 flex items-center gap-1.5 rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition-colors">
-                Set up eligibility <ArrowRight className="h-3 w-3" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-semibold text-slate-800">{s.label}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.badge}`}>{s.badgeLabel}</span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">{s.insight}</p>
+                <p className="mt-2 text-xs font-medium text-slate-400">Reach: {s.reach}</p>
+              </div>
+              <button className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm whitespace-nowrap">
+                {s.action} <ChevronRight className="h-3 w-3" />
               </button>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Campaign Quick Launch */}
+      <div>
+        <h3 className="mb-3 text-sm font-semibold text-slate-700">Launch a Campaign</h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {campaignTypes.map((c) => (
+            <button
+              key={c.title}
+              className={`flex flex-col items-start gap-2 rounded-xl border-2 bg-white p-4 text-left transition-all duration-150 shadow-sm ${c.color}`}
+            >
+              <span className="text-2xl">{c.icon}</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">{c.title}</p>
+                <p className="text-xs text-slate-500 leading-snug mt-0.5">{c.description}</p>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-medium text-teal-600 mt-auto pt-1">
+                Start <ArrowRight className="h-3 w-3" />
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
