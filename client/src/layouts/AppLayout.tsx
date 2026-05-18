@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Users,
   Megaphone,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,12 +16,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Eligibility', to: '/eligibility', icon: <ShieldCheck className="h-4 w-4" /> },
   { label: 'Patients', to: '/patients', icon: <Users className="h-4 w-4" /> },
   { label: 'Campaigns', to: '/campaigns', icon: <Megaphone className="h-4 w-4" /> },
 ]
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
+  '/eligibility': 'Eligibility Verification',
   '/patients': 'Patients',
   '/campaigns': 'Campaigns',
 }

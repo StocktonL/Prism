@@ -2,6 +2,7 @@ import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/cle
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
 import Dashboard from './pages/Dashboard'
+import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
 
@@ -37,6 +38,7 @@ export default function App() {
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="eligibility" element={<Eligibility />} />
             <Route path="patients" element={<Patients />} />
             <Route path="campaigns" element={<Campaigns />} />
           </Route>
