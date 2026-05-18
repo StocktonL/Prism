@@ -9,6 +9,10 @@ import {
   TrendingUp,
   ChevronRight,
   Zap,
+  ShoppingBag,
+  CalendarRange,
+  Bell,
+  PenLine,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
@@ -62,26 +66,30 @@ const campaignTypes = [
   {
     title: 'Trunk Show',
     description: 'Drive foot traffic for a vendor frame event',
-    color: 'border-amber-200 hover:border-amber-400 hover:bg-amber-50',
-    icon: '🛍️',
+    borderColor: 'border-amber-200 hover:border-amber-400',
+    iconBg: 'bg-amber-50',
+    icon: <ShoppingBag className="h-5 w-5 text-amber-600" />,
   },
   {
-    title: 'End of Year',
+    title: 'End of Year Benefits',
     description: 'Remind patients their benefits expire Dec 31',
-    color: 'border-rose-200 hover:border-rose-400 hover:bg-rose-50',
-    icon: '📅',
+    borderColor: 'border-rose-200 hover:border-rose-400',
+    iconBg: 'bg-rose-50',
+    icon: <CalendarRange className="h-5 w-5 text-rose-600" />,
   },
   {
     title: 'Mid-Year Reminder',
     description: 'Re-engage patients with benefits still available',
-    color: 'border-teal-200 hover:border-teal-400 hover:bg-teal-50',
-    icon: '📣',
+    borderColor: 'border-teal-200 hover:border-teal-400',
+    iconBg: 'bg-teal-50',
+    icon: <Bell className="h-5 w-5 text-teal-600" />,
   },
   {
     title: 'Custom Campaign',
     description: 'Build your own message and patient list',
-    color: 'border-slate-200 hover:border-slate-400 hover:bg-slate-50',
-    icon: '✏️',
+    borderColor: 'border-slate-200 hover:border-slate-400',
+    iconBg: 'bg-slate-100',
+    icon: <PenLine className="h-5 w-5 text-slate-600" />,
   },
 ]
 
@@ -165,15 +173,17 @@ export default function Dashboard() {
           {campaignTypes.map((c) => (
             <button
               key={c.title}
-              className={`flex flex-col items-start gap-2 rounded-xl border-2 bg-white p-4 text-left transition-all duration-150 shadow-sm ${c.color}`}
+              className={`flex flex-col items-start gap-3 rounded-xl border-2 bg-white p-4 text-left transition-all duration-150 shadow-sm hover:shadow-md ${c.borderColor}`}
             >
-              <span className="text-2xl">{c.icon}</span>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${c.iconBg}`}>
+                {c.icon}
+              </div>
               <div>
                 <p className="text-sm font-semibold text-slate-800">{c.title}</p>
                 <p className="text-xs text-slate-500 leading-snug mt-0.5">{c.description}</p>
               </div>
-              <div className="flex items-center gap-1 text-xs font-medium text-teal-600 mt-auto pt-1">
-                Start <ArrowRight className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs font-medium text-teal-600 mt-auto">
+                Start campaign <ArrowRight className="h-3 w-3" />
               </div>
             </button>
           ))}
