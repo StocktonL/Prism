@@ -29,6 +29,11 @@ export interface Patient {
     benefitPeriodEnd: string
     examCopay: number
     materialsCopay: number
+    planYear: { start: string; end: string }
+    frequency: { exam: string; materials: string }
+    copays: { exam: number; materials: number; contactFitting: number }
+    outOfNetwork: { exam: number; frames: number; lenses: number; contacts: number }
+    requiresPriorAuth: boolean
   }
   eligibilityHistory: Array<{ date: string; status: 'active' | 'inactive' | 'pending'; checkedBy: string }>
 }
@@ -62,6 +67,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 10,
       materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 10, materials: 25, contactFitting: 0 },
+      outOfNetwork: { exam: 45, frames: 70, lenses: 50, contacts: 105 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-16', status: 'active', checkedBy: 'Dr. Reynolds' },
@@ -97,6 +107,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2027-01-09',
       examCopay: 0,
       materialsCopay: 0,
+      planYear: { start: 'Jan 10, 2026', end: 'Jan 9, 2027' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 0, materials: 0, contactFitting: 40 },
+      outOfNetwork: { exam: 35, frames: 55, lenses: 40, contacts: 90 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-16', status: 'active', checkedBy: 'Front Desk' },
@@ -132,6 +147,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 15,
       materialsCopay: 30,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 24 months' },
+      copays: { exam: 15, materials: 30, contactFitting: 0 },
+      outOfNetwork: { exam: 40, frames: 60, lenses: 45, contacts: 100 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-14', status: 'pending', checkedBy: 'Front Desk' },
@@ -156,6 +176,7 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1968-05-30',
       relationship: 'Self',
     },
+    // stale — older than 30 days
     lastVerified: '2025-11-20',
     status: 'unverified',
     lastVisit: '2025-11-20',
@@ -167,6 +188,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 20,
       materialsCopay: 20,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 20, materials: 20, contactFitting: 25 },
+      outOfNetwork: { exam: 30, frames: 50, lenses: 35, contacts: 80 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2025-11-20', status: 'active', checkedBy: 'Front Desk' },
@@ -202,6 +228,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 10,
       materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 10, materials: 25, contactFitting: 0 },
+      outOfNetwork: { exam: 45, frames: 70, lenses: 50, contacts: 105 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-18', status: 'active', checkedBy: 'Front Desk' },
@@ -226,6 +257,14 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1958-09-17',
       relationship: 'Self',
     },
+    secondaryInsurance: {
+      carrier: 'Medicare Advantage',
+      memberId: 'MCA77234901',
+      groupNumber: 'G-99001',
+      subscriberName: 'Robert Chen',
+      subscriberDob: '1958-09-17',
+      relationship: 'Self',
+    },
     lastVerified: '2026-05-12',
     status: 'active',
     lastVisit: '2026-05-12',
@@ -237,6 +276,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 0,
       materialsCopay: 15,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 24 months' },
+      copays: { exam: 0, materials: 15, contactFitting: 0 },
+      outOfNetwork: { exam: 35, frames: 50, lenses: 40, contacts: 0 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-12', status: 'active', checkedBy: 'Dr. Reynolds' },
@@ -261,7 +305,8 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1970-02-28',
       relationship: 'Child',
     },
-    lastVerified: '2026-04-30',
+    // stale — older than 30 days
+    lastVerified: '2026-04-01',
     status: 'active',
     lastVisit: '2026-04-30',
     benefits: {
@@ -272,9 +317,14 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 15,
       materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 15, materials: 25, contactFitting: 20 },
+      outOfNetwork: { exam: 40, frames: 65, lenses: 45, contacts: 100 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
-      { date: '2026-04-30', status: 'active', checkedBy: 'Dr. Reynolds' },
+      { date: '2026-04-01', status: 'active', checkedBy: 'Dr. Reynolds' },
       { date: '2025-10-15', status: 'active', checkedBy: 'Front Desk' },
       { date: '2025-04-28', status: 'active', checkedBy: 'Front Desk' },
     ],
@@ -296,7 +346,7 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1943-12-03',
       relationship: 'Self',
     },
-    lastVerified: '2026-03-01',
+    lastVerified: '2026-05-15',
     status: 'unverified',
     lastVisit: '2025-09-14',
     benefits: {
@@ -307,9 +357,14 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 20,
       materialsCopay: 20,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 24 months' },
+      copays: { exam: 20, materials: 20, contactFitting: 0 },
+      outOfNetwork: { exam: 30, frames: 45, lenses: 35, contacts: 0 },
+      requiresPriorAuth: true,
     },
     eligibilityHistory: [
-      { date: '2026-03-01', status: 'inactive', checkedBy: 'Front Desk' },
+      { date: '2026-05-15', status: 'inactive', checkedBy: 'Front Desk' },
       { date: '2025-09-14', status: 'active', checkedBy: 'Dr. Reynolds' },
       { date: '2025-03-10', status: 'active', checkedBy: 'Front Desk' },
     ],
@@ -327,9 +382,9 @@ export const PATIENTS: Patient[] = [
       carrier: 'EyeMed',
       memberId: 'EM20091447',
       groupNumber: 'G-11034',
-      subscriberName: 'Priya Nair',
-      subscriberDob: '1988-06-25',
-      relationship: 'Self',
+      subscriberName: 'Arjun Nair',
+      subscriberDob: '1985-03-11',
+      relationship: 'Spouse',
     },
     lastVerified: '2026-05-10',
     status: 'active',
@@ -342,6 +397,11 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 0,
       materialsCopay: 0,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 0, materials: 0, contactFitting: 0 },
+      outOfNetwork: { exam: 35, frames: 55, lenses: 40, contacts: 90 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
       { date: '2026-05-10', status: 'active', checkedBy: 'Dr. Reynolds' },
@@ -366,7 +426,15 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1976-03-08',
       relationship: 'Self',
     },
-    lastVerified: '2026-05-05',
+    secondaryInsurance: {
+      carrier: 'Aetna Vision',
+      memberId: 'AET34119020',
+      groupNumber: 'G-55311',
+      subscriberName: 'David Okafor',
+      subscriberDob: '1976-03-08',
+      relationship: 'Self',
+    },
+    lastVerified: '2026-05-17',
     status: 'active',
     lastVisit: '2026-05-05',
     benefits: {
@@ -377,9 +445,14 @@ export const PATIENTS: Patient[] = [
       benefitPeriodEnd: '2026-12-31',
       examCopay: 15,
       materialsCopay: 30,
+      planYear: { start: 'Mar 8, 2026', end: 'Mar 7, 2027' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 15, materials: 30, contactFitting: 15 },
+      outOfNetwork: { exam: 40, frames: 60, lenses: 45, contacts: 100 },
+      requiresPriorAuth: false,
     },
     eligibilityHistory: [
-      { date: '2026-05-05', status: 'active', checkedBy: 'Dr. Reynolds' },
+      { date: '2026-05-17', status: 'active', checkedBy: 'Dr. Reynolds' },
       { date: '2025-06-18', status: 'active', checkedBy: 'Front Desk' },
       { date: '2025-01-10', status: 'active', checkedBy: 'Front Desk' },
     ],
