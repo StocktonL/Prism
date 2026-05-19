@@ -19,8 +19,16 @@ import {
   PenLine,
   ShoppingBag,
   Bell,
+  Upload,
+  CheckSquare,
+  Eye,
+  X,
+  RotateCcw,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+
+// ─── Demo flag — set false to see empty state ─────────────────────────────────
+const HAS_PATIENTS = true
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
 
@@ -33,6 +41,7 @@ const stats = [
     bg: 'bg-teal-50',
     trend: '+6 vs yesterday',
     trendUp: true,
+    nav: '/eligibility',
   },
   {
     title: 'Revenue Recovered',
@@ -42,15 +51,17 @@ const stats = [
     bg: 'bg-emerald-50',
     trend: '+18% vs last month',
     trendUp: true,
+    nav: '/campaigns',
   },
   {
     title: 'Benefits Expiring',
     value: '$48,360',
-    sub: 'frame + contact allowances (30 days)',
+    sub: 'frame + contact allowances · 312 patients',
     icon: <CalendarClock className="h-5 w-5 text-rose-600" />,
     bg: 'bg-rose-50',
-    trend: '312 patients at risk',
+    trend: '87 days until year-end',
     trendUp: false,
+    nav: '/patients',
   },
   {
     title: 'SMS Delivered',
@@ -60,6 +71,7 @@ const stats = [
     bg: 'bg-violet-50',
     trend: '96.2% delivery rate',
     trendUp: true,
+    nav: '/campaigns',
   },
 ]
 
@@ -183,85 +195,65 @@ interface ScheduledSend {
 }
 
 const thisWeeksSends: ScheduledSend[] = [
+  { name: 'Linda Kowalski', carrier: 'VSP',         frameAllowance: '$150', contactAllowance: '$130', reason: 'Benefits expire in 28 days', sendDay: 'Today',    channel: 'SMS',   status: 'sending-today' },
+  { name: 'Robert Chen',    carrier: 'EyeMed',      frameAllowance: '$200', contactAllowance: '$0',   reason: 'Benefits expire in 22 days', sendDay: 'Today',    channel: 'SMS',   status: 'sending-today' },
+  { name: 'Amara Osei',     carrier: 'Davis Vision', frameAllowance: '$130', contactAllowance: '$150', reason: 'Benefits expire in 30 days', sendDay: 'Tomorrow', channel: 'Email', status: 'scheduled'     },
+  { name: 'Priya Nair',     carrier: 'VSP',         frameAllowance: '$150', contactAllowance: '$0',   reason: 'Benefits expire in 26 days', sendDay: 'Wed',      channel: 'SMS',   status: 'scheduled'     },
+  { name: 'David Okafor',   carrier: 'EyeMed',      frameAllowance: '$200', contactAllowance: '$200', reason: 'Benefits expire in 29 days', sendDay: 'Thu',      channel: 'SMS',   status: 'scheduled'     },
+]
+
+// ─── Approval queue ───────────────────────────────────────────────────────────
+
+interface PendingCampaign {
+  id: number
+  name: string
+  type: string
+  patients: number
+  recoverable: string
+  scheduledFor: string
+  sampleMessage: string
+  carrier: string
+}
+
+const pendingApprovals: PendingCampaign[] = [
   {
-    name: 'Linda Kowalski',
+    id: 1,
+    name: 'End of Year — VSP Patients',
+    type: 'End of Year Benefits',
+    patients: 187,
+    recoverable: '$28,050',
+    scheduledFor: 'Today at 10:00 AM',
+    sampleMessage: 'Hi Sarah, you have $150 in unused frame benefits at Mountain View Eye Care expiring Dec 31. Schedule before they\'re gone:',
     carrier: 'VSP',
-    frameAllowance: '$150',
-    contactAllowance: '$130',
-    reason: 'Benefits expire in 28 days',
-    sendDay: 'Today',
-    channel: 'SMS',
-    status: 'sending-today',
   },
   {
-    name: 'Robert Chen',
+    id: 2,
+    name: 'End of Year — EyeMed Patients',
+    type: 'End of Year Benefits',
+    patients: 94,
+    recoverable: '$14,100',
+    scheduledFor: 'Tomorrow at 9:00 AM',
+    sampleMessage: 'Hi James, your EyeMed benefits include $200 in frame allowance expiring Dec 31. Book your appointment now:',
     carrier: 'EyeMed',
-    frameAllowance: '$200',
-    contactAllowance: '$0',
-    reason: 'Benefits expire in 22 days',
-    sendDay: 'Today',
-    channel: 'SMS',
-    status: 'sending-today',
   },
   {
-    name: 'Amara Osei',
-    carrier: 'Davis Vision',
-    frameAllowance: '$130',
-    contactAllowance: '$150',
-    reason: 'Benefits expire in 30 days',
-    sendDay: 'Tomorrow',
-    channel: 'Email',
-    status: 'scheduled',
-  },
-  {
-    name: 'Priya Nair',
-    carrier: 'VSP',
-    frameAllowance: '$150',
-    contactAllowance: '$0',
-    reason: 'Benefits expire in 26 days',
-    sendDay: 'Wed',
-    channel: 'SMS',
-    status: 'scheduled',
-  },
-  {
-    name: 'David Okafor',
-    carrier: 'EyeMed',
-    frameAllowance: '$200',
-    contactAllowance: '$200',
-    reason: 'Benefits expire in 29 days',
-    sendDay: 'Thu',
-    channel: 'SMS',
-    status: 'scheduled',
+    id: 3,
+    name: 'Contact Lens Reorder — 30-Day Window',
+    type: 'CL Reorder',
+    patients: 43,
+    recoverable: '$6,450',
+    scheduledFor: 'Wed at 11:00 AM',
+    sampleMessage: 'Hi Linda, your annual contact lens supply is running low. You have $130 in contacts benefits remaining — reorder now:',
+    carrier: 'All carriers',
   },
 ]
 
 // ─── Manual campaign types ────────────────────────────────────────────────────
 
 const manualCampaigns = [
-  {
-    title: 'Trunk Show',
-    type: 'Trunk Show',
-    description: 'Target benefit-eligible patients for a vendor frame event',
-    icon: <ShoppingBag className="h-4 w-4 text-amber-600" />,
-    iconBg: 'bg-amber-50',
-    border: 'border-amber-200 hover:border-amber-400',
-  },
-  {
-    title: 'Mid-Year Reminder',
-    type: 'Mid-Year Reminder',
-    description: 'Re-engage patients with benefits still available',
-    icon: <Bell className="h-4 w-4 text-teal-600" />,
-    iconBg: 'bg-teal-50',
-    border: 'border-teal-200 hover:border-teal-400',
-  },
-  {
-    title: 'Custom Campaign',
-    type: 'Custom Campaign',
-    description: 'Build your own message for any occasion',
-    icon: <PenLine className="h-4 w-4 text-slate-600" />,
-    iconBg: 'bg-slate-100',
-    border: 'border-slate-200 hover:border-slate-400',
-  },
+  { title: 'Trunk Show',       type: 'Trunk Show',       description: 'Target benefit-eligible patients for a vendor frame event', icon: <ShoppingBag className="h-4 w-4 text-amber-600" />, iconBg: 'bg-amber-50', border: 'border-amber-200 hover:border-amber-400' },
+  { title: 'Mid-Year Reminder', type: 'Mid-Year Reminder', description: 'Re-engage patients with benefits still available',          icon: <Bell       className="h-4 w-4 text-teal-600" />,  iconBg: 'bg-teal-50',  border: 'border-teal-200 hover:border-teal-400'  },
+  { title: 'Custom Campaign',  type: 'Custom Campaign',  description: 'Build your own message for any occasion',                    icon: <PenLine    className="h-4 w-4 text-slate-600" />, iconBg: 'bg-slate-100', border: 'border-slate-200 hover:border-slate-400' },
 ]
 
 function greeting() {
@@ -271,10 +263,80 @@ function greeting() {
   return 'Good evening'
 }
 
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function EmptyState({ onUpload }: { onUpload: () => void }) {
+  const steps = [
+    { n: 1, label: 'Upload patient list',      sub: 'CSV from any EHR — takes 5 minutes',           done: false },
+    { n: 2, label: 'Verify insurance benefits', sub: 'Prism checks exact dollar amounts per patient', done: false },
+    { n: 3, label: 'Send your first campaign',  sub: 'Every message includes the patient\'s exact allowance', done: false },
+  ]
+
+  return (
+    <div className="flex flex-col items-center justify-center py-20 px-4">
+      <div className="w-full max-w-lg">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 shadow-lg">
+            <Zap className="h-8 w-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900">Your revenue engine is ready</h3>
+          <p className="mt-2 text-sm text-slate-500">
+            Upload your patient list to see exactly how much unused benefit revenue is sitting in your practice.
+          </p>
+        </div>
+
+        <Card className="border-slate-200 shadow-sm mb-6">
+          <CardContent className="pt-5 space-y-4">
+            {steps.map((step, i) => (
+              <div key={step.n} className="flex items-start gap-4">
+                <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                  step.done ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-400'
+                }`}>
+                  {step.done ? <CheckCircle2 className="h-4 w-4" /> : step.n}
+                </div>
+                <div className="flex-1 pt-0.5">
+                  <p className={`text-sm font-semibold ${step.done ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{step.label}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{step.sub}</p>
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="absolute ml-4 mt-8 h-4 w-px bg-slate-200" />
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <button
+          onClick={onUpload}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-6 py-3.5 text-sm font-semibold text-white hover:bg-teal-700 transition-colors shadow-md"
+        >
+          <Upload className="h-4 w-4" /> Upload Patient List
+        </button>
+
+        <p className="mt-3 text-center text-xs text-slate-400">
+          Works with RevolutionEHR, Eyefinity, Crystal PM, and any EHR that exports CSV
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const navigate = useNavigate()
+
+  if (!HAS_PATIENTS) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
+          <p className="mt-1 text-sm text-slate-500">Let's get your practice set up.</p>
+        </div>
+        <EmptyState onUpload={() => navigate('/patients/upload')} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -285,10 +347,45 @@ export default function Dashboard() {
         <p className="mt-1 text-sm text-slate-500">Today's verification activity and your automated revenue pipeline.</p>
       </div>
 
+      {/* Aha headline */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-cyan-700 p-6 shadow-md">
+        <div className="relative z-10">
+          <p className="text-sm font-medium text-teal-200 mb-1">Recoverable optical revenue in your patient list</p>
+          <p className="text-5xl font-black text-white tracking-tight">$127,050</p>
+          <p className="mt-2 text-teal-100 text-sm">
+            847 patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-4">
+            <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
+              <p className="text-xs text-teal-200">Frame allowances</p>
+              <p className="text-lg font-bold text-white">$82,350</p>
+              <p className="text-xs text-teal-300">548 patients</p>
+            </div>
+            <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
+              <p className="text-xs text-teal-200">Contact lens benefits</p>
+              <p className="text-lg font-bold text-white">$44,700</p>
+              <p className="text-xs text-teal-300">299 patients</p>
+            </div>
+            <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
+              <p className="text-xs text-teal-200">At 20% response rate</p>
+              <p className="text-lg font-bold text-white">~$25,410</p>
+              <p className="text-xs text-teal-300">estimated recovery</p>
+            </div>
+          </div>
+        </div>
+        {/* Decorative background rings */}
+        <div className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-white/5" />
+        <div className="absolute -right-4 -bottom-8 h-32 w-32 rounded-full bg-white/5" />
+      </div>
+
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <Card key={s.title} className="border-slate-200 shadow-sm">
+          <Card
+            key={s.title}
+            onClick={() => navigate(s.nav)}
+            className="border-slate-200 shadow-sm cursor-pointer hover:shadow-md hover:border-teal-200 transition-all"
+          >
             <CardContent className="pt-5">
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.bg} mb-3`}>
                 {s.icon}
@@ -321,6 +418,81 @@ export default function Dashboard() {
           >
             View campaigns <ChevronRight className="h-3 w-3" />
           </button>
+        </CardContent>
+      </Card>
+
+      {/* Campaign Approval Queue */}
+      <Card className="border-amber-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
+                <CheckSquare className="h-4 w-4 text-amber-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Awaiting Your Approval
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
+                    {pendingApprovals.length}
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Review each campaign before it sends — personalized messages with exact benefit amounts are ready
+                </CardDescription>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/campaigns')}
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
+            >
+              All campaigns <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-slate-100">
+            {pendingApprovals.map((c) => (
+              <div key={c.id} className="px-5 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="text-sm font-semibold text-slate-800">{c.name}</p>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{c.carrier}</span>
+                      <span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">
+                        {c.patients} patients · {c.recoverable} recoverable
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mb-2">Scheduled: {c.scheduledFor}</p>
+                    {/* Message preview */}
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                      <p className="text-xs text-slate-400 mb-1 font-medium">Message preview</p>
+                      <p className="text-xs text-slate-600 leading-relaxed italic">"{c.sampleMessage} [link]"</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
+                    <button
+                      onClick={() => navigate('/campaigns')}
+                      className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap"
+                    >
+                      <CheckCircle2 className="h-3 w-3" /> Approve
+                    </button>
+                    <button
+                      onClick={() => navigate('/campaigns')}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
+                    >
+                      <Eye className="h-3 w-3" /> Review
+                    </button>
+                    <button
+                      onClick={() => navigate('/campaigns')}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Reschedule
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -415,7 +587,7 @@ export default function Dashboard() {
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Prism automatically sends personalized benefit reminders as patient allowances near expiration — no manual work required
+                  Personalized benefit reminders send automatically as patient allowances near expiration — no manual work required
                 </CardDescription>
               </div>
             </div>
@@ -428,22 +600,16 @@ export default function Dashboard() {
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
-
           {/* Pipeline stages */}
           <div className="grid gap-3 sm:grid-cols-3">
             {pipelineStages.map((stage) => (
-              <div
-                key={stage.label}
-                className={`rounded-xl border ${stage.border} ${stage.bg} p-4`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${stage.pill}`}>
-                    {stage.label}
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-slate-900">{stage.patients}</p>
+              <div key={stage.label} className={`rounded-xl border ${stage.border} ${stage.bg} p-4`}>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${stage.pill}`}>
+                  {stage.label}
+                </span>
+                <p className="text-2xl font-bold text-slate-900 mt-3">{stage.patients}</p>
                 <p className="text-xs text-slate-500 mt-0.5">patients</p>
-                <div className={`mt-2 h-1 w-full rounded-full bg-white/60`}>
+                <div className="mt-2 h-1 w-full rounded-full bg-white/60">
                   <div className={`h-full rounded-full ${stage.color}`} style={{ width: `${Math.min(100, (stage.patients / 200) * 100)}%` }} />
                 </div>
                 <p className={`mt-2 text-sm font-semibold ${stage.textColor}`}>{stage.value}</p>
@@ -475,20 +641,19 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      send.channel === 'SMS' ? 'bg-violet-50 text-violet-600' : 'bg-blue-50 text-blue-600'
-                    }`}>{send.channel}</span>
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      send.status === 'sending-today'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>{send.sendDay}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${send.channel === 'SMS' ? 'bg-violet-50 text-violet-600' : 'bg-blue-50 text-blue-600'}`}>
+                      {send.channel}
+                    </span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${send.status === 'sending-today' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                      {send.sendDay}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
             <p className="mt-2 text-xs text-slate-400 text-right">
-              89 patients queued for next week · <button onClick={() => navigate('/campaigns')} className="text-teal-600 hover:underline font-medium">view full queue</button>
+              89 patients queued for next week ·{' '}
+              <button onClick={() => navigate('/campaigns')} className="text-teal-600 hover:underline font-medium">view full queue</button>
             </p>
           </div>
         </CardContent>
@@ -497,7 +662,6 @@ export default function Dashboard() {
       {/* Bottom row — manual campaigns + verification breakdown */}
       <div className="grid gap-4 lg:grid-cols-5">
 
-        {/* Manual campaigns */}
         <Card className="border-slate-200 shadow-sm lg:col-span-2">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">One-Time Campaigns</CardTitle>
@@ -525,7 +689,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Verification breakdown */}
         <Card className="border-slate-200 shadow-sm lg:col-span-3">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -541,10 +704,10 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { label: 'Active — benefits available',          value: 31, total: 38, color: 'bg-emerald-500', text: 'text-emerald-700', note: 'Eligible to receive optical services' },
-              { label: 'Inactive — benefits used or expired',  value: 4,  total: 38, color: 'bg-red-400',     text: 'text-red-700',     note: 'Not eligible this benefit year'      },
-              { label: 'Pending — awaiting response',          value: 2,  total: 38, color: 'bg-amber-400',   text: 'text-amber-700',   note: 'Response expected within 24 hours'  },
-              { label: 'Prior auth required',                  value: 1,  total: 38, color: 'bg-rose-500',    text: 'text-rose-700',    note: 'Must obtain auth before dispensing'  },
+              { label: 'Active — benefits available',         value: 31, total: 38, color: 'bg-emerald-500', text: 'text-emerald-700', note: 'Eligible to receive optical services'  },
+              { label: 'Inactive — benefits used or expired', value: 4,  total: 38, color: 'bg-red-400',     text: 'text-red-700',     note: 'Not eligible this benefit year'        },
+              { label: 'Pending — awaiting response',         value: 2,  total: 38, color: 'bg-amber-400',   text: 'text-amber-700',   note: 'Response expected within 24 hours'    },
+              { label: 'Prior auth required',                 value: 1,  total: 38, color: 'bg-rose-500',    text: 'text-rose-700',    note: 'Must obtain auth before dispensing'    },
             ].map((row) => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs mb-1">
@@ -555,10 +718,7 @@ export default function Dashboard() {
                   <span className={`font-bold ${row.text}`}>{row.value}</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${row.color} transition-all`}
-                    style={{ width: `${Math.round((row.value / row.total) * 100)}%` }}
-                  />
+                  <div className={`h-full rounded-full ${row.color} transition-all`} style={{ width: `${Math.round((row.value / row.total) * 100)}%` }} />
                 </div>
               </div>
             ))}
