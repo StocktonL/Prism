@@ -14,13 +14,16 @@ import {
   Clock,
   Users,
   Send,
+  CalendarDays,
+  Zap,
+  Timer,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { PATIENTS, getPatientFullName } from '@/data/mockPatients'
 
 type CampaignType = 'Trunk Show' | 'End of Year Benefits' | 'Mid-Year Reminder' | 'Custom Campaign'
 type CampaignStatus = 'Active' | 'Scheduled' | 'Completed' | 'Draft'
-type ScheduleMode = 'now' | 'scheduled'
+type ScheduleMode = 'now' | 'scheduled' | 'staggered'
 type CriteriaKey = 'unused_benefits' | 'expiring_30' | 'expiring_60' | 'expiring_90' | 'last_visit_6' | 'last_visit_12' | 'last_visit_18' | 'last_visit_24' | 'carrier_vsp' | 'carrier_eyemed' | 'carrier_davis' | 'carrier_spectera' | 'all'
 
 interface Campaign {
@@ -208,6 +211,8 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
   const [message, setMessage] = useState(CAMPAIGN_TYPES.find((t) => t.type === preselectedType)?.defaultMessage ?? '')
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>('now')
   const [scheduleDate, setScheduleDate] = useState('')
+  const [staggerStartDate, setStaggerStartDate] = useState('')
+  const [staggerDays, setStaggerDays] = useState(7)
   const [criteria, setCriteria] = useState<CriteriaKey>('unused_benefits')
   const MAX_CHARS = 160
 
@@ -347,24 +352,75 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
               </div>
               <div>
                 <label className="mb-2 block text-xs font-medium text-slate-700">Schedule</label>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setScheduleMode('now')}
-                    className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors ${scheduleMode === 'now' ? 'border-teal-400 bg-teal-50 text-teal-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    Send Now
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setScheduleMode('scheduled')}
-                    className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors ${scheduleMode === 'scheduled' ? 'border-teal-400 bg-teal-50 text-teal-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                  >
-                    Schedule for Date
-                  </button>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { mode: 'now' as ScheduleMode,       icon: <Zap className="h-4 w-4" />,         label: 'Send Now',        sub: 'All at once, immediately'        },
+                    { mode: 'scheduled' as ScheduleMode, icon: <CalendarDays className="h-4 w-4" />, label: 'Specific Date',   sub: 'All at once on a chosen day'     },
+                    { mode: 'staggered' as ScheduleMode, icon: <Timer className="h-4 w-4" />,        label: 'Staggered Send',  sub: 'Spread over days or weeks'       },
+                  ].map((opt) => (
+                    <button
+                      key={opt.mode}
+                      type="button"
+                      onClick={() => setScheduleMode(opt.mode)}
+                      className={`flex flex-col items-center gap-1.5 rounded-lg border py-3 px-2 text-center transition-colors ${scheduleMode === opt.mode ? 'border-teal-400 bg-teal-50 text-teal-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                    >
+                      {opt.icon}
+                      <span className="text-xs font-semibold leading-tight">{opt.label}</span>
+                      <span className="text-xs text-slate-400 leading-tight">{opt.sub}</span>
+                    </button>
+                  ))}
                 </div>
+
+                {/* Specific date picker */}
                 {scheduleMode === 'scheduled' && (
-                  <input type="date" className="input-field mt-2" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+                  <div className="mt-3">
+                    <label className="mb-1 block text-xs font-medium text-slate-600">Send date</label>
+                    <input type="date" className="input-field" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+                  </div>
+                )}
+
+                {/* Staggered config */}
+                {scheduleMode === 'staggered' && (
+                  <div className="mt-3 rounded-xl border border-teal-200 bg-teal-50/50 p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-600">Start date</label>
+                        <input
+                          type="date"
+                          className="input-field"
+                          value={staggerStartDate}
+                          onChange={(e) => setStaggerStartDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-600">Spread over</label>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {[
+                            { days: 3,  label: '3 days'  },
+                            { days: 5,  label: '5 days'  },
+                            { days: 7,  label: '1 week'  },
+                            { days: 14, label: '2 weeks' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.days}
+                              type="button"
+                              onClick={() => setStaggerDays(opt.days)}
+                              className={`rounded-lg border py-1.5 text-xs font-semibold transition-colors ${staggerDays === opt.days ? 'border-teal-500 bg-teal-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-teal-200 bg-white px-3 py-2">
+                      <p className="text-xs font-semibold text-teal-700 mb-0.5">How staggered send works</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Prism divides your patient list evenly and sends a batch each day over {staggerDays} day{staggerDays > 1 ? 's' : ''}.
+                        Your front desk gets a steady flow of callbacks instead of a flood on day one.
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -405,12 +461,38 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
               </div>
 
               {/* Estimated reach */}
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4">
-                <Users className="h-5 w-5 text-teal-600 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-teal-800">Estimated reach: {estimatedReach.toLocaleString()} patients</p>
-                  <p className="text-xs text-teal-600">Based on your selected criteria and current patient roster</p>
+              <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50 p-4">
+                <div className="flex items-start gap-3">
+                  <Users className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-teal-800">
+                      {estimatedReach.toLocaleString()} patients will receive this campaign
+                    </p>
+                    <p className="text-xs text-teal-600 mt-0.5">Based on your selected criteria and current patient roster</p>
+                  </div>
                 </div>
+                {scheduleMode === 'staggered' && estimatedReach > 0 && (
+                  <div className="mt-3 border-t border-teal-200 pt-3">
+                    <p className="text-xs font-semibold text-teal-700 mb-2">Staggered send schedule</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-lg bg-white border border-teal-200 px-3 py-2 text-center">
+                        <p className="text-lg font-bold text-slate-800">{Math.ceil(estimatedReach / staggerDays)}</p>
+                        <p className="text-xs text-slate-500">messages/day</p>
+                      </div>
+                      <div className="rounded-lg bg-white border border-teal-200 px-3 py-2 text-center">
+                        <p className="text-lg font-bold text-slate-800">{staggerDays}</p>
+                        <p className="text-xs text-slate-500">days total</p>
+                      </div>
+                      <div className="rounded-lg bg-white border border-teal-200 px-3 py-2 text-center">
+                        <p className="text-lg font-bold text-slate-800">{estimatedReach.toLocaleString()}</p>
+                        <p className="text-xs text-slate-500">total sent</p>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-teal-600">
+                      Each batch sends at 10:00 AM automatically — no action needed after approval.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
@@ -422,7 +504,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                 className="flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
               >
                 <Send className="h-4 w-4" />
-                {scheduleMode === 'now' ? 'Launch Campaign' : 'Schedule Campaign'}
+                {scheduleMode === 'now' ? 'Launch Campaign' : scheduleMode === 'staggered' ? `Start Staggered Send` : 'Schedule Campaign'}
               </button>
             </div>
           </div>
