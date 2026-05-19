@@ -5,6 +5,7 @@ import {
   Plus,
   X,
   ChevronRight,
+  DollarSign,
   ShoppingBag,
   CalendarRange,
   Bell,
@@ -36,8 +37,18 @@ interface Campaign {
   smsDelivered: number
   smsFailed: number
   smsReplied: number
+  appointmentsBooked: number
+  revenueAttributed: number
   date: string
   patients: string[]
+}
+
+// 80% of SMS replies convert to booked appointments; avg optical transaction $400
+const BOOKING_RATE = 0.80
+const AVG_TRANSACTION = 400
+
+function calcRevenue(replied: number) {
+  return Math.round(replied * BOOKING_RATE * AVG_TRANSACTION)
 }
 
 const INITIAL_CAMPAIGNS: Campaign[] = [
@@ -51,6 +62,8 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     smsDelivered: 298,
     smsFailed: 14,
     smsReplied: 42,
+    appointmentsBooked: 34,
+    revenueAttributed: calcRevenue(42),
     date: '2026-05-01',
     patients: ['Sarah Mitchell', 'Linda Kowalski', 'Marcus Rivera', 'Thomas Garrett'],
   },
@@ -64,6 +77,8 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     smsDelivered: 185,
     smsFailed: 4,
     smsReplied: 31,
+    appointmentsBooked: 25,
+    revenueAttributed: calcRevenue(31),
     date: '2026-03-15',
     patients: ['James Thornton', 'Diana Patel', 'Robert Chen', 'Priya Nair'],
   },
@@ -77,6 +92,8 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     smsDelivered: 0,
     smsFailed: 0,
     smsReplied: 0,
+    appointmentsBooked: 0,
+    revenueAttributed: 0,
     date: '2026-06-01',
     patients: ['Amara Osei', 'David Okafor', 'Marcus Rivera'],
   },
@@ -90,6 +107,8 @@ const INITIAL_CAMPAIGNS: Campaign[] = [
     smsDelivered: 0,
     smsFailed: 0,
     smsReplied: 0,
+    appointmentsBooked: 0,
+    revenueAttributed: 0,
     date: '—',
     patients: [],
   },
@@ -228,6 +247,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
 
   function handleLaunch() {
     const patientNames = PATIENTS.slice(0, Math.min(estimatedReach, PATIENTS.length)).map(getPatientFullName)
+    const replied = scheduleMode === 'now' ? Math.floor(estimatedReach * 0.12) : 0
     const newCampaign: Campaign = {
       id: Date.now(),
       name,
@@ -237,8 +257,10 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
       patientsReached: estimatedReach,
       smsDelivered: scheduleMode === 'now' ? Math.floor(estimatedReach * 0.95) : 0,
       smsFailed: scheduleMode === 'now' ? Math.ceil(estimatedReach * 0.05) : 0,
-      smsReplied: scheduleMode === 'now' ? Math.floor(estimatedReach * 0.12) : 0,
-      date: scheduleMode === 'now' ? new Date().toISOString().split('T')[0] : (scheduleDate || new Date().toISOString().split('T')[0]),
+      smsReplied: replied,
+      appointmentsBooked: Math.round(replied * BOOKING_RATE),
+      revenueAttributed: calcRevenue(replied),
+      date: scheduleMode === 'now' ? new Date().toISOString().split('T')[0] : (scheduleDate || staggerStartDate || new Date().toISOString().split('T')[0]),
       patients: patientNames,
     }
     onLaunch(newCampaign)
@@ -561,14 +583,40 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
             <p className="mt-2 text-xs text-teal-600">Each patient receives their actual verified benefit amounts at send time.</p>
           </div>
 
+          {/* Revenue attributed */}
+          {campaign.revenueAttributed > 0 && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-emerald-600">Revenue Attributed</p>
+              <p className="text-3xl font-black text-emerald-700">${campaign.revenueAttributed.toLocaleString()}</p>
+              <p className="text-xs text-emerald-600 mt-1">optical revenue recovered from this campaign</p>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
+                  <p className="text-sm font-bold text-slate-800">{campaign.smsReplied}</p>
+                  <p className="text-xs text-slate-500">replied</p>
+                </div>
+                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
+                  <p className="text-sm font-bold text-slate-800">{campaign.appointmentsBooked}</p>
+                  <p className="text-xs text-slate-500">booked</p>
+                </div>
+                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
+                  <p className="text-sm font-bold text-slate-800">${AVG_TRANSACTION}</p>
+                  <p className="text-xs text-slate-500">avg sale</p>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-emerald-500">
+                {replyRate}% response rate · {Math.round(BOOKING_RATE * 100)}% booking conversion · ${AVG_TRANSACTION} avg optical transaction
+              </p>
+            </div>
+          )}
+
           {/* Delivery stats */}
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Delivery Statistics</p>
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: 'Delivered', value: campaign.smsDelivered, sub: `${deliveryRate}% rate`, color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-                { label: 'Failed', value: campaign.smsFailed, sub: `${campaign.smsFailed > 0 ? 100 - deliveryRate : 0}% rate`, color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
-                { label: 'Replied', value: campaign.smsReplied, sub: `${replyRate}% rate`, color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
+                { label: 'Failed',    value: campaign.smsFailed,    sub: `${campaign.smsFailed > 0 ? 100 - deliveryRate : 0}% rate`, color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200' },
+                { label: 'Replied',   value: campaign.smsReplied,   sub: `${replyRate}% rate`,    color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200' },
               ].map((s) => (
                 <div key={s.label} className={`rounded-xl border ${s.border} ${s.bg} p-3 text-center`}>
                   <p className={`text-2xl font-bold ${s.color}`}>{s.value.toLocaleString()}</p>
@@ -625,12 +673,15 @@ export default function Campaigns() {
   const totalActive = campaigns.filter((c) => c.status === 'Active').length
   const totalScheduled = campaigns.filter((c) => c.status === 'Scheduled').length
   const totalSms = campaigns.reduce((sum, c) => sum + c.smsDelivered, 0)
+  const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenueAttributed, 0)
+  const totalReplied = campaigns.reduce((sum, c) => sum + c.smsReplied, 0)
+  const avgResponseRate = totalSms > 0 ? Math.round((totalReplied / totalSms) * 100) : 0
 
   const stats = [
-    { label: 'Total Campaigns', value: campaigns.length, icon: <Megaphone className="h-5 w-5 text-violet-600" />, bg: 'bg-violet-50' },
-    { label: 'Active', value: totalActive, icon: <CheckCircle2 className="h-5 w-5 text-emerald-600" />, bg: 'bg-emerald-50' },
-    { label: 'Scheduled', value: totalScheduled, icon: <Clock className="h-5 w-5 text-blue-600" />, bg: 'bg-blue-50' },
-    { label: 'SMS Delivered', value: totalSms.toLocaleString(), icon: <Send className="h-5 w-5 text-teal-600" />, bg: 'bg-teal-50' },
+    { label: 'Total Campaigns',   value: campaigns.length,         icon: <Megaphone   className="h-5 w-5 text-violet-600" />, bg: 'bg-violet-50'  },
+    { label: 'Avg Response Rate', value: `${avgResponseRate}%`,    icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />,   bg: 'bg-blue-50'    },
+    { label: 'SMS Delivered',     value: totalSms.toLocaleString(), icon: <Send        className="h-5 w-5 text-teal-600" />,   bg: 'bg-teal-50'    },
+    { label: 'Revenue Recovered', value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign className="h-5 w-5 text-emerald-600" />, bg: 'bg-emerald-50' },
   ]
 
   function openNewCampaign(type?: CampaignType) {
@@ -722,14 +773,26 @@ export default function Campaigns() {
                       </div>
                       <p className="text-xs text-slate-400">{campaign.date !== '—' ? campaign.date : 'Draft'}</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-8 text-sm">
+                    <div className="hidden sm:flex items-center gap-6 text-sm">
                       <div className="text-center">
                         <p className="font-semibold text-slate-800">{campaign.patientsReached.toLocaleString()}</p>
                         <p className="text-xs text-slate-400">Reached</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold text-slate-800">{campaign.smsDelivered.toLocaleString()}</p>
-                        <p className="text-xs text-slate-400">Delivered</p>
+                        <p className="font-semibold text-slate-800">
+                          {campaign.smsDelivered > 0
+                            ? `${Math.round((campaign.smsReplied / campaign.smsDelivered) * 100)}%`
+                            : '—'}
+                        </p>
+                        <p className="text-xs text-slate-400">Response</p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`font-semibold ${campaign.revenueAttributed > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>
+                          {campaign.revenueAttributed > 0
+                            ? `$${campaign.revenueAttributed.toLocaleString()}`
+                            : '—'}
+                        </p>
+                        <p className="text-xs text-slate-400">Revenue</p>
                       </div>
                     </div>
                     {statusBadge(campaign.status)}
