@@ -1,24 +1,24 @@
 import { useNavigate } from 'react-router-dom'
 import {
   DollarSign,
-  Megaphone,
   ShieldCheck,
   MessageSquare,
-  Sparkles,
   ArrowRight,
   CalendarClock,
   TrendingUp,
   ChevronRight,
-  ShoppingBag,
-  CalendarRange,
-  Bell,
-  PenLine,
   AlertCircle,
   CheckCircle2,
   XCircle,
   Clock,
   AlertTriangle,
   Info,
+  Zap,
+  Send,
+  Users,
+  PenLine,
+  ShoppingBag,
+  Bell,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
@@ -125,63 +125,143 @@ const todayVerifs: VerifRow[] = [
 ]
 
 const verifStatusConfig: Record<VerifStatus, { label: string; icon: React.ReactNode; className: string }> = {
-  active:     { label: 'Active',      icon: <CheckCircle2 className="h-3.5 w-3.5" />, className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  inactive:   { label: 'Inactive',    icon: <XCircle      className="h-3.5 w-3.5" />, className: 'bg-red-50 text-red-700 border-red-200'             },
-  pending:    { label: 'Pending',     icon: <Clock        className="h-3.5 w-3.5" />, className: 'bg-amber-50 text-amber-700 border-amber-200'        },
-  'needs-auth': { label: 'Auth Reqd', icon: <AlertTriangle className="h-3.5 w-3.5" />, className: 'bg-rose-50 text-rose-700 border-rose-200'          },
+  active:       { label: 'Active',    icon: <CheckCircle2  className="h-3.5 w-3.5" />, className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  inactive:     { label: 'Inactive',  icon: <XCircle       className="h-3.5 w-3.5" />, className: 'bg-red-50 text-red-700 border-red-200'             },
+  pending:      { label: 'Pending',   icon: <Clock         className="h-3.5 w-3.5" />, className: 'bg-amber-50 text-amber-700 border-amber-200'        },
+  'needs-auth': { label: 'Auth Reqd', icon: <AlertTriangle className="h-3.5 w-3.5" />, className: 'bg-rose-50 text-rose-700 border-rose-200'           },
 }
 
-// ─── AI suggestions ───────────────────────────────────────────────────────────
+// ─── Revenue pipeline ─────────────────────────────────────────────────────────
 
-const aiSuggestions = [
+const pipelineStages = [
   {
-    id: 1,
-    label: 'End of Year — $48K Opportunity',
-    insight: '312 patients have an average of $155 in unused frame and contact benefits expiring Dec 31. At a 20% response rate, that\'s ~$9,672 in recoverable optical revenue.',
-    action: 'Launch campaign',
-    reach: '312 patients · est. $9,672 recovered',
-    icon: <CalendarClock className="h-5 w-5 text-rose-500" />,
+    label: 'Sending This Week',
+    patients: 47,
+    value: '$11,280',
+    description: 'Benefits expire within 30 days',
+    color: 'bg-rose-500',
+    textColor: 'text-rose-700',
     bg: 'bg-rose-50',
-    badge: 'bg-rose-100 text-rose-700',
-    badgeLabel: 'High Priority',
-    nav: '/campaigns',
-    navState: { openModal: true, campaignType: 'End of Year Benefits' },
+    border: 'border-rose-200',
+    pill: 'bg-rose-100 text-rose-700',
   },
   {
-    id: 2,
-    label: 'Trunk Show — 189 Eligible Patients',
-    insight: '189 patients are benefit-eligible, haven\'t visited in 12+ months, and have an average of $142 in unused frame benefits. Perfect trunk show audience.',
-    action: 'Launch campaign',
-    reach: '189 patients · avg $142 frame benefit',
-    icon: <ShoppingBag className="h-5 w-5 text-amber-500" />,
+    label: 'Queued — Next 2 Weeks',
+    patients: 89,
+    value: '$21,540',
+    description: 'Benefits expire in 31–60 days',
+    color: 'bg-amber-400',
+    textColor: 'text-amber-700',
     bg: 'bg-amber-50',
-    badge: 'bg-amber-100 text-amber-700',
-    badgeLabel: 'High Priority',
-    nav: '/campaigns',
-    navState: { openModal: true, campaignType: 'Trunk Show' },
+    border: 'border-amber-200',
+    pill: 'bg-amber-100 text-amber-700',
   },
   {
-    id: 3,
-    label: 'Mid-Year — 94 Patients Untouched',
-    insight: '94 patients are 6+ months since their last visit with full exam and materials benefits still available.',
-    action: 'Launch campaign',
-    reach: '94 patients · full benefits remaining',
-    icon: <Bell className="h-5 w-5 text-teal-500" />,
+    label: 'Scheduled — Next Month',
+    patients: 156,
+    value: '$37,920',
+    description: 'Benefits expire in 61–90 days',
+    color: 'bg-teal-500',
+    textColor: 'text-teal-700',
     bg: 'bg-teal-50',
-    badge: 'bg-teal-100 text-teal-700',
-    badgeLabel: 'Medium Priority',
-    nav: '/campaigns',
-    navState: { openModal: true, campaignType: 'Mid-Year Reminder' },
+    border: 'border-teal-200',
+    pill: 'bg-teal-100 text-teal-700',
   },
 ]
 
-// ─── Campaign types ───────────────────────────────────────────────────────────
+// ─── This week's automated sends ──────────────────────────────────────────────
 
-const campaignTypes = [
-  { title: 'Trunk Show',          type: 'Trunk Show',          description: 'Drive foot traffic for a vendor frame event',    borderColor: 'border-amber-200 hover:border-amber-400', iconBg: 'bg-amber-50',  icon: <ShoppingBag className="h-4 w-4 text-amber-600" /> },
-  { title: 'End of Year Benefits', type: 'End of Year Benefits', description: 'Remind patients their benefits expire Dec 31', borderColor: 'border-rose-200 hover:border-rose-400',   iconBg: 'bg-rose-50',   icon: <CalendarRange className="h-4 w-4 text-rose-600" /> },
-  { title: 'Mid-Year Reminder',   type: 'Mid-Year Reminder',   description: 'Re-engage patients with benefits still available', borderColor: 'border-teal-200 hover:border-teal-400', iconBg: 'bg-teal-50',   icon: <Bell className="h-4 w-4 text-teal-600" /> },
-  { title: 'Custom Campaign',     type: 'Custom Campaign',     description: 'Build your own message and patient list',        borderColor: 'border-slate-200 hover:border-slate-400', iconBg: 'bg-slate-100', icon: <PenLine className="h-4 w-4 text-slate-600" /> },
+interface ScheduledSend {
+  name: string
+  carrier: string
+  frameAllowance: string
+  contactAllowance: string
+  reason: string
+  sendDay: string
+  channel: 'SMS' | 'Email'
+  status: 'sending-today' | 'scheduled'
+}
+
+const thisWeeksSends: ScheduledSend[] = [
+  {
+    name: 'Linda Kowalski',
+    carrier: 'VSP',
+    frameAllowance: '$150',
+    contactAllowance: '$130',
+    reason: 'Benefits expire in 28 days',
+    sendDay: 'Today',
+    channel: 'SMS',
+    status: 'sending-today',
+  },
+  {
+    name: 'Robert Chen',
+    carrier: 'EyeMed',
+    frameAllowance: '$200',
+    contactAllowance: '$0',
+    reason: 'Benefits expire in 22 days',
+    sendDay: 'Today',
+    channel: 'SMS',
+    status: 'sending-today',
+  },
+  {
+    name: 'Amara Osei',
+    carrier: 'Davis Vision',
+    frameAllowance: '$130',
+    contactAllowance: '$150',
+    reason: 'Benefits expire in 30 days',
+    sendDay: 'Tomorrow',
+    channel: 'Email',
+    status: 'scheduled',
+  },
+  {
+    name: 'Priya Nair',
+    carrier: 'VSP',
+    frameAllowance: '$150',
+    contactAllowance: '$0',
+    reason: 'Benefits expire in 26 days',
+    sendDay: 'Wed',
+    channel: 'SMS',
+    status: 'scheduled',
+  },
+  {
+    name: 'David Okafor',
+    carrier: 'EyeMed',
+    frameAllowance: '$200',
+    contactAllowance: '$200',
+    reason: 'Benefits expire in 29 days',
+    sendDay: 'Thu',
+    channel: 'SMS',
+    status: 'scheduled',
+  },
+]
+
+// ─── Manual campaign types ────────────────────────────────────────────────────
+
+const manualCampaigns = [
+  {
+    title: 'Trunk Show',
+    type: 'Trunk Show',
+    description: 'Target benefit-eligible patients for a vendor frame event',
+    icon: <ShoppingBag className="h-4 w-4 text-amber-600" />,
+    iconBg: 'bg-amber-50',
+    border: 'border-amber-200 hover:border-amber-400',
+  },
+  {
+    title: 'Mid-Year Reminder',
+    type: 'Mid-Year Reminder',
+    description: 'Re-engage patients with benefits still available',
+    icon: <Bell className="h-4 w-4 text-teal-600" />,
+    iconBg: 'bg-teal-50',
+    border: 'border-teal-200 hover:border-teal-400',
+  },
+  {
+    title: 'Custom Campaign',
+    type: 'Custom Campaign',
+    description: 'Build your own message for any occasion',
+    icon: <PenLine className="h-4 w-4 text-slate-600" />,
+    iconBg: 'bg-slate-100',
+    border: 'border-slate-200 hover:border-slate-400',
+  },
 ]
 
 function greeting() {
@@ -202,7 +282,7 @@ export default function Dashboard() {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
-        <p className="mt-1 text-sm text-slate-500">Today's verification activity and revenue opportunities.</p>
+        <p className="mt-1 text-sm text-slate-500">Today's verification activity and your automated revenue pipeline.</p>
       </div>
 
       {/* Stats */}
@@ -232,14 +312,14 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-semibold text-rose-900">$48,360 in patient benefits expiring within 30 days</p>
-              <p className="text-xs text-rose-700">312 patients have unused frame and contact allowances. Send now to recover optical revenue before it lapses.</p>
+              <p className="text-xs text-rose-700">312 patients have unused frame and contact allowances. Prism is automatically sending reminders — 47 going out this week.</p>
             </div>
           </div>
           <button
-            onClick={() => navigate('/campaigns', { state: { openModal: true, campaignType: 'End of Year Benefits' } })}
+            onClick={() => navigate('/campaigns')}
             className="ml-4 flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-sm whitespace-nowrap"
           >
-            Launch campaign <ChevronRight className="h-3 w-3" />
+            View campaigns <ChevronRight className="h-3 w-3" />
           </button>
         </CardContent>
       </Card>
@@ -275,12 +355,9 @@ export default function Dashboard() {
                   onClick={() => navigate('/eligibility')}
                   className="flex items-start gap-4 px-5 py-3.5 hover:bg-slate-50 cursor-pointer transition-colors"
                 >
-                  {/* Avatar */}
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mt-0.5">
                     {v.name.split(' ').map((n) => n[0]).join('')}
                   </div>
-
-                  {/* Main info */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-slate-800">{v.name}</p>
@@ -303,8 +380,6 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-
-                  {/* Status badge */}
                   <span className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium flex-shrink-0 ${cfg.className}`}>
                     {cfg.icon}{cfg.label}
                   </span>
@@ -312,8 +387,6 @@ export default function Dashboard() {
               )
             })}
           </div>
-
-          {/* Footer */}
           <div className="border-t border-slate-100 px-5 py-3">
             <button
               onClick={() => navigate('/eligibility')}
@@ -325,94 +398,165 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* AI Revenue Suggestions */}
+      {/* Revenue Engine */}
       <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600">
-              <Sparkles className="h-4 w-4 text-white" />
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600">
+                <Zap className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Revenue Engine
+                  <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Running
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Prism automatically sends personalized benefit reminders as patient allowances near expiration — no manual work required
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-base">AI Revenue Suggestions</CardTitle>
-              <CardDescription className="text-xs">Based on verified benefit data — each patient receives their exact dollar amount</CardDescription>
-            </div>
+            <button
+              onClick={() => navigate('/campaigns')}
+              className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
+            >
+              All campaigns <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {aiSuggestions.map((s) => (
-            <div
-              key={s.id}
-              onClick={() => navigate(s.nav, { state: s.navState })}
-              className="flex items-start gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:bg-white hover:border-slate-200 hover:shadow-sm cursor-pointer"
-            >
-              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${s.bg}`}>
-                {s.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <p className="text-sm font-semibold text-slate-800">{s.label}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.badge}`}>{s.badgeLabel}</span>
+        <CardContent className="space-y-5">
+
+          {/* Pipeline stages */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {pipelineStages.map((stage) => (
+              <div
+                key={stage.label}
+                className={`rounded-xl border ${stage.border} ${stage.bg} p-4`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${stage.pill}`}>
+                    {stage.label}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">{s.insight}</p>
-                <p className="mt-1.5 text-xs font-medium text-teal-600">{s.reach}</p>
+                <p className="text-2xl font-bold text-slate-900">{stage.patients}</p>
+                <p className="text-xs text-slate-500 mt-0.5">patients</p>
+                <div className={`mt-2 h-1 w-full rounded-full bg-white/60`}>
+                  <div className={`h-full rounded-full ${stage.color}`} style={{ width: `${Math.min(100, (stage.patients / 200) * 100)}%` }} />
+                </div>
+                <p className={`mt-2 text-sm font-semibold ${stage.textColor}`}>{stage.value}</p>
+                <p className="text-xs text-slate-400">{stage.description}</p>
               </div>
-              <button className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm whitespace-nowrap">
-                {s.action} <ChevronRight className="h-3 w-3" />
-              </button>
+            ))}
+          </div>
+
+          {/* This week's sends */}
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <Send className="h-3.5 w-3.5 text-slate-400" />
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">This Week's Automatic Sends</p>
             </div>
-          ))}
+            <div className="rounded-xl border border-slate-100 bg-slate-50 divide-y divide-slate-100">
+              {thisWeeksSends.map((send) => (
+                <div key={send.name} className="flex items-center gap-4 px-4 py-3">
+                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-600">
+                    {send.name.split(' ').map((n) => n[0]).join('')}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-xs font-semibold text-slate-800">{send.name}</p>
+                      <span className="text-xs text-slate-400">{send.carrier}</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {[send.frameAllowance !== '$0' && `${send.frameAllowance} frames`, send.contactAllowance !== '$0' && `${send.contactAllowance} contacts`].filter(Boolean).join(' · ')}
+                      <span className="ml-1.5 text-slate-400">— {send.reason}</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      send.channel === 'SMS' ? 'bg-violet-50 text-violet-600' : 'bg-blue-50 text-blue-600'
+                    }`}>{send.channel}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      send.status === 'sending-today'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>{send.sendDay}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-slate-400 text-right">
+              89 patients queued for next week · <button onClick={() => navigate('/campaigns')} className="text-teal-600 hover:underline font-medium">view full queue</button>
+            </p>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Bottom row — campaigns + quick verify */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Bottom row — manual campaigns + verification breakdown */}
+      <div className="grid gap-4 lg:grid-cols-5">
 
-        <Card className="border-slate-200 shadow-sm">
+        {/* Manual campaigns */}
+        <Card className="border-slate-200 shadow-sm lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Launch a Campaign</CardTitle>
-            <CardDescription className="text-xs">Allowances from verification are included in every message automatically</CardDescription>
+            <CardTitle className="text-base">One-Time Campaigns</CardTitle>
+            <CardDescription className="text-xs">
+              For trunk shows, events, and custom outreach — benefit amounts are included automatically
+            </CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-            {campaignTypes.map((c) => (
+          <CardContent className="space-y-2">
+            {manualCampaigns.map((c) => (
               <button
                 key={c.title}
                 onClick={() => navigate('/campaigns', { state: { openModal: true, campaignType: c.type } })}
-                className={`flex flex-col items-start gap-2 rounded-xl border-2 bg-white p-3 text-left transition-all shadow-sm hover:shadow-md ${c.borderColor}`}
+                className={`flex w-full items-center gap-3 rounded-xl border-2 bg-white p-3 text-left transition-all hover:shadow-sm ${c.border}`}
               >
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${c.iconBg}`}>{c.icon}</div>
-                <div>
+                <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${c.iconBg}`}>
+                  {c.icon}
+                </div>
+                <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-slate-800">{c.title}</p>
-                  <p className="text-xs text-slate-400 leading-snug mt-0.5">{c.description}</p>
+                  <p className="text-xs text-slate-400 leading-snug">{c.description}</p>
                 </div>
-                <div className="flex items-center gap-1 text-xs font-medium text-teal-600 mt-auto">
-                  Start <ArrowRight className="h-3 w-3" />
-                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
               </button>
             ))}
           </CardContent>
         </Card>
 
         {/* Verification breakdown */}
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-slate-200 shadow-sm lg:col-span-3">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Verification Breakdown</CardTitle>
-            <CardDescription className="text-xs">Today's eligibility check results</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Verification Breakdown</CardTitle>
+                <CardDescription className="text-xs">Today's eligibility check results — 38 total</CardDescription>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5">
+                <Users className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-semibold text-slate-600">38 checked</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { label: 'Active — benefits available',         value: 31, total: 38, color: 'bg-emerald-500', text: 'text-emerald-700' },
-              { label: 'Inactive — benefits used or expired', value: 4,  total: 38, color: 'bg-red-400',     text: 'text-red-700'     },
-              { label: 'Pending — awaiting response',         value: 2,  total: 38, color: 'bg-amber-400',   text: 'text-amber-700'   },
-              { label: 'Prior auth required',                 value: 1,  total: 38, color: 'bg-rose-500',    text: 'text-rose-700'    },
+              { label: 'Active — benefits available',          value: 31, total: 38, color: 'bg-emerald-500', text: 'text-emerald-700', note: 'Eligible to receive optical services' },
+              { label: 'Inactive — benefits used or expired',  value: 4,  total: 38, color: 'bg-red-400',     text: 'text-red-700',     note: 'Not eligible this benefit year'      },
+              { label: 'Pending — awaiting response',          value: 2,  total: 38, color: 'bg-amber-400',   text: 'text-amber-700',   note: 'Response expected within 24 hours'  },
+              { label: 'Prior auth required',                  value: 1,  total: 38, color: 'bg-rose-500',    text: 'text-rose-700',    note: 'Must obtain auth before dispensing'  },
             ].map((row) => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-600">{row.label}</span>
-                  <span className={`font-semibold ${row.text}`}>{row.value}</span>
+                  <div>
+                    <span className="text-slate-700 font-medium">{row.label}</span>
+                    <span className="ml-2 text-slate-400">{row.note}</span>
+                  </div>
+                  <span className={`font-bold ${row.text}`}>{row.value}</span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${row.color}`}
+                    className={`h-full rounded-full ${row.color} transition-all`}
                     style={{ width: `${Math.round((row.value / row.total) * 100)}%` }}
                   />
                 </div>
