@@ -276,9 +276,9 @@ export default function Landing() {
             <p className="mt-4 text-xs text-slate-600">No credit card required · HIPAA compliant · Up and running today</p>
           </div>
 
-          {/* 4 message bubbles */}
+          {/* Message bubbles */}
           <div className="mx-auto max-w-5xl">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <MessageBubble
                 initials="SM"
                 name="Sarah Mitchell"
@@ -309,6 +309,14 @@ export default function Landing() {
                 tagColor="text-rose-600 bg-rose-50"
                 message="Hi Marcus, your $150 in frame benefits and $200 in contact lens benefits expire Dec 31 and don't roll over to next year. Use them or lose them — reply YES to book. — Valley Eye Care"
                 time="8m ago"
+              />
+              <MessageBubble
+                initials="KP"
+                name="Kevin Park"
+                tag="Brand Match"
+                tagColor="text-amber-600 bg-amber-50"
+                message="Hi Kevin, you're a Maui Jim fan — we're hosting a Maui Jim trunk show Nov 14–16 and thought of you. Your $150 VSP benefit applies to any pair. Want us to hold a spot? — Valley Eye Care"
+                time="11m ago"
               />
             </div>
           </div>
