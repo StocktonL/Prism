@@ -1,5 +1,13 @@
 @docs/company-brief.md
 @docs/technical.md
+@agents/ceo/CLAUDE.md
+@agents/cfo/CLAUDE.md
+@agents/cmo/CLAUDE.md
+@agents/coo/CLAUDE.md
+@agents/pm/CLAUDE.md
+@agents/frontend/CLAUDE.md
+@agents/backend/CLAUDE.md
+@agents/domain/CLAUDE.md
 # PRISM — Lead Engineer
 
 ## Read First
