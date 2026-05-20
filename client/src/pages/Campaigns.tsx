@@ -438,7 +438,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                     <div className="rounded-lg border border-teal-200 bg-white px-3 py-2">
                       <p className="text-xs font-semibold text-teal-700 mb-0.5">How staggered send works</p>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Prism divides your patient list evenly and sends a batch each day over {staggerDays} day{staggerDays > 1 ? 's' : ''}.
+                        Prizm divides your patient list evenly and sends a batch each day over {staggerDays} day{staggerDays > 1 ? 's' : ''}.
                         Your front desk gets a steady flow of callbacks instead of a flood on day one.
                       </p>
                     </div>
@@ -576,7 +576,7 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
             <div className="rounded-lg border border-teal-200 bg-white p-3">
               <div className="flex items-center gap-2 mb-2">
                 <MessageSquare className="h-4 w-4 text-teal-600" />
-                <span className="text-xs font-medium text-teal-600">SMS from Prism Practice</span>
+                <span className="text-xs font-medium text-teal-600">SMS from Prizm</span>
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(campaign.message)}</p>
             </div>
@@ -670,8 +670,6 @@ export default function Campaigns() {
     }
   }, [location.state])
 
-  const totalActive = campaigns.filter((c) => c.status === 'Active').length
-  const totalScheduled = campaigns.filter((c) => c.status === 'Scheduled').length
   const totalSms = campaigns.reduce((sum, c) => sum + c.smsDelivered, 0)
   const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenueAttributed, 0)
   const totalReplied = campaigns.reduce((sum, c) => sum + c.smsReplied, 0)

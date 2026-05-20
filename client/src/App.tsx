@@ -1,6 +1,7 @@
 import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout from './layouts/AppLayout'
+import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
@@ -14,6 +15,8 @@ if (!clerkPublishableKey) {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isDemoMode = localStorage.getItem('prizm_demo') === 'true'
+  if (isDemoMode) return <>{children}</>
   return (
     <>
       <SignedIn>{children}</SignedIn>
@@ -29,21 +32,32 @@ export default function App() {
     <ClerkProvider publishableKey={clerkPublishableKey}>
       <BrowserRouter>
         <Routes>
+          {/* Public landing page */}
+          <Route path="/" element={<Landing />} />
+
+          {/* Protected app */}
           <Route
-            path="/"
+            path="/app"
             element={
               <ProtectedRoute>
                 <AppLayout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="eligibility" element={<Eligibility />} />
             <Route path="patients" element={<Patients />} />
             <Route path="campaigns" element={<Campaigns />} />
             <Route path="claims" element={<Claims />} />
           </Route>
+
+          {/* Legacy routes — redirect to /app equivalents */}
+          <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="/eligibility" element={<Navigate to="/app/eligibility" replace />} />
+          <Route path="/patients" element={<Navigate to="/app/patients" replace />} />
+          <Route path="/campaigns" element={<Navigate to="/app/campaigns" replace />} />
+          <Route path="/claims" element={<Navigate to="/app/claims" replace />} />
         </Routes>
       </BrowserRouter>
     </ClerkProvider>

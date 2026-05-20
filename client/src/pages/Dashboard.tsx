@@ -22,7 +22,6 @@ import {
   Upload,
   CheckSquare,
   Eye,
-  X,
   RotateCcw,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -41,7 +40,7 @@ const stats = [
     bg: 'bg-teal-50',
     trend: '+6 vs yesterday',
     trendUp: true,
-    nav: '/eligibility',
+    nav: '/app/eligibility',
   },
   {
     title: 'Revenue Recovered',
@@ -51,7 +50,7 @@ const stats = [
     bg: 'bg-emerald-50',
     trend: '+18% vs last month',
     trendUp: true,
-    nav: '/campaigns',
+    nav: '/app/campaigns',
   },
   {
     title: 'Benefits Expiring',
@@ -61,7 +60,7 @@ const stats = [
     bg: 'bg-rose-50',
     trend: '87 days until year-end',
     trendUp: false,
-    nav: '/patients',
+    nav: '/app/patients',
   },
   {
     title: 'SMS Delivered',
@@ -71,7 +70,7 @@ const stats = [
     bg: 'bg-violet-50',
     trend: '96.2% delivery rate',
     trendUp: true,
-    nav: '/campaigns',
+    nav: '/app/campaigns',
   },
 ]
 
@@ -268,7 +267,7 @@ function greeting() {
 function EmptyState({ onUpload }: { onUpload: () => void }) {
   const steps = [
     { n: 1, label: 'Upload patient list',      sub: 'CSV from any EHR — takes 5 minutes',           done: false },
-    { n: 2, label: 'Verify insurance benefits', sub: 'Prism checks exact dollar amounts per patient', done: false },
+    { n: 2, label: 'Verify insurance benefits', sub: 'Prizm checks exact dollar amounts per patient', done: false },
     { n: 3, label: 'Send your first campaign',  sub: 'Every message includes the patient\'s exact allowance', done: false },
   ]
 
@@ -333,7 +332,7 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
           <p className="mt-1 text-sm text-slate-500">Let's get your practice set up.</p>
         </div>
-        <EmptyState onUpload={() => navigate('/patients/upload')} />
+        <EmptyState onUpload={() => navigate('/app/patients/upload')} />
       </div>
     )
   }
@@ -409,11 +408,11 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-semibold text-rose-900">$48,360 in patient benefits expiring within 30 days</p>
-              <p className="text-xs text-rose-700">312 patients have unused frame and contact allowances. Prism is automatically sending reminders — 47 going out this week.</p>
+              <p className="text-xs text-rose-700">312 patients have unused frame and contact allowances. Prizm is automatically sending reminders — 47 going out this week.</p>
             </div>
           </div>
           <button
-            onClick={() => navigate('/campaigns')}
+            onClick={() => navigate('/app/campaigns')}
             className="ml-4 flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-sm whitespace-nowrap"
           >
             View campaigns <ChevronRight className="h-3 w-3" />
@@ -442,7 +441,7 @@ export default function Dashboard() {
               </div>
             </div>
             <button
-              onClick={() => navigate('/campaigns')}
+              onClick={() => navigate('/app/campaigns')}
               className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
             >
               All campaigns <ChevronRight className="h-3.5 w-3.5" />
@@ -471,19 +470,19 @@ export default function Dashboard() {
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
                     <button
-                      onClick={() => navigate('/campaigns')}
+                      onClick={() => navigate('/app/campaigns')}
                       className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap"
                     >
                       <CheckCircle2 className="h-3 w-3" /> Approve
                     </button>
                     <button
-                      onClick={() => navigate('/campaigns')}
+                      onClick={() => navigate('/app/campaigns')}
                       className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
                     >
                       <Eye className="h-3 w-3" /> Review
                     </button>
                     <button
-                      onClick={() => navigate('/campaigns')}
+                      onClick={() => navigate('/app/campaigns')}
                       className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap"
                     >
                       <RotateCcw className="h-3 w-3" /> Reschedule
@@ -510,7 +509,7 @@ export default function Dashboard() {
               </div>
             </div>
             <button
-              onClick={() => navigate('/eligibility')}
+              onClick={() => navigate('/app/eligibility')}
               className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
             >
               View all <ChevronRight className="h-3.5 w-3.5" />
@@ -524,7 +523,7 @@ export default function Dashboard() {
               return (
                 <div
                   key={v.name}
-                  onClick={() => navigate('/eligibility')}
+                  onClick={() => navigate('/app/eligibility')}
                   className="flex items-start gap-4 px-5 py-3.5 hover:bg-slate-50 cursor-pointer transition-colors"
                 >
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mt-0.5">
@@ -561,7 +560,7 @@ export default function Dashboard() {
           </div>
           <div className="border-t border-slate-100 px-5 py-3">
             <button
-              onClick={() => navigate('/eligibility')}
+              onClick={() => navigate('/app/eligibility')}
               className="flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm"
             >
               <ShieldCheck className="h-3.5 w-3.5" /> Run a New Verification
@@ -587,12 +586,12 @@ export default function Dashboard() {
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Personalized benefit reminders send automatically as patient allowances near expiration — no manual work required
+                  Prizm automatically sends personalized benefit reminders as patient allowances near expiration — no manual work required
                 </CardDescription>
               </div>
             </div>
             <button
-              onClick={() => navigate('/campaigns')}
+              onClick={() => navigate('/app/campaigns')}
               className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
             >
               All campaigns <ChevronRight className="h-3.5 w-3.5" />
@@ -653,7 +652,7 @@ export default function Dashboard() {
             </div>
             <p className="mt-2 text-xs text-slate-400 text-right">
               89 patients queued for next week ·{' '}
-              <button onClick={() => navigate('/campaigns')} className="text-teal-600 hover:underline font-medium">view full queue</button>
+              <button onClick={() => navigate('/app/campaigns')} className="text-teal-600 hover:underline font-medium">view full queue</button>
             </p>
           </div>
         </CardContent>
@@ -673,7 +672,7 @@ export default function Dashboard() {
             {manualCampaigns.map((c) => (
               <button
                 key={c.title}
-                onClick={() => navigate('/campaigns', { state: { openModal: true, campaignType: c.type } })}
+                onClick={() => navigate('/app/campaigns', { state: { openModal: true, campaignType: c.type } })}
                 className={`flex w-full items-center gap-3 rounded-xl border-2 bg-white p-3 text-left transition-all hover:shadow-sm ${c.border}`}
               >
                 <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${c.iconBg}`}>
@@ -723,7 +722,7 @@ export default function Dashboard() {
               </div>
             ))}
             <button
-              onClick={() => navigate('/eligibility')}
+              onClick={() => navigate('/app/eligibility')}
               className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition-colors"
             >
               <ShieldCheck className="h-3.5 w-3.5" /> Open Full Eligibility View
