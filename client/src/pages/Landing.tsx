@@ -49,7 +49,7 @@ function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () =>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-400 mb-1 block">Your name</label>
               <input
@@ -110,9 +110,9 @@ function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () =>
 // ─── Stat pill ────────────────────────────────────────────────────────────────
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1 px-8 py-6 border-r border-white/10 last:border-0">
-      <span className="text-4xl font-black text-white">{value}</span>
-      <span className="text-sm text-slate-400 text-center leading-tight">{label}</span>
+    <div className="flex flex-col items-center gap-1 px-4 sm:px-8 py-5 sm:py-6 bg-slate-950">
+      <span className="text-2xl sm:text-4xl font-black text-white">{value}</span>
+      <span className="text-xs sm:text-sm text-slate-400 text-center leading-tight">{label}</span>
     </div>
   )
 }
@@ -249,7 +249,7 @@ export default function Landing() {
               <span className="text-xs font-semibold text-teal-300">AI-powered campaign automation for optometry</span>
             </div>
 
-            <h1 className="mx-auto max-w-4xl text-5xl md:text-6xl font-black leading-[1.08] tracking-tight">
+            <h1 className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl font-black leading-[1.08] tracking-tight">
               $2.4 billion in vision benefits
               <br />
               <span className="text-teal-400">expire unused every year.</span>
@@ -318,7 +318,7 @@ export default function Landing() {
       {/* Industry stats */}
       <section className="border-y border-white/5 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10">
             <Stat value="25,000" label="independent optometry practices in the US" />
             <Stat value="$2.4B" label="in vision benefits that expire unused every year" />
             <Stat value="$150" label="average unused frame allowance per patient" />
@@ -374,7 +374,7 @@ export default function Landing() {
       {/* Eligibility + Claims */}
       <section id="verification" className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">Real-time eligibility</p>
               <h2 className="text-4xl font-black leading-tight">
@@ -436,9 +436,9 @@ export default function Landing() {
 
       {/* Aha moment */}
       <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="rounded-3xl bg-gradient-to-br from-teal-900/60 via-slate-900 to-cyan-900/40 border border-teal-500/20 p-10 shadow-2xl text-center">
+        <div className="rounded-3xl bg-gradient-to-br from-teal-900/60 via-slate-900 to-cyan-900/40 border border-teal-500/20 p-6 sm:p-10 shadow-2xl text-center">
           <p className="text-sm font-semibold text-teal-300 mb-2">What you see 60 seconds after uploading your patient list</p>
-          <p className="text-7xl font-black text-white tracking-tight mt-2">$127,050</p>
+          <p className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tight mt-2">$127,050</p>
           <p className="mt-3 text-teal-200 text-xl">in recoverable optical revenue sitting in your patient list right now</p>
           <div className="mt-8 grid gap-4 sm:grid-cols-3 max-w-2xl mx-auto">
             {[
@@ -569,7 +569,7 @@ export default function Landing() {
       {/* Final CTA */}
       <section className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-black leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight">
             Your patients have money waiting.<br />
             <span className="text-teal-400">Are you going to tell them?</span>
           </h2>

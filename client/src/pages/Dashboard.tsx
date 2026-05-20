@@ -398,15 +398,16 @@ export default function Dashboard() {
     <div className="space-y-6">
 
       {/* Header — Morgan: lead with revenue context */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
           <p className="mt-1 text-sm text-slate-500">You've recovered <span className="font-semibold text-emerald-600">$24,180</span> this month. 312 patients have benefits expiring.</p>
         </div>
         {/* COO: HIPAA compliance status bar */}
-        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 self-start flex-shrink-0">
           <Lock className="h-3.5 w-3.5 text-emerald-600" />
-          <span className="text-xs font-medium text-emerald-700">HIPAA · Audit logging active · Data encrypted</span>
+          <span className="hidden sm:inline text-xs font-medium text-emerald-700">HIPAA · Audit logging active · Data encrypted</span>
+          <span className="sm:hidden text-xs font-medium text-emerald-700">HIPAA secure</span>
         </div>
       </div>
 
@@ -414,7 +415,7 @@ export default function Dashboard() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-cyan-700 p-6 shadow-md">
         <div className="relative z-10">
           <p className="text-sm font-medium text-teal-200 mb-1">Recoverable optical revenue in your patient list</p>
-          <p className="text-5xl font-black text-white tracking-tight">$127,050</p>
+          <p className="text-3xl sm:text-5xl font-black text-white tracking-tight">$127,050</p>
           <p className="mt-2 text-teal-100 text-sm">
             847 patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.
           </p>
@@ -465,8 +466,8 @@ export default function Dashboard() {
 
       {/* Urgent alert */}
       <Card className="border-rose-200 bg-rose-50/60 shadow-sm">
-        <CardContent className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
+        <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+          <div className="flex items-start gap-3">
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-rose-100">
               <AlertCircle className="h-5 w-5 text-rose-600" />
             </div>
@@ -477,7 +478,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={() => navigate('/app/campaigns')}
-            className="ml-4 flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-sm whitespace-nowrap"
+            className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-sm whitespace-nowrap"
           >
             View campaigns <ChevronRight className="h-3 w-3" />
           </button>
@@ -498,14 +499,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
                 <span className="font-semibold text-emerald-600">$1,388 approved</span>
                 <span>·</span>
                 <span className="font-semibold text-amber-600">$338 pending</span>
               </div>
               <button
                 onClick={() => navigate('/app/claims')}
-                className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
+                className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors whitespace-nowrap"
               >
                 All claims <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -517,20 +518,20 @@ export default function Dashboard() {
             {todaysClaims.map((c) => {
               const cfg = claimStatusConfig[c.status]
               return (
-                <div key={c.patient} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => navigate('/app/claims')}>
+                <div key={c.patient} className="flex items-center gap-3 px-3 sm:px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => navigate('/app/claims')}>
                   <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                     {c.patient.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-sm font-semibold text-slate-800">{c.patient}</p>
-                      <span className="text-xs text-slate-400">{c.carrier}</span>
-                      <span className="text-xs text-slate-400">· {c.service}</span>
+                      <span className="text-xs text-slate-400 hidden sm:inline">{c.carrier} · {c.service}</span>
+                      <span className="text-xs text-slate-400 sm:hidden">{c.carrier}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-sm font-bold text-slate-800">{c.amount}</span>
-                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
                   </div>
                 </div>
               )
@@ -574,9 +575,9 @@ export default function Dashboard() {
         <CardContent className="p-0">
           <div className="divide-y divide-slate-100">
             {pendingApprovals.map((c) => (
-              <div key={c.id} className="px-5 py-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
+              <div key={c.id} className="px-3 sm:px-5 py-4">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 w-full">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="text-sm font-semibold text-slate-800">{c.name}</p>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{c.carrier}</span>
@@ -607,22 +608,22 @@ export default function Dashboard() {
                       <p className="text-xs text-slate-600 leading-relaxed italic">"{currentPreview.msg}"</p>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
+                  <div className="flex sm:flex-col flex-row gap-1.5 flex-shrink-0 w-full sm:w-auto">
                     <button
                       onClick={() => navigate('/app/campaigns')}
-                      className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap"
+                      className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap"
                     >
                       <CheckCircle2 className="h-3 w-3" /> Approve
                     </button>
                     <button
                       onClick={() => navigate('/app/campaigns')}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
+                      className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap"
                     >
                       <Eye className="h-3 w-3" /> Review
                     </button>
                     <button
                       onClick={() => navigate('/app/campaigns')}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap"
+                      className="hidden sm:flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap"
                     >
                       <RotateCcw className="h-3 w-3" /> Reschedule
                     </button>
@@ -663,7 +664,7 @@ export default function Dashboard() {
                 <div
                   key={v.name}
                   onClick={() => navigate('/app/eligibility')}
-                  className="flex items-start gap-4 px-5 py-3.5 hover:bg-slate-50 cursor-pointer transition-colors"
+                  className="flex items-start gap-3 px-3 sm:px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors"
                 >
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mt-0.5">
                     {v.name.split(' ').map((n) => n[0]).join('')}
@@ -772,7 +773,7 @@ export default function Dashboard() {
             </div>
             <div className="rounded-xl border border-slate-100 bg-slate-50 divide-y divide-slate-100">
               {thisWeeksSends.map((send) => (
-                <div key={send.name} className="flex items-center gap-4 px-4 py-3">
+                <div key={send.name} className="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-3">
                   <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-600">
                     {send.name.split(' ').map((n) => n[0]).join('')}
                   </div>

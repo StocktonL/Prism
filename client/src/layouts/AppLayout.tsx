@@ -38,8 +38,8 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      {/* Sidebar */}
-      <aside className="flex w-60 flex-col bg-slate-900">
+      {/* Sidebar — desktop only */}
+      <aside className="hidden md:flex w-60 flex-col bg-slate-900">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-700/60">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/30">
@@ -104,10 +104,31 @@ export default function AppLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-slate-700/60 bg-slate-900">
+        <div className="flex">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-1 flex-col items-center gap-1 py-3 px-1 text-xs font-medium transition-colors',
+                  isActive ? 'text-teal-400' : 'text-slate-400'
+                )
+              }
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </div>
   )
 }
