@@ -118,6 +118,11 @@ function AddPatientModal({ onClose, onAdd }: AddPatientModalProps) {
         benefitPeriodEnd: '2026-12-31',
         examCopay: 10,
         materialsCopay: 25,
+        planYear: { start: '2026-01-01', end: '2026-12-31' },
+        frequency: { exam: '12 months', materials: '12 months' },
+        copays: { exam: 10, materials: 25, contactFitting: 0 },
+        outOfNetwork: { exam: 0, frames: 0, lenses: 0, contacts: 0 },
+        requiresPriorAuth: false,
       },
       eligibilityHistory: [],
     }

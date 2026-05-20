@@ -16,7 +16,6 @@ import {
   Loader2,
   AlertTriangle,
   Info,
-  User,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { PATIENTS, getPatientFullName, type Patient } from '@/data/mockPatients'
