@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import {
   DollarSign,
   ShieldCheck,
@@ -23,6 +24,8 @@ import {
   CheckSquare,
   Eye,
   RotateCcw,
+  FileCheck,
+  Lock,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
@@ -45,7 +48,7 @@ const stats = [
   {
     title: 'Revenue Recovered',
     value: '$24,180',
-    sub: 'optical revenue this month',
+    sub: '$399 subscription · 60x ROI this month',
     icon: <DollarSign className="h-5 w-5 text-emerald-600" />,
     bg: 'bg-emerald-50',
     trend: '+18% vs last month',
@@ -65,7 +68,7 @@ const stats = [
   {
     title: 'SMS Delivered',
     value: '1,204',
-    sub: 'campaign messages this month',
+    sub: '~$20 avg optical sale per reply',
     icon: <MessageSquare className="h-5 w-5 text-violet-600" />,
     bg: 'bg-violet-50',
     trend: '96.2% delivery rate',
@@ -84,6 +87,8 @@ interface VerifRow {
   memberId: string
   copay: string
   covered: string
+  frameAllowance: string
+  clAllowance: string
   status: VerifStatus
   flag?: string
 }
@@ -95,6 +100,8 @@ const todayVerifs: VerifRow[] = [
     memberId: 'VSP00192837',
     copay: '$10 exam · $25 materials',
     covered: 'Routine vision — exam + materials',
+    frameAllowance: '$150',
+    clAllowance: '$130',
     status: 'active',
   },
   {
@@ -103,6 +110,8 @@ const todayVerifs: VerifRow[] = [
     memberId: 'EM88234001',
     copay: '$0 exam · $0 materials',
     covered: 'Routine vision — benefits used Jan 2026',
+    frameAllowance: '$0',
+    clAllowance: '$0',
     status: 'inactive',
     flag: 'Benefits used — next eligible Jan 2027',
   },
@@ -112,6 +121,8 @@ const todayVerifs: VerifRow[] = [
     memberId: 'ANT66781204',
     copay: '$20 exam · $20 materials',
     covered: 'Routine vision + medical exam',
+    frameAllowance: '$150',
+    clAllowance: '$0',
     status: 'needs-auth',
     flag: 'Prior authorization required before dispensing',
   },
@@ -121,6 +132,8 @@ const todayVerifs: VerifRow[] = [
     memberId: 'VSP00834291',
     copay: '$10 exam · $25 materials',
     covered: 'Routine vision — $60 frame balance remaining',
+    frameAllowance: '$60',
+    clAllowance: '$130',
     status: 'active',
     flag: 'Subscriber: Raj Patel (parent)',
   },
@@ -130,6 +143,8 @@ const todayVerifs: VerifRow[] = [
     memberId: 'SP77123456',
     copay: '$20 exam · $20 materials',
     covered: 'Routine vision — full benefits available',
+    frameAllowance: '$200',
+    clAllowance: '$150',
     status: 'pending',
     flag: 'Last verified Nov 2025 — re-verify recommended',
   },
@@ -179,6 +194,31 @@ const pipelineStages = [
     pill: 'bg-teal-100 text-teal-700',
   },
 ]
+
+// ─── Claims data ─────────────────────────────────────────────────────────────
+
+interface ClaimRow {
+  patient: string
+  carrier: string
+  amount: string
+  service: string
+  status: 'approved' | 'submitted' | 'pending' | 'denied'
+}
+
+const todaysClaims: ClaimRow[] = [
+  { patient: 'Sarah Mitchell',  carrier: 'VSP',          amount: '$287', service: 'Exam + frames',   status: 'approved'  },
+  { patient: 'James Okafor',    carrier: 'EyeMed',       amount: '$412', service: 'Exam + CL fit',   status: 'approved'  },
+  { patient: 'Linda Chen',      carrier: 'Davis Vision', amount: '$195', service: 'Frames only',     status: 'submitted' },
+  { patient: 'Marcus Webb',     carrier: 'Spectera',     amount: '$338', service: 'Exam + frames',   status: 'pending'   },
+  { patient: 'Priya Nair',      carrier: 'VSP',          amount: '$156', service: 'Contacts only',   status: 'approved'  },
+]
+
+const claimStatusConfig = {
+  approved:  { label: 'Approved',   className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  submitted: { label: 'Submitted',  className: 'bg-blue-50 text-blue-700 border-blue-200'          },
+  pending:   { label: 'Pending',    className: 'bg-amber-50 text-amber-700 border-amber-200'        },
+  denied:    { label: 'Denied',     className: 'bg-red-50 text-red-700 border-red-200'              },
+}
 
 // ─── This week's automated sends ──────────────────────────────────────────────
 
@@ -324,6 +364,21 @@ function EmptyState({ onUpload }: { onUpload: () => void }) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [previewIndex, setPreviewIndex] = useState(0)
+
+  const cyclingPreviews = [
+    { name: 'Sarah Mitchell',  carrier: 'VSP',          frame: '$150', cl: '$130', msg: 'Hi Sarah, your VSP frame allowance of $150 and $130 in contact lens benefits expire Dec 31. Ready to use them? Reply YES to schedule. — Valley Eye Care' },
+    { name: 'James Okafor',    carrier: 'EyeMed',       frame: '$200', cl: '$0',   msg: 'Hi James, your EyeMed frame benefit of $200 expires Dec 31. Don\'t let it go to waste — reply YES and we\'ll get you in. — Valley Eye Care' },
+    { name: 'Linda Chen',      carrier: 'Davis Vision', frame: '$130', cl: '$150', msg: 'Hi Linda, you have $130 in frames and $150 in contact lens benefits through Davis Vision expiring soon. Reply YES to book. — Valley Eye Care' },
+    { name: 'Marcus Webb',     carrier: 'Spectera',     frame: '$200', cl: '$200', msg: 'Hi Marcus, your Spectera plan includes $200 for frames AND $200 for contacts — all expiring Dec 31. Reply YES to schedule. — Valley Eye Care' },
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPreviewIndex(i => (i + 1) % cyclingPreviews.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [])
 
   if (!HAS_PATIENTS) {
     return (
@@ -337,13 +392,22 @@ export default function Dashboard() {
     )
   }
 
+  const currentPreview = cyclingPreviews[previewIndex]
+
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
-        <p className="mt-1 text-sm text-slate-500">Today's verification activity and your automated revenue pipeline.</p>
+      {/* Header — Morgan: lead with revenue context */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
+          <p className="mt-1 text-sm text-slate-500">You've recovered <span className="font-semibold text-emerald-600">$24,180</span> this month. 312 patients have benefits expiring.</p>
+        </div>
+        {/* COO: HIPAA compliance status bar */}
+        <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 flex-shrink-0">
+          <Lock className="h-3.5 w-3.5 text-emerald-600" />
+          <span className="text-xs font-medium text-emerald-700">HIPAA · Audit logging active · Data encrypted</span>
+        </div>
       </div>
 
       {/* Aha headline */}
@@ -420,6 +484,65 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Casey: Claims Summary Card */}
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50">
+                <FileCheck className="h-4 w-4 text-violet-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Claims Today</CardTitle>
+                <CardDescription className="text-xs">Submitted, approved, and pending via Stedi clearinghouse</CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span className="font-semibold text-emerald-600">$1,388 approved</span>
+                <span>·</span>
+                <span className="font-semibold text-amber-600">$338 pending</span>
+              </div>
+              <button
+                onClick={() => navigate('/app/claims')}
+                className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors"
+              >
+                All claims <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-slate-100">
+            {todaysClaims.map((c) => {
+              const cfg = claimStatusConfig[c.status]
+              return (
+                <div key={c.patient} className="flex items-center gap-4 px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => navigate('/app/claims')}>
+                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                    {c.patient.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-800">{c.patient}</p>
+                      <span className="text-xs text-slate-400">{c.carrier}</span>
+                      <span className="text-xs text-slate-400">· {c.service}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-sm font-bold text-slate-800">{c.amount}</span>
+                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="border-t border-slate-100 px-5 py-3 flex items-center justify-between">
+            <p className="text-xs text-slate-400">5 claims today · <span className="text-emerald-600 font-medium">3 approved</span> · <span className="text-amber-600 font-medium">1 pending</span> · <span className="text-blue-600 font-medium">1 submitted</span></p>
+            <button onClick={() => navigate('/app/claims')} className="text-xs font-medium text-teal-600 hover:underline">View full claims log</button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Campaign Approval Queue */}
       <Card className="border-amber-200 shadow-sm">
         <CardHeader className="pb-3">
@@ -462,10 +585,26 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mb-2">Scheduled: {c.scheduledFor}</p>
-                    {/* Message preview */}
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                      <p className="text-xs text-slate-400 mb-1 font-medium">Message preview</p>
-                      <p className="text-xs text-slate-600 leading-relaxed italic">"{c.sampleMessage} [link]"</p>
+                    {/* Jordan: cycling personalized message preview */}
+                    <div className="rounded-lg border border-teal-100 bg-slate-50 px-3 py-2">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-xs font-medium text-slate-400">Live preview — each patient gets their own message</p>
+                        <div className="flex gap-1">
+                          {cyclingPreviews.map((_, i) => (
+                            <span key={i} className={`h-1.5 w-1.5 rounded-full transition-colors ${i === previewIndex ? 'bg-teal-500' : 'bg-slate-300'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="h-5 w-5 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          {currentPreview.name[0]}
+                        </div>
+                        <span className="text-xs font-semibold text-slate-700">{currentPreview.name}</span>
+                        <span className="text-xs text-slate-400">{currentPreview.carrier}</span>
+                        <span className="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5">{currentPreview.frame} frames</span>
+                        {currentPreview.cl !== '$0' && <span className="text-xs font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5">{currentPreview.cl} contacts</span>}
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed italic">"{currentPreview.msg}"</p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1.5 flex-shrink-0 pt-0.5">
@@ -535,7 +674,15 @@ export default function Dashboard() {
                       <span className="text-xs text-slate-400">{v.carrier} · {v.memberId}</span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">{v.covered}</p>
-                    <p className="text-xs font-medium text-slate-600 mt-0.5">{v.copay}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <p className="text-xs font-medium text-slate-600">{v.copay}</p>
+                      {v.frameAllowance !== '$0' && (
+                        <span className="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5">{v.frameAllowance} frames</span>
+                      )}
+                      {v.clAllowance !== '$0' && (
+                        <span className="text-xs font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5">{v.clAllowance} contacts</span>
+                      )}
+                    </div>
                     {v.flag && (
                       <div className="mt-1.5 flex items-center gap-1.5">
                         {v.status === 'needs-auth'
