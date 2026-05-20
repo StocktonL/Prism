@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap,
   ShieldCheck,
-  MessageSquare,
   DollarSign,
   ChevronRight,
   CheckCircle2,
@@ -14,11 +14,97 @@ import {
   FileCheck,
   Users,
   Sparkles,
+  X,
+  MessageSquare,
 } from 'lucide-react'
 
-function startDemo(navigate: ReturnType<typeof useNavigate>) {
-  localStorage.setItem('prizm_demo', 'true')
-  navigate('/app/dashboard')
+// ─── Lead capture modal ───────────────────────────────────────────────────────
+function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () => void }) {
+  const [form, setForm] = useState({ name: '', practice: '', email: '', phone: '' })
+  const [submitting, setSubmitting] = useState(false)
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    // In production this would POST to a backend / email Stockton
+    // For now store locally and open demo
+    localStorage.setItem('prizm_lead', JSON.stringify({ ...form, submittedAt: new Date().toISOString() }))
+    setTimeout(() => onSubmit(), 600)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-3xl bg-slate-900 border border-white/10 p-8 shadow-2xl">
+        <button onClick={onClose} className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors">
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="mb-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 border border-teal-500/30 mb-4">
+            <Zap className="h-5 w-5 text-teal-400" />
+          </div>
+          <h2 className="text-xl font-black text-white">Get instant access to the demo</h2>
+          <p className="mt-1.5 text-sm text-slate-400">We'll show you your practice's recoverable revenue — free, no credit card.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Your name</label>
+              <input
+                required
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Sarah Johnson"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 focus:bg-white/8 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Practice name</label>
+              <input
+                required
+                value={form.practice}
+                onChange={e => setForm(f => ({ ...f, practice: e.target.value }))}
+                placeholder="Valley Eye Care"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">Work email</label>
+            <input
+              required
+              type="email"
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              placeholder="sarah@valleyeyecare.com"
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">Phone number</label>
+            <input
+              required
+              type="tel"
+              value={form.phone}
+              onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              placeholder="(801) 555-1234"
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors disabled:opacity-60 mt-2 shadow-lg shadow-teal-900/40"
+          >
+            {submitting ? 'Opening demo...' : 'Show me the demo →'}
+          </button>
+        </form>
+        <p className="mt-3 text-center text-xs text-slate-600">No credit card · HIPAA compliant · We'll follow up within 24 hours</p>
+      </div>
+    </div>
+  )
 }
 
 // ─── Stat pill ────────────────────────────────────────────────────────────────
@@ -32,22 +118,29 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 // ─── Mock message bubble ──────────────────────────────────────────────────────
-function MessageBubble({ name, benefit, amount, expiry }: { name: string; benefit: string; amount: string; expiry: string }) {
+interface BubbleProps {
+  initials: string
+  name: string
+  tag: string
+  tagColor: string
+  message: string
+  time?: string
+}
+
+function MessageBubble({ initials, name, tag, tagColor, message, time = 'Just now' }: BubbleProps) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-xl border border-slate-100 max-w-sm">
+    <div className="rounded-2xl bg-white p-4 shadow-xl border border-slate-100">
       <div className="flex items-center gap-3 mb-3">
-        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-sm font-bold">
-          {name[0]}
+        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+          {initials}
         </div>
-        <div>
-          <p className="text-sm font-semibold text-slate-900">{name}</p>
-          <p className="text-xs text-slate-400">SMS · Just now</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900 truncate">{name}</p>
+          <p className="text-xs text-slate-400">SMS · {time}</p>
         </div>
-        <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Delivered</span>
+        <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${tagColor}`}>{tag}</span>
       </div>
-      <p className="text-sm text-slate-700 leading-relaxed">
-        Hi {name.split(' ')[0]}, your <strong>{benefit}</strong> benefit of <strong className="text-teal-700">{amount}</strong> expires {expiry}. Ready to use it? Reply YES and we'll get you scheduled. — Valley Eye Care
-      </p>
+      <p className="text-sm text-slate-700 leading-relaxed">{message}</p>
     </div>
   )
 }
@@ -94,12 +187,25 @@ function VerificationCard() {
 // ─── Landing Page ─────────────────────────────────────────────────────────────
 export default function Landing() {
   const navigate = useNavigate()
+  const [showModal, setShowModal] = useState(false)
+
+  function openDemo() {
+    setShowModal(true)
+  }
+
+  function enterDemo() {
+    setShowModal(false)
+    localStorage.setItem('prizm_demo', 'true')
+    navigate('/app/dashboard')
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
 
+      {showModal && <DemoModal onClose={() => setShowModal(false)} onSubmit={enterDemo} />}
+
       {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/90 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/50">
@@ -122,7 +228,7 @@ export default function Landing() {
               Sign In
             </button>
             <button
-              onClick={() => startDemo(navigate)}
+              onClick={openDemo}
               className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400 transition-colors shadow-lg shadow-teal-900/40"
             >
               Try Demo
@@ -137,7 +243,7 @@ export default function Landing() {
         <div className="absolute top-20 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-6 pt-20 pb-16">
-          <div className="text-center mb-12">
+          <div className="text-center mb-14">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5">
               <Sparkles className="h-3.5 w-3.5 text-teal-400" />
               <span className="text-xs font-semibold text-teal-300">AI-powered campaign automation for optometry</span>
@@ -155,7 +261,7 @@ export default function Landing() {
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <button
-                onClick={() => startDemo(navigate)}
+                onClick={openDemo}
                 className="flex items-center gap-2 rounded-xl bg-teal-500 px-7 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-xl shadow-teal-900/40"
               >
                 <Zap className="h-4 w-4" /> See your practice's numbers
@@ -170,16 +276,40 @@ export default function Landing() {
             <p className="mt-4 text-xs text-slate-600">No credit card required · HIPAA compliant · Up and running today</p>
           </div>
 
-          {/* Live message examples */}
-          <div className="relative mx-auto max-w-4xl">
-            <div className="grid md:grid-cols-2 gap-4 items-start">
-              <div className="space-y-4">
-                <MessageBubble name="Sarah Mitchell" benefit="frame allowance" amount="$150" expiry="Dec 31" />
-                <MessageBubble name="James Okafor" benefit="contact lens benefit" amount="$130" expiry="Dec 31" />
-              </div>
-              <div className="md:pt-10">
-                <VerificationCard />
-              </div>
+          {/* 4 message bubbles */}
+          <div className="mx-auto max-w-5xl">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MessageBubble
+                initials="SM"
+                name="Sarah Mitchell"
+                tag="Benefits"
+                tagColor="text-emerald-600 bg-emerald-50"
+                message="Hi Sarah, your frame allowance of $150 expires Dec 31. Don't let it go to waste — reply YES to schedule. — Valley Eye Care"
+              />
+              <MessageBubble
+                initials="JO"
+                name="James Okafor"
+                tag="Trunk Show"
+                tagColor="text-violet-600 bg-violet-50"
+                message="Hi James, our Fall Frame Trunk Show is Nov 14–16. Your $130 frame benefit covers most styles. Want us to hold a spot? — Valley Eye Care"
+                time="2m ago"
+              />
+              <MessageBubble
+                initials="LC"
+                name="Linda Chen"
+                tag="Back to School"
+                tagColor="text-blue-600 bg-blue-50"
+                message="Hi Linda, back-to-school season is here! Your family has $580 in combined vision benefits ready to use. Reply YES to book. — Valley Eye Care"
+                time="5m ago"
+              />
+              <MessageBubble
+                initials="MW"
+                name="Marcus Webb"
+                tag="Promo"
+                tagColor="text-amber-600 bg-amber-50"
+                message="Hi Marcus, we're running a buy-one-get-one on frames this month. Your $150 allowance makes the first pair free. Interested? — Valley Eye Care"
+                time="8m ago"
+              />
             </div>
           </div>
         </div>
@@ -225,13 +355,13 @@ export default function Landing() {
               n: '03',
               icon: <MessageSquare className="h-6 w-6 text-cyan-400" />,
               title: 'Personalized campaigns go out automatically',
-              body: 'Every patient gets a message with their exact dollar amounts. You approve once. Prizm sends year-round — staggered so your front desk isn\'t flooded.',
+              body: "Every patient gets a message with their exact dollar amounts. You approve once. Prizm sends year-round — staggered so your front desk isn't flooded.",
               accent: 'cyan',
             },
           ].map((step) => (
             <div key={step.n} className="relative rounded-2xl border border-white/5 bg-white/[0.03] p-7 hover:bg-white/[0.05] transition-colors">
               <span className="absolute top-5 right-6 text-5xl font-black text-white/5">{step.n}</span>
-              <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-${step.accent}-500/10 border border-${step.accent}-500/20`}>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                 {step.icon}
               </div>
               <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
@@ -241,7 +371,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Eligibility verification deep-dive */}
+      {/* Eligibility + Claims */}
       <section id="verification" className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -270,7 +400,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Claims section on right */}
             <div className="space-y-4">
               <div className="rounded-2xl bg-slate-900 border border-slate-700/60 p-5">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Claims Snapshot · Today</p>
@@ -325,7 +454,7 @@ export default function Landing() {
             ))}
           </div>
           <button
-            onClick={() => startDemo(navigate)}
+            onClick={openDemo}
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-teal-500 px-7 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-xl shadow-teal-900/60"
           >
             <Zap className="h-4 w-4" /> See your practice's numbers
@@ -333,7 +462,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features grid */}
+      {/* Features */}
       <section className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-14">
@@ -359,13 +488,13 @@ export default function Landing() {
                 icon: <FileCheck className="h-5 w-5 text-violet-400" />,
                 bg: 'bg-violet-500/10 border-violet-500/20',
                 title: 'Claims tracking',
-                body: 'See every claim submitted, approved, or pending. Know exactly what\'s billed and what\'s been paid — at a glance.',
+                body: "See every claim submitted, approved, or pending. Know exactly what's billed and what's been paid — at a glance.",
               },
               {
                 icon: <Zap className="h-5 w-5 text-cyan-400" />,
                 bg: 'bg-cyan-500/10 border-cyan-500/20',
                 title: 'Year-round, always-on',
-                body: 'Prizm sends campaigns automatically all year — not just a Q4 blast. Staggered delivery keeps your front desk from being overwhelmed.',
+                body: "Prizm sends campaigns automatically all year — not just a Q4 blast. Staggered delivery keeps your front desk from being overwhelmed.",
               },
               {
                 icon: <BarChart3 className="h-5 w-5 text-amber-400" />,
@@ -406,7 +535,6 @@ export default function Landing() {
               <span className="text-slate-400 mb-2">/month</span>
             </div>
             <p className="text-sm text-slate-400 mb-6">Everything included. Cancel anytime.</p>
-
             <div className="space-y-3 mb-8">
               {[
                 'Unlimited patients',
@@ -424,9 +552,8 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-
             <button
-              onClick={() => startDemo(navigate)}
+              onClick={openDemo}
               className="w-full rounded-xl bg-teal-500 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-lg shadow-teal-900/40"
             >
               Try the Live Demo
@@ -451,7 +578,7 @@ export default function Landing() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={() => startDemo(navigate)}
+              onClick={openDemo}
               className="flex items-center gap-2 rounded-xl bg-teal-500 px-8 py-4 text-base font-bold text-white hover:bg-teal-400 transition-colors shadow-xl shadow-teal-900/40"
             >
               <Zap className="h-5 w-5" /> See your numbers free
