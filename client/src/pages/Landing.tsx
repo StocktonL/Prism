@@ -284,7 +284,7 @@ export default function Landing() {
                 name="Sarah Mitchell"
                 tag="Benefits"
                 tagColor="text-emerald-600 bg-emerald-50"
-                message="Hi Sarah, did you know your VSP plan covers $150 toward new glasses? It's been a while since your last pair — that benefit expires Dec 31. Reply YES to book. — Valley Eye Care"
+                message="Hi Sarah, did you know your VSP plan covers $150 toward new glasses? It's been a while since your last pair — we'd love to help you use it. Reply YES to book. — Valley Eye Care"
               />
               <MessageBubble
                 initials="JO"
