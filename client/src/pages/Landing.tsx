@@ -291,7 +291,7 @@ export default function Landing() {
                 name="James Okafor"
                 tag="Trunk Show"
                 tagColor="text-violet-600 bg-violet-50"
-                message="Hi James, our Fall Frame Trunk Show is Nov 14–16. Your $130 frame benefit covers most styles. Want us to hold a spot? — Valley Eye Care"
+                message="Hi James, our Fall Frame Trunk Show is Nov 14–16. Your $130 frame benefit applies to any frame in the collection. Want us to hold a spot? — Valley Eye Care"
                 time="2m ago"
               />
               <MessageBubble
@@ -305,9 +305,9 @@ export default function Landing() {
               <MessageBubble
                 initials="MW"
                 name="Marcus Webb"
-                tag="Promo"
-                tagColor="text-amber-600 bg-amber-50"
-                message="Hi Marcus, we're running a buy-one-get-one on frames this month. Your $150 allowance makes the first pair free. Interested? — Valley Eye Care"
+                tag="Expiring"
+                tagColor="text-rose-600 bg-rose-50"
+                message="Hi Marcus, your $150 in frame benefits and $200 in contact lens benefits expire Dec 31 and don't roll over to next year. Use them or lose them — reply YES to book. — Valley Eye Care"
                 time="8m ago"
               />
             </div>
