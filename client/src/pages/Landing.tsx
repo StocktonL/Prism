@@ -533,25 +533,26 @@ export default function Landing() {
       <section id="pricing" className="mx-auto max-w-7xl px-6 py-24">
         <div className="text-center mb-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">Pricing</p>
-          <h2 className="text-4xl font-black">Simple. One plan. Everything included.</h2>
-          <p className="mt-3 text-slate-400">No per-message fees. No setup fees. No contracts.</p>
+          <h2 className="text-4xl font-black">Plans that scale with your practice.</h2>
+          <p className="mt-3 text-slate-400">All plans include every feature. Pay only for the verification volume you need.</p>
         </div>
-        <div className="mx-auto max-w-lg">
-          <div className="rounded-3xl border border-teal-500/30 bg-gradient-to-b from-teal-950/40 to-slate-900 p-8 shadow-2xl shadow-teal-900/20">
-            <div className="flex items-end gap-2 mb-1">
-              <span className="text-6xl font-black text-white">$399</span>
-              <span className="text-slate-400 mb-2">/month</span>
+
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Starter */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 flex flex-col">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Starter</p>
+            <div className="flex items-end gap-1.5 mb-1">
+              <span className="text-5xl font-black text-white">$449</span>
+              <span className="text-slate-400 mb-1.5">/mo</span>
             </div>
-            <p className="text-sm text-slate-400 mb-6">Everything included. Cancel anytime.</p>
-            <div className="space-y-3 mb-8">
+            <p className="text-xs text-slate-500 mb-6">Includes 1,500 verifications · $0.25/check after</p>
+            <div className="space-y-2.5 mb-8 flex-1">
               {[
-                'Unlimited patients',
-                'Real-time insurance eligibility verification',
-                'Claims tracking dashboard',
+                'Up to 1,500 patients/month',
                 'All campaign templates',
-                'AI-personalized messages per patient',
+                'AI-personalized messages',
                 'SMS + email delivery',
-                'Revenue tracking and attribution',
+                'Revenue tracking',
                 'HIPAA BAA included',
               ].map((f) => (
                 <div key={f} className="flex items-center gap-2.5">
@@ -562,16 +563,86 @@ export default function Landing() {
             </div>
             <button
               onClick={openDemo}
-              className="w-full rounded-xl bg-teal-500 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-lg shadow-teal-900/40"
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
-              Try the Live Demo
+              Try the Demo
             </button>
-            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-center">
-              <p className="text-xs text-amber-300 font-medium">Founding customer offer</p>
-              <p className="text-sm text-amber-200 mt-0.5">$199/month for your first 6 months — first 10 customers only</p>
+            <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2.5 text-center">
+              <p className="text-xs text-amber-300 font-medium">Founding offer: $199/mo first 6 months</p>
+              <p className="text-xs text-amber-400/70 mt-0.5">First 10 customers only · Annual commit</p>
             </div>
           </div>
+
+          {/* Growth — featured */}
+          <div className="rounded-3xl border border-teal-500/40 bg-gradient-to-b from-teal-950/50 to-slate-900 p-8 flex flex-col shadow-2xl shadow-teal-900/20 relative">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+              <span className="rounded-full bg-teal-500 px-3.5 py-1 text-xs font-bold text-white shadow-lg">Most Popular</span>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-4">Growth</p>
+            <div className="flex items-end gap-1.5 mb-1">
+              <span className="text-5xl font-black text-white">$749</span>
+              <span className="text-slate-400 mb-1.5">/mo</span>
+            </div>
+            <p className="text-xs text-slate-500 mb-6">Includes 5,000 verifications · $0.22/check after</p>
+            <div className="space-y-2.5 mb-8 flex-1">
+              {[
+                'Up to 5,000 patients/month',
+                'All campaign templates',
+                'AI-personalized messages',
+                'SMS + email delivery',
+                'Revenue tracking',
+                'HIPAA BAA included',
+                'Priority support',
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-teal-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-300">{f}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={openDemo}
+              className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-lg shadow-teal-900/40"
+            >
+              Try the Demo
+            </button>
+          </div>
+
+          {/* Practice */}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-8 flex flex-col">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Practice</p>
+            <div className="flex items-end gap-1.5 mb-1">
+              <span className="text-5xl font-black text-white">$1,299</span>
+              <span className="text-slate-400 mb-1.5">/mo</span>
+            </div>
+            <p className="text-xs text-slate-500 mb-6">Includes 10,000 verifications · $0.18/check after</p>
+            <div className="space-y-2.5 mb-8 flex-1">
+              {[
+                'Up to 10,000 patients/month',
+                'All campaign templates',
+                'AI-personalized messages',
+                'SMS + email delivery',
+                'Revenue tracking',
+                'HIPAA BAA included',
+                'Dedicated onboarding',
+                'Multi-location ready',
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-teal-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-300">{f}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={openDemo}
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              Try the Demo
+            </button>
+          </div>
         </div>
+
+        <p className="text-center text-xs text-slate-600 mt-8">All plans include a one-time $499 setup fee · Cancel anytime after 12 months</p>
       </section>
 
       {/* Final CTA */}
