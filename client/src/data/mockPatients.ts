@@ -21,6 +21,11 @@ export interface Patient {
   lastVerified: string
   status: 'active' | 'pending' | 'unverified'
   lastVisit: string
+  lastFramePurchaseDate?: string
+  lastFrameBrand?: string
+  lastFrameModel?: string
+  lastClOrderDate?: string
+  lastClBrand?: string
   benefits: {
     exam: { covered: boolean; used: boolean; usedDate?: string }
     frames: { allowance: number; used: number }
@@ -59,6 +64,11 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-16',
     status: 'active',
     lastVisit: '2026-04-10',
+    lastFramePurchaseDate: '2024-03-15',
+    lastFrameBrand: 'Maui Jim',
+    lastFrameModel: 'Peahi',
+    lastClOrderDate: '2025-04-10',
+    lastClBrand: 'Acuvue Oasys',
     benefits: {
       exam: { covered: true, used: false },
       frames: { allowance: 150, used: 0 },
@@ -99,6 +109,9 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-16',
     status: 'active',
     lastVisit: '2026-03-28',
+    lastFramePurchaseDate: '2026-01-10',
+    lastFrameBrand: 'Ray-Ban',
+    lastFrameModel: 'Aviator Classic',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-01-10' },
       frames: { allowance: 200, used: 200 },
@@ -180,6 +193,9 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2025-11-20',
     status: 'unverified',
     lastVisit: '2025-11-20',
+    lastFramePurchaseDate: '2024-11-18',
+    lastFrameBrand: 'Oakley',
+    lastFrameModel: 'Holbrook',
     benefits: {
       exam: { covered: true, used: false },
       frames: { allowance: 120, used: 0 },
@@ -220,6 +236,10 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-18',
     status: 'active',
     lastVisit: '2026-04-22',
+    lastFramePurchaseDate: '2026-04-22',
+    lastFrameBrand: 'Kate Spade',
+    lastClOrderDate: '2025-09-10',
+    lastClBrand: 'Dailies Total 1',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-04-22' },
       frames: { allowance: 150, used: 90 },
@@ -268,6 +288,8 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-12',
     status: 'active',
     lastVisit: '2026-05-12',
+    lastFramePurchaseDate: '2024-05-14',
+    lastFrameBrand: 'Silhouette',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-12' },
       frames: { allowance: 200, used: 0 },
@@ -309,6 +331,10 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-04-01',
     status: 'active',
     lastVisit: '2026-04-30',
+    lastFramePurchaseDate: '2026-04-30',
+    lastFrameBrand: 'Nike',
+    lastClOrderDate: '2026-04-30',
+    lastClBrand: 'Biofinity',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-04-30' },
       frames: { allowance: 150, used: 150 },
@@ -389,6 +415,8 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-10',
     status: 'active',
     lastVisit: '2026-05-10',
+    lastClOrderDate: '2026-05-10',
+    lastClBrand: 'Acuvue Oasys 1-Day',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-10' },
       frames: { allowance: 200, used: 0 },
@@ -437,6 +465,11 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-17',
     status: 'active',
     lastVisit: '2026-05-05',
+    lastFramePurchaseDate: '2025-06-18',
+    lastFrameBrand: 'Costa',
+    lastFrameModel: 'Brine',
+    lastClOrderDate: '2026-05-05',
+    lastClBrand: 'Biofinity Toric',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-05' },
       frames: { allowance: 175, used: 80 },

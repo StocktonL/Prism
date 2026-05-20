@@ -399,6 +399,45 @@ function PatientDetailPanel({ patient, onClose }: PatientDetailProps) {
             <p className="mt-2 text-xs text-slate-400">Benefit period ends: {formatDate(b.benefitPeriodEnd)} &middot; Exam copay: ${b.examCopay} &middot; Materials copay: ${b.materialsCopay}</p>
           </div>
 
+          {/* Purchase History */}
+          {(patient.lastFrameBrand || patient.lastClBrand) && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Purchase History</p>
+              <div className="space-y-3">
+                {patient.lastFrameBrand && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                      <Glasses className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Last Frame Purchase</p>
+                      <p className="text-sm font-semibold text-slate-800">
+                        {patient.lastFrameBrand}{patient.lastFrameModel ? ` — ${patient.lastFrameModel}` : ''}
+                      </p>
+                      {patient.lastFramePurchaseDate && (
+                        <p className="text-xs text-slate-500">{formatDate(patient.lastFramePurchaseDate)}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {patient.lastClBrand && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-amber-50">
+                      <Contact2 className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Last Contact Lens Order</p>
+                      <p className="text-sm font-semibold text-slate-800">{patient.lastClBrand}</p>
+                      {patient.lastClOrderDate && (
+                        <p className="text-xs text-slate-500">{formatDate(patient.lastClOrderDate)}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Eligibility history */}
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Eligibility History</p>

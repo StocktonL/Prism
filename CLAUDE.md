@@ -116,7 +116,10 @@ patients (
   last_visit_date date,
   contact_lens_wearer boolean DEFAULT false,
   last_frame_purchase date,
+  last_frame_brand text,
+  last_frame_model text,
   last_cl_order date,
+  last_cl_brand text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 )
