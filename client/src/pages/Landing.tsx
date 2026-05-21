@@ -266,6 +266,12 @@ export default function Landing() {
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
             <a href="#verification" className="hover:text-white transition-colors">Eligibility</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a
+              href="/founding"
+              className="font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Founding Offer
+            </a>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -597,10 +603,13 @@ export default function Landing() {
             >
               Try the Live Demo
             </button>
-            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-center">
+            <a
+              href="/founding"
+              className="mt-4 block rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-center hover:bg-amber-500/20 transition-colors"
+            >
               <p className="text-xs text-amber-300 font-medium">Founding customer offer</p>
-              <p className="text-sm text-amber-200 mt-0.5">$199/month for your first 6 months — first 10 customers only</p>
-            </div>
+              <p className="text-sm text-amber-200 mt-0.5">$199/month locked for life — first 10 customers only →</p>
+            </a>
           </div>
         </div>
       </section>
@@ -629,6 +638,12 @@ export default function Landing() {
               Talk to a human <ChevronRight className="h-5 w-5" />
             </button>
           </div>
+          <p className="mt-6 text-sm text-slate-500">
+            Looking for the founding customer rate?{' '}
+            <a href="/founding" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">
+              Apply for $199/month →
+            </a>
+          </p>
         </div>
       </section>
 

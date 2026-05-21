@@ -7,6 +7,7 @@ import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
 import Claims from './pages/Claims'
+import Founding from './pages/Founding'
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -34,6 +35,7 @@ export default function App() {
         <Routes>
           {/* Public landing page */}
           <Route path="/" element={<Landing />} />
+          <Route path="/founding" element={<Founding />} />
 
           {/* Protected app */}
           <Route
