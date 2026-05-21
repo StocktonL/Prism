@@ -299,7 +299,7 @@ export default function Landing() {
                 name="Kevin Park"
                 tag="Brand Match"
                 tagColor="text-amber-600 bg-amber-50"
-                message="Hi Kevin, you're a Maui Jim fan — we're hosting a Maui Jim trunk show Nov 14–16 and thought of you. Your $150 VSP benefit applies to any pair. Want us to hold a spot? — Valley Eye Care"
+                message="Hi Kevin, did you know your VSP plan still has $150 in frame benefits you haven't used? We're hosting a Maui Jim trunk show Nov 14–16 and thought you'd want to know — those benefits apply to any pair in the collection. Want us to hold a spot? — Valley Eye Care"
                 time="11m ago"
               />
             </div>
