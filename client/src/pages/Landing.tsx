@@ -44,7 +44,7 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
             <CheckCircle2 className="h-6 w-6 text-teal-400" />
           </div>
           <h2 className="text-xl font-black text-white mb-2">You're on the list</h2>
-          <p className="text-sm text-slate-400 mb-6">Stockton will reach out personally within 24 hours to schedule your demo and walk through your practice's numbers.</p>
+          <p className="text-sm text-slate-400 mb-6">Our team will reach out personally within 24 hours to schedule your demo and walk through your practice's numbers.</p>
           <button onClick={onClose} className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors">
             Got it
           </button>
@@ -72,7 +72,7 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
           </h2>
           <p className="mt-1.5 text-sm text-slate-400">
             {isContact
-              ? 'Leave your info and a note. Stockton will reach out personally within 24 hours.'
+              ? 'Leave your info and a note. Our team will reach out personally within 24 hours.'
               : 'We\'ll show you your practice\'s recoverable revenue — free, no credit card.'}
           </p>
         </div>
@@ -644,7 +644,7 @@ export default function Landing() {
             <span className="text-sm font-bold text-white">Prizm</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-600">
-            <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a>
+            <a href="mailto:hello@prizmvision.com" className="hover:text-slate-400 transition-colors">hello@prizmvision.com</a>
             <span>·</span>
             <span>Built for independent optometry</span>
           </div>
