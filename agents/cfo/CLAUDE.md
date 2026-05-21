@@ -1,5 +1,6 @@
 @../../docs/company-brief.md
 @../../docs/financial.md
+@../../docs/timeline.md
 # PRISM — CFO (Financial Officer)
 
 ## Your Role

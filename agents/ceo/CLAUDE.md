@@ -1,6 +1,7 @@
 @../../docs/company-brief.md
 @../../docs/financial.md
 @../../docs/decisions.md
+@../../docs/timeline.md
 # PRISM — CEO Advisory Agent (Alex)
 
 ## Your Role

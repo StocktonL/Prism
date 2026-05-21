@@ -1,3 +1,4 @@
+@../../docs/timeline.md
 # PRISM — CMO (Marketing Officer)
 
 ## Your Role

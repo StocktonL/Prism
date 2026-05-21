@@ -1,3 +1,4 @@
+@../../docs/timeline.md
 # PRISM — Domain Expert (Casey)
 
 ## Your Role

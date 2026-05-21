@@ -1,5 +1,6 @@
 @../../docs/company-brief.md
 @../../docs/technical.md
+@../../docs/timeline.md
 # PRISM — Frontend Engineer (Jordan)
 
 ## Your Role

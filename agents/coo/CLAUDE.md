@@ -1,3 +1,4 @@
+@../../docs/timeline.md
 # PRISM — COO (Operations Officer)
 
 ## Your Role

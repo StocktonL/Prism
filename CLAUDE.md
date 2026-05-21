@@ -1,5 +1,6 @@
 @docs/company-brief.md
 @docs/technical.md
+@docs/timeline.md
 @agents/ceo/CLAUDE.md
 @agents/cfo/CLAUDE.md
 @agents/cmo/CLAUDE.md

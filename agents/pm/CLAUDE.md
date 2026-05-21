@@ -1,3 +1,4 @@
+@../../docs/timeline.md
 # PRISM — Product Manager (Morgan)
 
 ## Your Role
