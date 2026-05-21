@@ -278,29 +278,13 @@ export default function Landing() {
 
           {/* Message bubbles */}
           <div className="mx-auto max-w-5xl">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <MessageBubble
                 initials="SM"
                 name="Sarah Mitchell"
                 tag="Benefits"
                 tagColor="text-emerald-600 bg-emerald-50"
                 message="Hi Sarah, did you know your VSP plan covers $150 toward new glasses? It's been a while since your last pair — we'd love to help you use it. Reply YES to book. — Valley Eye Care"
-              />
-              <MessageBubble
-                initials="JO"
-                name="James Okafor"
-                tag="Trunk Show"
-                tagColor="text-violet-600 bg-violet-50"
-                message="Hi James, our Fall Frame Trunk Show is Nov 14–16. Your $130 frame benefit applies to any frame in the collection. Want us to hold a spot? — Valley Eye Care"
-                time="2m ago"
-              />
-              <MessageBubble
-                initials="LC"
-                name="Linda Chen"
-                tag="Back to School"
-                tagColor="text-blue-600 bg-blue-50"
-                message="Hi Linda, back-to-school season is here! Your family has $580 in combined vision benefits ready to use. Reply YES to book. — Valley Eye Care"
-                time="5m ago"
               />
               <MessageBubble
                 initials="MW"
