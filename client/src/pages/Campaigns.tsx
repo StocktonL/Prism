@@ -221,19 +221,35 @@ interface NewCampaignModalProps {
   onClose: () => void
   onLaunch: (c: Campaign) => void
   preselectedType?: CampaignType
+  preselectedBrand?: string
 }
 
-function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignModalProps) {
+function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand }: NewCampaignModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(preselectedType ? 2 : 1)
   const [selectedType, setSelectedType] = useState<CampaignType | null>(preselectedType ?? null)
-  const [name, setName] = useState(preselectedType ? `${preselectedType} — ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : '')
-  const [message, setMessage] = useState(CAMPAIGN_TYPES.find((t) => t.type === preselectedType)?.defaultMessage ?? '')
+  const [name, setName] = useState(
+    preselectedBrand
+      ? `${preselectedBrand} Trunk Show — ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+      : preselectedType
+      ? `${preselectedType} — ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+      : ''
+  )
+  const [message, setMessage] = useState(
+    preselectedBrand
+      ? `Hi {{first_name}}, did you know your {{carrier}} plan still has {{frame_allowance}} in frame benefits you haven't used? We're hosting a ${preselectedBrand} trunk show and thought of you — those benefits apply to any pair. Want us to hold a spot? Call (555) 800-2020.`
+      : CAMPAIGN_TYPES.find((t) => t.type === preselectedType)?.defaultMessage ?? ''
+  )
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>('now')
   const [scheduleDate, setScheduleDate] = useState('')
   const [staggerStartDate, setStaggerStartDate] = useState('')
   const [staggerDays, setStaggerDays] = useState(7)
-  const [criteria, setCriteria] = useState<CriteriaKey>('unused_benefits')
+  const [criteria, setCriteria] = useState<CriteriaKey>(preselectedBrand ? 'all' : 'unused_benefits')
   const MAX_CHARS = 160
+
+  // Patients who purchased this brand — shown in brand targeting banner
+  const brandPatients = preselectedBrand
+    ? PATIENTS.filter((p) => p.lastFrameBrand === preselectedBrand)
+    : []
 
   const estimatedReach = CRITERIA_OPTIONS.find((c) => c.key === criteria)?.reach ?? 0
 
@@ -275,18 +291,17 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden"
+        className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="border-b border-slate-200 px-6 py-4">
+        {/* Header — fixed */}
+        <div className="flex-shrink-0 border-b border-slate-200 px-6 py-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-slate-900">New Campaign</h2>
             <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
               <X className="h-5 w-5" />
             </button>
           </div>
-          {/* Step indicator */}
           <div className="flex items-center gap-2">
             {stepLabels.map((label, i) => {
               const n = (i + 1) as 1 | 2 | 3
@@ -305,34 +320,66 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
           </div>
         </div>
 
-        {/* Step 1 */}
-        {step === 1 && (
-          <div className="p-6">
-            <p className="mb-4 text-sm text-slate-500">Choose a campaign type to get started</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {CAMPAIGN_TYPES.map((t) => (
-                <button
-                  key={t.type}
-                  onClick={() => handleTypeSelect(t.type)}
-                  className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${t.borderColor} bg-white`}
-                >
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${t.iconBg}`}>
-                    {t.icon}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{t.type}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t.description}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
 
-        {/* Step 2 */}
-        {step === 2 && (
-          <div>
+          {/* Step 1 */}
+          {step === 1 && (
+            <div className="p-6">
+              <p className="mb-4 text-sm text-slate-500">Choose a campaign type to get started</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {CAMPAIGN_TYPES.map((t) => (
+                  <button
+                    key={t.type}
+                    onClick={() => handleTypeSelect(t.type)}
+                    className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${t.borderColor} bg-white`}
+                  >
+                    <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${t.iconBg}`}>
+                      {t.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">{t.type}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-snug">{t.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 */}
+          {step === 2 && (
             <div className="space-y-4 px-6 py-5">
+
+              {/* Brand targeting banner */}
+              {preselectedBrand && brandPatients.length > 0 && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShoppingBag className="h-4 w-4 text-amber-600" />
+                    <p className="text-sm font-semibold text-amber-800">Targeting {preselectedBrand} patients</p>
+                    <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-bold text-amber-800">{brandPatients.length} matched</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {brandPatients.map((p) => (
+                      <div key={p.id} className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-white px-3 py-2">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
+                          {p.firstName[0]}{p.lastName[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-semibold text-slate-800">{p.firstName} {p.lastName}</span>
+                          <span className="ml-2 text-xs text-slate-500">{p.primaryInsurance.carrier}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-slate-500">{p.lastFrameBrand}</span>
+                          {p.lastFrameModel && <span className="text-xs text-slate-400">— {p.lastFrameModel}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-amber-600">This message will also go to all other patients with unused frame benefits.</p>
+                </div>
+              )}
+
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-700">Campaign Name</label>
                 <input className="input-field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Campaign name" />
@@ -342,7 +389,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                   <label className="text-xs font-medium text-slate-700">Message</label>
                   <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>{message.length}/{MAX_CHARS} chars</span>
                 </div>
-                {/* Merge tag buttons */}
                 <div className="mb-2 flex flex-wrap gap-1.5">
                   {MERGE_TAGS.map((t) => (
                     <button
@@ -362,7 +408,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Enter your SMS message..."
                 />
-                {/* Live preview */}
                 {message && (
                   <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <p className="mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Live preview — how Sarah's message will read:</p>
@@ -376,9 +421,9 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                 <label className="mb-2 block text-xs font-medium text-slate-700">Schedule</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { mode: 'now' as ScheduleMode,       icon: <Zap className="h-4 w-4" />,         label: 'Send Now',        sub: 'All at once, immediately'        },
-                    { mode: 'scheduled' as ScheduleMode, icon: <CalendarDays className="h-4 w-4" />, label: 'Specific Date',   sub: 'All at once on a chosen day'     },
-                    { mode: 'staggered' as ScheduleMode, icon: <Timer className="h-4 w-4" />,        label: 'Staggered Send',  sub: 'Spread over days or weeks'       },
+                    { mode: 'now' as ScheduleMode,       icon: <Zap className="h-4 w-4" />,         label: 'Send Now',       sub: 'All at once, immediately'    },
+                    { mode: 'scheduled' as ScheduleMode, icon: <CalendarDays className="h-4 w-4" />, label: 'Specific Date',  sub: 'All at once on a chosen day' },
+                    { mode: 'staggered' as ScheduleMode, icon: <Timer className="h-4 w-4" />,        label: 'Staggered Send', sub: 'Spread over days or weeks'   },
                   ].map((opt) => (
                     <button
                       key={opt.mode}
@@ -392,43 +437,25 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                     </button>
                   ))}
                 </div>
-
-                {/* Specific date picker */}
                 {scheduleMode === 'scheduled' && (
                   <div className="mt-3">
                     <label className="mb-1 block text-xs font-medium text-slate-600">Send date</label>
                     <input type="date" className="input-field" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
                   </div>
                 )}
-
-                {/* Staggered config */}
                 {scheduleMode === 'staggered' && (
                   <div className="mt-3 rounded-xl border border-teal-200 bg-teal-50/50 p-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="mb-1 block text-xs font-medium text-slate-600">Start date</label>
-                        <input
-                          type="date"
-                          className="input-field"
-                          value={staggerStartDate}
-                          onChange={(e) => setStaggerStartDate(e.target.value)}
-                        />
+                        <input type="date" className="input-field" value={staggerStartDate} onChange={(e) => setStaggerStartDate(e.target.value)} />
                       </div>
                       <div>
                         <label className="mb-1 block text-xs font-medium text-slate-600">Spread over</label>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {[
-                            { days: 3,  label: '3 days'  },
-                            { days: 5,  label: '5 days'  },
-                            { days: 7,  label: '1 week'  },
-                            { days: 14, label: '2 weeks' },
-                          ].map((opt) => (
-                            <button
-                              key={opt.days}
-                              type="button"
-                              onClick={() => setStaggerDays(opt.days)}
-                              className={`rounded-lg border py-1.5 text-xs font-semibold transition-colors ${staggerDays === opt.days ? 'border-teal-500 bg-teal-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
-                            >
+                          {[{ days: 3, label: '3 days' }, { days: 5, label: '5 days' }, { days: 7, label: '1 week' }, { days: 14, label: '2 weeks' }].map((opt) => (
+                            <button key={opt.days} type="button" onClick={() => setStaggerDays(opt.days)}
+                              className={`rounded-lg border py-1.5 text-xs font-semibold transition-colors ${staggerDays === opt.days ? 'border-teal-500 bg-teal-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
                               {opt.label}
                             </button>
                           ))}
@@ -446,28 +473,30 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                 )}
               </div>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
-              <button onClick={() => setStep(1)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                Back
-              </button>
-              <button
-                onClick={() => setStep(3)}
-                disabled={!name || !message}
-                className="rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next: Patient Criteria
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 3 */}
-        {step === 3 && (
-          <div>
-            <div className="px-6 py-5">
-              <p className="mb-4 text-sm text-slate-500">Choose which patients to include in this campaign</p>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {CRITERIA_OPTIONS.map((opt) => (
+          {/* Step 3 */}
+          {step === 3 && (
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-sm text-slate-500">Choose which patients to include in this campaign</p>
+
+              {/* Brand-specific option shown first when brand is preselected */}
+              {preselectedBrand && brandPatients.length > 0 && (
+                <label className={`flex cursor-pointer items-center justify-between rounded-lg border-2 p-3 transition-colors ${criteria === 'all' ? 'border-amber-400 bg-amber-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`h-4 w-4 rounded-full border-2 flex-shrink-0 ${criteria === 'all' ? 'border-amber-500 bg-amber-500' : 'border-slate-300'}`} />
+                    <div>
+                      <span className="text-sm font-semibold text-slate-700">{preselectedBrand} patients + unused benefits</span>
+                      <p className="text-xs text-slate-400 mt-0.5">Prioritizes {preselectedBrand} purchasers, includes all patients with frame benefits</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">{brandPatients.length} brand matches</span>
+                  <input type="radio" className="sr-only" checked={criteria === 'all'} onChange={() => setCriteria('all')} />
+                </label>
+              )}
+
+              <div className="space-y-2">
+                {CRITERIA_OPTIONS.filter(o => o.key !== 'all').map((opt) => (
                   <label
                     key={opt.key}
                     className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${criteria === opt.key ? 'border-teal-400 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
@@ -482,14 +511,11 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                 ))}
               </div>
 
-              {/* Estimated reach */}
-              <div className="mt-4 rounded-xl border border-teal-200 bg-teal-50 p-4">
+              <div className="rounded-xl border border-teal-200 bg-teal-50 p-4">
                 <div className="flex items-start gap-3">
                   <Users className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-teal-800">
-                      {estimatedReach.toLocaleString()} patients will receive this campaign
-                    </p>
+                    <p className="text-sm font-semibold text-teal-800">{estimatedReach.toLocaleString()} patients will receive this campaign</p>
                     <p className="text-xs text-teal-600 mt-0.5">Based on your selected criteria and current patient roster</p>
                   </div>
                 </div>
@@ -510,27 +536,45 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType }: NewCampaignMod
                         <p className="text-xs text-slate-500">total sent</p>
                       </div>
                     </div>
-                    <p className="mt-2 text-xs text-teal-600">
-                      Each batch sends at 10:00 AM automatically — no action needed after approval.
-                    </p>
+                    <p className="mt-2 text-xs text-teal-600">Each batch sends at 10:00 AM automatically — no action needed after approval.</p>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
-              <button onClick={() => setStep(2)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                Back
-              </button>
-              <button
-                onClick={handleLaunch}
-                className="flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
-              >
-                <Send className="h-4 w-4" />
-                {scheduleMode === 'now' ? 'Launch Campaign' : scheduleMode === 'staggered' ? `Start Staggered Send` : 'Schedule Campaign'}
-              </button>
-            </div>
+          )}
+
+        </div>{/* end scrollable content */}
+
+        {/* Footer — fixed, only on steps 2 and 3 */}
+        {step === 2 && (
+          <div className="flex-shrink-0 flex items-center justify-between border-t border-slate-200 px-6 py-4">
+            <button onClick={() => setStep(1)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+              Back
+            </button>
+            <button
+              onClick={() => setStep(3)}
+              disabled={!name || !message}
+              className="rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next: Patient Criteria
+            </button>
           </div>
         )}
+        {step === 3 && (
+          <div className="flex-shrink-0 flex items-center justify-between border-t border-slate-200 px-6 py-4">
+            <button onClick={() => setStep(2)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+              Back
+            </button>
+            <button
+              onClick={handleLaunch}
+              className="flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+            >
+              <Send className="h-4 w-4" />
+              {scheduleMode === 'now' ? 'Launch Campaign' : scheduleMode === 'staggered' ? 'Start Staggered Send' : 'Schedule Campaign'}
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   )
@@ -657,15 +701,15 @@ export default function Campaigns() {
   const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS)
   const [showModal, setShowModal] = useState(false)
   const [preselectedType, setPreselectedType] = useState<CampaignType | undefined>(undefined)
+  const [preselectedBrand, setPreselectedBrand] = useState<string | undefined>(undefined)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
 
-  // Handle navigation from Dashboard with pre-selected campaign type
   useEffect(() => {
-    const state = location.state as { openModal?: boolean; campaignType?: CampaignType } | null
+    const state = location.state as { openModal?: boolean; campaignType?: CampaignType; brand?: string } | null
     if (state?.openModal) {
       setPreselectedType(state.campaignType)
+      setPreselectedBrand(state.brand)
       setShowModal(true)
-      // Clear the state so re-navigation doesn't re-trigger
       window.history.replaceState({}, '')
     }
   }, [location.state])
@@ -682,8 +726,9 @@ export default function Campaigns() {
     { label: 'Revenue Recovered', value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign className="h-5 w-5 text-emerald-600" />, bg: 'bg-emerald-50' },
   ]
 
-  function openNewCampaign(type?: CampaignType) {
+  function openNewCampaign(type?: CampaignType, brand?: string) {
     setPreselectedType(type)
+    setPreselectedBrand(brand)
     setShowModal(true)
   }
 
@@ -804,9 +849,10 @@ export default function Campaigns() {
 
       {showModal && (
         <NewCampaignModal
-          onClose={() => { setShowModal(false); setPreselectedType(undefined) }}
+          onClose={() => { setShowModal(false); setPreselectedType(undefined); setPreselectedBrand(undefined) }}
           onLaunch={(c) => setCampaigns((prev) => [c, ...prev])}
           preselectedType={preselectedType}
+          preselectedBrand={preselectedBrand}
         />
       )}
 
