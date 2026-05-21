@@ -291,7 +291,7 @@ export default function Landing() {
                 name="Marcus Webb"
                 tag="Expiring"
                 tagColor="text-rose-600 bg-rose-50"
-                message="Hi Marcus, your $150 in frame benefits and $200 in contact lens benefits expire Dec 31 and don't roll over to next year. Use them or lose them — reply YES to book. — Valley Eye Care"
+                message="Hi Marcus, wanted to give you a heads up — our records show you have $150 in frame benefits and $200 in contact lens benefits expiring Dec 31. Most patients don't realize these don't carry over to next year. Reply YES to book. — Valley Eye Care"
                 time="8m ago"
               />
               <MessageBubble
