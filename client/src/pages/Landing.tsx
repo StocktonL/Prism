@@ -19,17 +19,63 @@ import {
 } from 'lucide-react'
 
 // ─── Lead capture modal ───────────────────────────────────────────────────────
-function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () => void }) {
-  const [form, setForm] = useState({ name: '', practice: '', email: '', phone: '' })
-  const [submitting, setSubmitting] = useState(false)
+type ModalVariant = 'demo' | 'contact'
 
-  function handleSubmit(e: React.FormEvent) {
+function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => void; onSubmit: () => void; variant?: ModalVariant }) {
+  const [form, setForm] = useState({ name: '', practice: '', email: '', phone: '', message: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  const isContact = variant === 'contact'
+  const FORMSPREE_ID = import.meta.env.VITE_FORMSPREE_ID
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    // In production this would POST to a backend / email Stockton
-    // For now store locally and open demo
-    localStorage.setItem('prizm_lead', JSON.stringify({ ...form, submittedAt: new Date().toISOString() }))
-    setTimeout(() => onSubmit(), 600)
+
+    const payload = { ...form, variant, submittedAt: new Date().toISOString() }
+
+    // Submit to Formspree if configured, otherwise fall back silently
+    if (FORMSPREE_ID) {
+      try {
+        await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        // Submission failed silently — still open the demo / confirm
+      }
+    }
+
+    // Always save locally as a fallback
+    localStorage.setItem('prizm_lead', JSON.stringify(payload))
+
+    if (isContact) {
+      setSubmitted(true)
+      setSubmitting(false)
+    } else {
+      setTimeout(() => onSubmit(), 400)
+    }
+  }
+
+  // Contact variant — confirmation screen
+  if (isContact && submitted) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative w-full max-w-md rounded-3xl bg-slate-900 border border-white/10 p-8 shadow-2xl text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-500/20 border border-teal-500/30">
+            <CheckCircle2 className="h-6 w-6 text-teal-400" />
+          </div>
+          <h2 className="text-xl font-black text-white mb-2">You're on the list</h2>
+          <p className="text-sm text-slate-400 mb-6">Stockton will reach out personally within 24 hours to schedule your demo and walk through your practice's numbers.</p>
+          <button onClick={onClose} className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors">
+            Got it
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -42,10 +88,18 @@ function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () =>
 
         <div className="mb-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 border border-teal-500/30 mb-4">
-            <Zap className="h-5 w-5 text-teal-400" />
+            {isContact
+              ? <MessageSquare className="h-5 w-5 text-teal-400" />
+              : <Zap className="h-5 w-5 text-teal-400" />}
           </div>
-          <h2 className="text-xl font-black text-white">Get instant access to the demo</h2>
-          <p className="mt-1.5 text-sm text-slate-400">We'll show you your practice's recoverable revenue — free, no credit card.</p>
+          <h2 className="text-xl font-black text-white">
+            {isContact ? 'Let\'s talk' : 'Get instant access to the demo'}
+          </h2>
+          <p className="mt-1.5 text-sm text-slate-400">
+            {isContact
+              ? 'Leave your info and a note. Stockton will reach out personally within 24 hours.'
+              : 'We\'ll show you your practice\'s recoverable revenue — free, no credit card.'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -93,12 +147,29 @@ function DemoModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: () =>
               className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
             />
           </div>
+          <div>
+            <label className="text-xs font-medium text-slate-400 mb-1 block">
+              {isContact ? 'What\'s on your mind?' : 'Anything you\'d like us to know? (optional)'}
+            </label>
+            <textarea
+              required={isContact}
+              value={form.message}
+              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+              placeholder={isContact
+                ? 'How many patients do you have? Which EHR do you use? Any questions about Prizm?'
+                : 'e.g. "We have about 2,000 patients on VSP and EyeMed..."'}
+              rows={3}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors resize-none"
+            />
+          </div>
           <button
             type="submit"
             disabled={submitting}
             className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors disabled:opacity-60 mt-2 shadow-lg shadow-teal-900/40"
           >
-            {submitting ? 'Opening demo...' : 'Show me the demo →'}
+            {submitting
+              ? (isContact ? 'Sending...' : 'Opening demo...')
+              : (isContact ? 'Send — I\'ll hear from you soon →' : 'Show me the demo →')}
           </button>
         </form>
         <p className="mt-3 text-center text-xs text-slate-600">No credit card · HIPAA compliant · We'll follow up within 24 hours</p>
@@ -188,10 +259,10 @@ function VerificationCard() {
 export default function Landing() {
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
 
-  function openDemo() {
-    setShowModal(true)
-  }
+  function openDemo() { setShowModal(true) }
+  function openContact() { setShowContactModal(true) }
 
   function enterDemo() {
     setShowModal(false)
@@ -202,7 +273,8 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
 
-      {showModal && <DemoModal onClose={() => setShowModal(false)} onSubmit={enterDemo} />}
+      {showModal && <DemoModal onClose={() => setShowModal(false)} onSubmit={enterDemo} variant="demo" />}
+      {showContactModal && <DemoModal onClose={() => setShowContactModal(false)} onSubmit={() => setShowContactModal(false)} variant="contact" />}
 
       {/* Nav */}
       <nav className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/90 backdrop-blur-md">
@@ -266,12 +338,12 @@ export default function Landing() {
               >
                 <Zap className="h-4 w-4" /> See your practice's numbers
               </button>
-              <a
-                href="mailto:stockton@prizmvision.com?subject=Demo Request"
+              <button
+                onClick={openContact}
                 className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3.5 text-sm font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
               >
                 Talk to us <ArrowRight className="h-4 w-4" />
-              </a>
+              </button>
             </div>
             <p className="mt-4 text-xs text-slate-600">No credit card required · HIPAA compliant · Up and running today</p>
           </div>
@@ -575,12 +647,12 @@ export default function Landing() {
             >
               <Zap className="h-5 w-5" /> See your numbers free
             </button>
-            <a
-              href="mailto:stockton@prizmvision.com?subject=Demo Request"
+            <button
+              onClick={openContact}
               className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-base font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
             >
               Talk to a human <ChevronRight className="h-5 w-5" />
-            </a>
+            </button>
           </div>
         </div>
       </section>
