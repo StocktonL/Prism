@@ -250,7 +250,25 @@ function ExpandedDetail({ patient }: { patient: Patient }) {
 }
 
 // ---- Verification Modal ----
-type ModalStep = 'form' | 'checking' | 'result'
+type ModalStep = 'form' | 'checking' | 'result' | 'error'
+
+interface ParsedBenefits {
+  active: boolean
+  planName?: string
+  planYear: { start: string; end: string }
+  frameAllowance: number
+  frameUsed: number
+  clAllowance: number
+  clUsed: number
+  examCopay: number
+  materialsCopay: number
+  examEligible: boolean
+  nextEligibleDate?: string
+  requiresPriorAuth: boolean
+  oonFrameAllowance: number
+  oonClAllowance: number
+  oonExamAllowance: number
+}
 
 interface VerificationModalProps {
   onClose: () => void
@@ -264,6 +282,8 @@ function VerificationModal({ onClose, onComplete }: VerificationModalProps) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [manualMode, setManualMode] = useState(false)
   const [form, setForm] = useState({ carrier: 'VSP', memberId: '', groupNumber: '', subscriberName: '', subscriberDob: '', relationship: 'Self' })
+  const [liveBenefits, setLiveBenefits] = useState<ParsedBenefits | null>(null)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const suggestions = PATIENTS.filter(
     (p) => patientSearch.length > 1 && getPatientFullName(p).toLowerCase().includes(patientSearch.toLowerCase()),
@@ -283,10 +303,44 @@ function VerificationModal({ onClose, onComplete }: VerificationModalProps) {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStep('checking')
-    setTimeout(() => setStep('result'), 1500)
+    setLiveBenefits(null)
+    setErrorMsg('')
+
+    const [subscriberFirstName, ...rest] = form.subscriberName.trim().split(' ')
+    const subscriberLastName = rest.join(' ') || subscriberFirstName
+
+    try {
+      const res = await fetch('/api/eligibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          carrier: form.carrier,
+          memberId: form.memberId,
+          groupNumber: form.groupNumber || undefined,
+          subscriberFirstName: subscriberFirstName || '',
+          subscriberLastName,
+          subscriberDob: form.subscriberDob,
+          relationship: form.relationship,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErrorMsg(data.error ?? 'Eligibility check failed. Please try again.')
+        setStep('error')
+        return
+      }
+
+      setLiveBenefits(data.benefits as ParsedBenefits)
+      setStep('result')
+    } catch {
+      setErrorMsg('Could not reach the eligibility network. Check your connection and try again.')
+      setStep('error')
+    }
   }
 
   function handleSave() {
@@ -410,23 +464,70 @@ function VerificationModal({ onClose, onComplete }: VerificationModalProps) {
             </div>
           )}
 
+          {/* Error step */}
+          {step === 'error' && (
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-red-800">Verification Failed</p>
+                  <p className="text-xs text-red-600 mt-1">{errorMsg}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setStep('form')} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  Try Again
+                </button>
+                <button onClick={onClose} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Result step */}
           {step === 'result' && (
             <div className="p-6 space-y-4">
-              {/* Status banner */}
-              <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-800">Benefits Active</p>
-                    <p className="text-xs text-emerald-600">{p ? `${form.carrier} · Plan Year: ${p.benefits.planYear.start} – ${p.benefits.planYear.end}` : form.carrier}</p>
+              {/* Status banner — uses live API data when available */}
+              {liveBenefits ? (
+                <div className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
+                  liveBenefits.active
+                    ? 'border-emerald-200 bg-emerald-50'
+                    : 'border-red-200 bg-red-50'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {liveBenefits.active
+                      ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      : <XCircle className="h-5 w-5 text-red-500" />
+                    }
+                    <div>
+                      <p className={`text-sm font-semibold ${liveBenefits.active ? 'text-emerald-800' : 'text-red-800'}`}>
+                        {liveBenefits.active ? 'Benefits Active' : 'Benefits Inactive / Exhausted'}
+                      </p>
+                      <p className={`text-xs ${liveBenefits.active ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {form.carrier}
+                        {liveBenefits.planYear.start && ` · Plan Year: ${liveBenefits.planYear.start} – ${liveBenefits.planYear.end}`}
+                        {liveBenefits.planName && ` · ${liveBenefits.planName}`}
+                      </p>
+                    </div>
                   </div>
+                  <span className="text-xs font-medium text-slate-500">Live · Stedi</span>
                 </div>
-                <span className="text-xs font-medium text-emerald-600">Verified via Stedi</span>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-800">Benefits Active</p>
+                      <p className="text-xs text-emerald-600">{p ? `${form.carrier} · Plan Year: ${p.benefits.planYear.start} – ${p.benefits.planYear.end}` : form.carrier}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-emerald-600">Verified via Stedi</span>
+                </div>
+              )}
 
               {/* Prior auth */}
-              {p?.benefits.requiresPriorAuth && (
+              {(liveBenefits?.requiresPriorAuth || p?.benefits.requiresPriorAuth) && (
                 <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
                   <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
                   <p className="text-xs font-semibold text-red-700">Prior Authorization Required — confirm auth number before dispensing materials.</p>
@@ -434,19 +535,118 @@ function VerificationModal({ onClose, onComplete }: VerificationModalProps) {
               )}
 
               {/* Subscriber/dependent */}
-              {p && p.primaryInsurance.relationship !== 'Self' && (
+              {form.relationship !== 'Self' && form.subscriberName && (
                 <div className="flex items-center gap-2.5 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2.5">
                   <Info className="h-4 w-4 text-blue-500 flex-shrink-0" />
                   <p className="text-xs text-blue-700">
-                    <span className="font-semibold">Subscriber:</span> {p.primaryInsurance.subscriberName} ({p.primaryInsurance.relationship})
-                    <span className="mx-1.5 text-blue-300">|</span>
-                    <span className="font-semibold">Patient:</span> {getPatientFullName(p)}
+                    <span className="font-semibold">Subscriber:</span> {form.subscriberName} ({form.relationship})
+                    {p && <><span className="mx-1.5 text-blue-300">|</span><span className="font-semibold">Patient:</span> {getPatientFullName(p)}</>}
                   </p>
                 </div>
               )}
 
-              {/* Benefit cards */}
-              {p && (
+              {/* Live benefit summary — shown when real Stedi data is available */}
+              {liveBenefits && (
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Benefit Summary — Live from {form.carrier}</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {/* Exam */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-teal-50">
+                          <Stethoscope className="h-4 w-4 text-teal-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700">Eye Exam</p>
+                          <p className="text-xs text-slate-500">{liveBenefits.examEligible ? 'Eligible' : 'Not eligible this period'}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span className="text-slate-400">Copay</span>
+                        <span className="font-medium text-slate-700">{liveBenefits.examCopay > 0 ? `$${liveBenefits.examCopay}` : 'No copay'}</span>
+                      </div>
+                      {liveBenefits.oonExamAllowance > 0 && (
+                        <div className="flex justify-between text-xs mt-1">
+                          <span className="text-slate-400">OON allowance</span>
+                          <span className="font-medium text-slate-500">${liveBenefits.oonExamAllowance}</span>
+                        </div>
+                      )}
+                      {liveBenefits.nextEligibleDate && (
+                        <p className="text-xs text-amber-600 mt-1">Next eligible: {liveBenefits.nextEligibleDate}</p>
+                      )}
+                    </div>
+                    {/* Frames */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-50">
+                          <Glasses className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700">Frames</p>
+                          <p className="text-xs text-slate-500">${liveBenefits.frameAllowance - liveBenefits.frameUsed} remaining</p>
+                        </div>
+                      </div>
+                      <UtilizationBar used={liveBenefits.frameUsed} total={liveBenefits.frameAllowance} />
+                      <div className="flex justify-between text-xs mt-1.5">
+                        <span className="text-slate-400">${liveBenefits.frameUsed} used</span>
+                        <span className="font-medium text-teal-600">${liveBenefits.frameAllowance} allowance</span>
+                      </div>
+                      {liveBenefits.oonFrameAllowance > 0 && (
+                        <div className="flex justify-between text-xs mt-1 border-t border-slate-100 pt-1">
+                          <span className="text-slate-400">OON allowance</span>
+                          <span className="text-slate-500">${liveBenefits.oonFrameAllowance}</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Contacts */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-50">
+                          <Contact2 className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-700">Contacts</p>
+                          <p className="text-xs text-slate-500">
+                            {liveBenefits.clAllowance > 0 ? `$${liveBenefits.clAllowance - liveBenefits.clUsed} remaining` : 'Not covered'}
+                          </p>
+                        </div>
+                      </div>
+                      {liveBenefits.clAllowance > 0 && (
+                        <>
+                          <UtilizationBar used={liveBenefits.clUsed} total={liveBenefits.clAllowance} />
+                          <div className="flex justify-between text-xs mt-1.5">
+                            <span className="text-slate-400">${liveBenefits.clUsed} used</span>
+                            <span className="font-medium text-teal-600">${liveBenefits.clAllowance} allowance</span>
+                          </div>
+                        </>
+                      )}
+                      {liveBenefits.oonClAllowance > 0 && (
+                        <div className="flex justify-between text-xs mt-1 border-t border-slate-100 pt-1">
+                          <span className="text-slate-400">OON allowance</span>
+                          <span className="text-slate-500">${liveBenefits.oonClAllowance}</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Copays */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Copays</p>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-500">Exam</span>
+                          <span className="font-medium text-slate-700">{liveBenefits.examCopay > 0 ? `$${liveBenefits.examCopay}` : 'No copay'}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-500">Materials</span>
+                          <span className="font-medium text-slate-700">{liveBenefits.materialsCopay > 0 ? `$${liveBenefits.materialsCopay}` : 'No copay'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Fallback to mock patient data when no live data */}
+              {!liveBenefits && p && (
                 <>
                   <BenefitCards patient={p} />
                   <div className="grid gap-3 sm:grid-cols-2">
