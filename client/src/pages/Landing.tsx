@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap,
@@ -19,48 +19,23 @@ import {
 } from 'lucide-react'
 
 // ─── Lead capture modal ───────────────────────────────────────────────────────
+import { useForm, ValidationError } from '@formspree/react'
+
 type ModalVariant = 'demo' | 'contact'
 
 function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => void; onSubmit: () => void; variant?: ModalVariant }) {
-  const [form, setForm] = useState({ name: '', practice: '', email: '', phone: '', message: '' })
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-
+  const [state, handleSubmit] = useForm('mykveaoq')
   const isContact = variant === 'contact'
-  const FORMSPREE_ID = import.meta.env.VITE_FORMSPREE_ID
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setSubmitting(true)
-
-    const payload = { ...form, variant, submittedAt: new Date().toISOString() }
-
-    // Submit to Formspree if configured, otherwise fall back silently
-    if (FORMSPREE_ID) {
-      try {
-        await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-      } catch {
-        // Submission failed silently — still open the demo / confirm
-      }
-    }
-
-    // Always save locally as a fallback
-    localStorage.setItem('prizm_lead', JSON.stringify(payload))
-
-    if (isContact) {
-      setSubmitted(true)
-      setSubmitting(false)
-    } else {
+  // After successful submission: enter demo or show confirmation
+  useEffect(() => {
+    if (state.succeeded && !isContact) {
       setTimeout(() => onSubmit(), 400)
     }
-  }
+  }, [state.succeeded])
 
   // Contact variant — confirmation screen
-  if (isContact && submitted) {
+  if (isContact && state.succeeded) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -103,23 +78,24 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Hidden field tells you whether this was a demo signup or contact request */}
+          <input type="hidden" name="type" value={isContact ? 'Contact Request' : 'Demo Signup'} />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-400 mb-1 block">Your name</label>
               <input
                 required
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                name="name"
                 placeholder="Sarah Johnson"
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 focus:bg-white/8 transition-colors"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
               />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-400 mb-1 block">Practice name</label>
               <input
                 required
-                value={form.practice}
-                onChange={e => setForm(f => ({ ...f, practice: e.target.value }))}
+                name="practice"
                 placeholder="Valley Eye Care"
                 className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
               />
@@ -130,19 +106,18 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
             <input
               required
               type="email"
-              value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              name="email"
               placeholder="sarah@valleyeyecare.com"
               className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
             />
+            <ValidationError field="email" errors={state.errors} className="text-xs text-red-400 mt-1" />
           </div>
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1 block">Phone number</label>
             <input
               required
               type="tel"
-              value={form.phone}
-              onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              name="phone"
               placeholder="(801) 555-1234"
               className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors"
             />
@@ -153,21 +128,21 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
             </label>
             <textarea
               required={isContact}
-              value={form.message}
-              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+              name="message"
               placeholder={isContact
                 ? 'How many patients do you have? Which EHR do you use? Any questions about Prizm?'
                 : 'e.g. "We have about 2,000 patients on VSP and EyeMed..."'}
               rows={3}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-teal-500/50 transition-colors resize-none"
             />
+            <ValidationError field="message" errors={state.errors} className="text-xs text-red-400 mt-1" />
           </div>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={state.submitting}
             className="w-full rounded-xl bg-teal-500 py-3 text-sm font-bold text-white hover:bg-teal-400 transition-colors disabled:opacity-60 mt-2 shadow-lg shadow-teal-900/40"
           >
-            {submitting
+            {state.submitting
               ? (isContact ? 'Sending...' : 'Opening demo...')
               : (isContact ? 'Send — I\'ll hear from you soon →' : 'Show me the demo →')}
           </button>
