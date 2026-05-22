@@ -62,7 +62,8 @@ export default function Signup() {
 
         setStep(2)
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+        console.error('Signup error full object:', err)
+        const msg = err instanceof Error ? err.message : JSON.stringify(err) || 'Something went wrong. Please try again.'
         setError(msg)
       } finally {
         setLoading(false)
