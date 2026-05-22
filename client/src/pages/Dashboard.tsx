@@ -25,10 +25,337 @@ import {
   FileCheck,
   Lock,
   Glasses,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Sun,
+  Snowflake,
+  Leaf,
+  Flower2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 const HAS_PATIENTS = true
+
+// ─── Campaign Suggestions Engine ─────────────────────────────────────────────
+
+type Urgency = 'urgent' | 'recommended' | 'upcoming'
+
+interface CampaignSuggestion {
+  id: string
+  title: string
+  type: string
+  why: string
+  detail: string
+  patients: number
+  estimatedRevenue: string
+  urgency: Urgency
+  icon: string
+  campaignType: string
+}
+
+interface MonthPlan {
+  season: string
+  seasonIcon: React.ReactNode
+  headline: string
+  suggestions: CampaignSuggestion[]
+}
+
+const MONTHLY_PLAN: Record<number, MonthPlan> = {
+  1: {
+    season: 'Winter', seasonIcon: <Snowflake className="h-3.5 w-3.5" />,
+    headline: 'New benefit year — patients have fresh allowances they don\'t know about yet.',
+    suggestions: [
+      { id: 'jan-1', title: 'New Benefit Year Kickoff', type: 'Mid-Year Benefits', why: 'Benefits just reset Jan 1', detail: 'Most patients forget their benefits renewed. First practice to remind them wins the visit.', patients: 412, estimatedRevenue: '$61,800', urgency: 'urgent', icon: '🎉', campaignType: 'Mid-Year Benefits' },
+      { id: 'jan-2', title: 'Contact Lens Reorder', type: 'CL Reorder', why: 'Annual supply running low for Dec orders', detail: 'Patients who ordered contacts last January are due. Remind before they go elsewhere.', patients: 89, estimatedRevenue: '$13,350', urgency: 'recommended', icon: '👁️', campaignType: 'CL Reorder' },
+      { id: 'jan-3', title: 'Re-engage No-Shows', type: 'Mid-Year Benefits', why: 'Patients who missed Q4 appointments', detail: 'Some Q4 patients scheduled but didn\'t show. New year is a natural re-engagement moment.', patients: 43, estimatedRevenue: '$6,450', urgency: 'upcoming', icon: '📅', campaignType: 'Mid-Year Benefits' },
+    ],
+  },
+  2: {
+    season: 'Winter', seasonIcon: <Snowflake className="h-3.5 w-3.5" />,
+    headline: 'February is slow — the right campaign fills the schedule before spring rush.',
+    suggestions: [
+      { id: 'feb-1', title: 'Valentine\'s Day Frames', type: 'Mid-Year Benefits', why: 'Gift season drives self-treat purchases', detail: '"Treat yourself" framing converts well. Target patients with full frame allowances available.', patients: 287, estimatedRevenue: '$43,050', urgency: 'recommended', icon: '🕶️', campaignType: 'Mid-Year Benefits' },
+      { id: 'feb-2', title: 'Contact Lens Benefits Reminder', type: 'CL Reorder', why: 'Benefits available, no urgency yet', detail: 'Early reminder captures patients before spring busy season. CL patients respond well to proactive outreach.', patients: 156, estimatedRevenue: '$23,400', urgency: 'recommended', icon: '👁️', campaignType: 'CL Reorder' },
+      { id: 'feb-3', title: 'Spring Preview Trunk Show', type: 'Trunk Show', why: 'Spring collection arrivals', detail: 'Frame brands release spring lines in February. Preview event drives early traffic.', patients: 94, estimatedRevenue: '$14,100', urgency: 'upcoming', icon: '🕶️', campaignType: 'Trunk Show' },
+    ],
+  },
+  3: {
+    season: 'Spring', seasonIcon: <Flower2 className="h-3.5 w-3.5" />,
+    headline: 'Spring is here — sunglasses season and trunk shows drive strong optical revenue.',
+    suggestions: [
+      { id: 'mar-1', title: 'Spring Sunglasses Campaign', type: 'Mid-Year Benefits', why: 'Prime sunglasses buying season begins', detail: 'Patients with available benefits are 3x more likely to upgrade frames in spring. Target patients with $130+ frame allowances.', patients: 348, estimatedRevenue: '$52,200', urgency: 'urgent', icon: '☀️', campaignType: 'Mid-Year Benefits' },
+      { id: 'mar-2', title: 'Maui Jim / Costa Trunk Show', type: 'Trunk Show', why: 'Outdoor brand peak buying season', detail: 'Outdoor patients buy in spring. Maui Jim and Costa trunk shows in March-April consistently outperform other months.', patients: 41, estimatedRevenue: '$6,150', urgency: 'recommended', icon: '🌊', campaignType: 'Trunk Show' },
+      { id: 'mar-3', title: 'Q1 Benefits Reminder', type: 'Mid-Year Benefits', why: '25% of patients haven\'t used benefits yet', detail: 'Patients who didn\'t act in January need a second touch. Keep the practice top of mind before competing spring schedules.', patients: 187, estimatedRevenue: '$28,050', urgency: 'recommended', icon: '📬', campaignType: 'Mid-Year Benefits' },
+    ],
+  },
+  4: {
+    season: 'Spring', seasonIcon: <Flower2 className="h-3.5 w-3.5" />,
+    headline: 'Peak trunk show month — brand events in April drive the highest optical conversion rates.',
+    suggestions: [
+      { id: 'apr-1', title: 'Ray-Ban Spring Trunk Show', type: 'Trunk Show', why: 'April is #1 trunk show month', detail: 'April trunk shows consistently outperform all other months by 40%. Ray-Ban is the top-performing brand for spring events.', patients: 31, estimatedRevenue: '$4,650', urgency: 'urgent', icon: '🕶️', campaignType: 'Trunk Show' },
+      { id: 'apr-2', title: 'Sunglasses Season — Full List', type: 'Mid-Year Benefits', why: 'Spring outdoor activity peaks in April', detail: 'Broad sunglasses campaign to benefit-eligible patients. Message: "Your $X in frame benefits is perfect for a pair of polarized sunglasses."', patients: 412, estimatedRevenue: '$61,800', urgency: 'urgent', icon: '☀️', campaignType: 'Mid-Year Benefits' },
+      { id: 'apr-3', title: 'Contact Lens Quarterly', type: 'CL Reorder', why: 'Q2 contact lens reorder window', detail: 'Patients who order 3-month supplies are due in April. Higher conversion than annual reorder campaigns.', patients: 134, estimatedRevenue: '$20,100', urgency: 'recommended', icon: '👁️', campaignType: 'CL Reorder' },
+    ],
+  },
+  5: {
+    season: 'Spring', seasonIcon: <Flower2 className="h-3.5 w-3.5" />,
+    headline: 'May is the last quiet month before summer — great time to run contact lens and family campaigns.',
+    suggestions: [
+      { id: 'may-1', title: 'Contact Lens Benefits — Act Now', type: 'CL Reorder', why: 'CL benefits often underused vs frame benefits', detail: 'Most practices focus on frame campaigns. CL patients are underserved — they have benefits and forget. This campaign converts quietly all year.', patients: 189, estimatedRevenue: '$28,350', urgency: 'recommended', icon: '👁️', campaignType: 'CL Reorder' },
+      { id: 'may-2', title: 'Mother\'s Day Frame Campaign', type: 'Mid-Year Benefits', why: 'Gift-driven purchases peak in May', detail: '"Treat mom to new frames with her vision benefits" converts well. Target female patients 30–55 with available frame allowances.', patients: 203, estimatedRevenue: '$30,450', urgency: 'urgent', icon: '🌸', campaignType: 'Mid-Year Benefits' },
+      { id: 'may-3', title: 'Pre-Summer Oakley Trunk Show', type: 'Trunk Show', why: 'Athletic frames sell before summer activities', detail: 'Oakley and sport-frame brands peak before summer. Target patients with athletic frame history + available benefits.', patients: 19, estimatedRevenue: '$2,850', urgency: 'upcoming', icon: '⚡', campaignType: 'Trunk Show' },
+    ],
+  },
+  6: {
+    season: 'Summer', seasonIcon: <Sun className="h-3.5 w-3.5" />,
+    headline: 'Some plans reset July 1 — remind those patients before their old benefits expire.',
+    suggestions: [
+      { id: 'jun-1', title: 'Mid-Year Reset Reminder', type: 'Mid-Year Benefits', why: 'EyeMed & some plans reset July 1', detail: 'Patients with July benefit resets lose their H1 allowance if they don\'t act before July 1. This campaign has high open rates — real urgency.', patients: 94, estimatedRevenue: '$14,100', urgency: 'urgent', icon: '⏰', campaignType: 'Mid-Year Benefits' },
+      { id: 'jun-2', title: 'Back to School — Early Bird', type: 'Back to School', why: 'Families who plan ahead schedule in June', detail: 'Back to school season starts in July-August, but organized parents schedule in June. Capture them before the August rush.', patients: 156, estimatedRevenue: '$23,400', urgency: 'recommended', icon: '📚', campaignType: 'Back to School' },
+      { id: 'jun-3', title: 'Summer Sunglasses — Final Push', type: 'Mid-Year Benefits', why: 'Last strong sunglasses buying month', detail: 'July marks the start of summer schedule craziness. June is the last reliable window for sunglasses campaigns before back to school.', patients: 287, estimatedRevenue: '$43,050', urgency: 'recommended', icon: '🏖️', campaignType: 'Mid-Year Benefits' },
+    ],
+  },
+  7: {
+    season: 'Summer', seasonIcon: <Sun className="h-3.5 w-3.5" />,
+    headline: 'Back to school season is here — families are in buying mode and benefits are available.',
+    suggestions: [
+      { id: 'jul-1', title: 'Back to School — Kids + Families', type: 'Back to School', why: 'Largest back-to-school campaign window', detail: 'Target parents with children under 18 who haven\'t had an exam this year. Frame benefits + back to school urgency = highest conversion campaign of summer.', patients: 203, estimatedRevenue: '$30,450', urgency: 'urgent', icon: '🎒', campaignType: 'Back to School' },
+      { id: 'jul-2', title: 'Mid-Year Benefits — Last Call', type: 'Mid-Year Benefits', why: 'July 1 resets already happened — act on what\'s available', detail: 'Patients who reset July 1 have fresh benefits. Everyone else has H2 window. Broad reminder with exact dollar amounts.', patients: 412, estimatedRevenue: '$61,800', urgency: 'recommended', icon: '💰', campaignType: 'Mid-Year Benefits' },
+      { id: 'jul-3', title: 'Contact Lens Reorder — Summer', type: 'CL Reorder', why: 'Summer activities drive daily lens use', detail: 'Summer is peak daily disposable season. Patients use more contacts in summer — reorder timing aligns perfectly.', patients: 134, estimatedRevenue: '$20,100', urgency: 'recommended', icon: '👁️', campaignType: 'CL Reorder' },
+    ],
+  },
+  8: {
+    season: 'Summer', seasonIcon: <Sun className="h-3.5 w-3.5" />,
+    headline: 'Back to school is at peak and Q4 benefit urgency is 3 months away — start building pipeline now.',
+    suggestions: [
+      { id: 'aug-1', title: 'Back to School — Urgent Push', type: 'Back to School', why: 'Last 3 weeks before school starts', detail: 'Families in crunch mode are more responsive than ever. Short urgency-based message with appointment availability converts at 2x normal rate.', patients: 203, estimatedRevenue: '$30,450', urgency: 'urgent', icon: '🎒', campaignType: 'Back to School' },
+      { id: 'aug-2', title: 'Q4 Preview — Benefits Expiring', type: 'End of Year Benefits', why: 'Start Q4 pipeline early — beat competitors', detail: 'Most practices wait until October. Patients contacted in August have more scheduling flexibility and book before the Q4 crunch.', patients: 548, estimatedRevenue: '$82,200', urgency: 'recommended', icon: '📆', campaignType: 'End of Year Benefits' },
+      { id: 'aug-3', title: 'Fall Frames Preview', type: 'Trunk Show', why: 'Fall collections arrive in August', detail: 'Frame brands ship fall lines in August. Preview event + benefit reminder is a powerful combination for August trunk shows.', patients: 94, estimatedRevenue: '$14,100', urgency: 'upcoming', icon: '🍂', campaignType: 'Trunk Show' },
+    ],
+  },
+  9: {
+    season: 'Fall', seasonIcon: <Leaf className="h-3.5 w-3.5" />,
+    headline: 'Q4 starts now — benefits expire in 90 days and every week of delay costs appointments.',
+    suggestions: [
+      { id: 'sep-1', title: 'Q4 Benefits Expiring — Launch', type: 'End of Year Benefits', why: 'Benefits expire Dec 31 — 90 days left', detail: 'The highest-revenue campaign of the year. Every patient with unused benefits gets a personalized message with their exact dollar amounts. Send this one first.', patients: 548, estimatedRevenue: '$82,200', urgency: 'urgent', icon: '🚨', campaignType: 'End of Year Benefits' },
+      { id: 'sep-2', title: 'Contact Lens Benefits — Q4 Reminder', type: 'CL Reorder', why: 'CL benefits expire Dec 31 too', detail: 'CL patients often forget their contact benefits. A separate CL-focused campaign alongside the frame campaign captures the full benefit picture.', patients: 189, estimatedRevenue: '$28,350', urgency: 'urgent', icon: '👁️', campaignType: 'CL Reorder' },
+      { id: 'sep-3', title: 'Fall Trunk Show', type: 'Trunk Show', why: 'Fall brand events + expiring benefits = perfect timing', detail: 'Combining trunk show invitation with benefit urgency is the most effective trunk show formula. September is the best month to run this.', patients: 94, estimatedRevenue: '$14,100', urgency: 'recommended', icon: '🍂', campaignType: 'Trunk Show' },
+    ],
+  },
+  10: {
+    season: 'Fall', seasonIcon: <Leaf className="h-3.5 w-3.5" />,
+    headline: 'Peak Q4 — benefits expire in 60 days. Every patient with unused allowances needs a message this month.',
+    suggestions: [
+      { id: 'oct-1', title: 'Q4 Benefits — URGENT', type: 'End of Year Benefits', why: '60 days left — urgency is real', detail: 'If you haven\'t sent Q4 yet, send today. 60 days creates genuine urgency. Patients who got a September message get a follow-up. New patients get initial outreach.', patients: 548, estimatedRevenue: '$82,200', urgency: 'urgent', icon: '🔴', campaignType: 'End of Year Benefits' },
+      { id: 'oct-2', title: 'EyeMed Patients — Separate Campaign', type: 'End of Year Benefits', why: 'EyeMed patients respond better to carrier-specific messaging', detail: 'EyeMed patients who get a message referencing their specific plan by name convert at 35% higher than generic campaigns. Worth the extra 5 minutes.', patients: 287, estimatedRevenue: '$43,050', urgency: 'urgent', icon: '📬', campaignType: 'End of Year Benefits' },
+      { id: 'oct-3', title: 'VSP Benefits — Separate Campaign', type: 'End of Year Benefits', why: 'VSP is 40% of your patient base', detail: 'Same logic as EyeMed — VSP-specific messaging outperforms generic. With 412 VSP patients, this is your single biggest revenue campaign.', patients: 412, estimatedRevenue: '$61,800', urgency: 'urgent', icon: '📬', campaignType: 'End of Year Benefits' },
+    ],
+  },
+  11: {
+    season: 'Fall', seasonIcon: <Leaf className="h-3.5 w-3.5" />,
+    headline: 'Last 6 weeks — schedule is filling up. Patients who haven\'t responded need a final push now.',
+    suggestions: [
+      { id: 'nov-1', title: 'Final Benefits Notice — Non-Responders', type: 'End of Year Benefits', why: '30 days left — last chance messaging', detail: 'Filter to patients who received a campaign but didn\'t book. "Final notice" subject line opens at 52% vs 35% for standard benefit reminders. This is your highest-converting send of the year.', patients: 312, estimatedRevenue: '$46,800', urgency: 'urgent', icon: '🚨', campaignType: 'End of Year Benefits' },
+      { id: 'nov-2', title: 'December Schedule Is Filling Fast', type: 'End of Year Benefits', why: 'Schedule scarcity drives action', detail: 'Add appointment availability context to the message. "We have limited December openings left" creates real urgency and moves patients from "I\'ll get to it" to booking.', patients: 189, estimatedRevenue: '$28,350', urgency: 'urgent', icon: '📅', campaignType: 'End of Year Benefits' },
+      { id: 'nov-3', title: 'Holiday Frames Trunk Show', type: 'Trunk Show', why: 'Holiday gift-giving frame purchases peak', detail: 'Holiday trunk show with expiring benefit messaging is the highest-converting campaign combination of the year. Run this the first week of November.', patients: 94, estimatedRevenue: '$14,100', urgency: 'recommended', icon: '🎁', campaignType: 'Trunk Show' },
+    ],
+  },
+  12: {
+    season: 'Winter', seasonIcon: <Snowflake className="h-3.5 w-3.5" />,
+    headline: 'Last call — benefits expire December 31. Fill every open appointment slot before year-end.',
+    suggestions: [
+      { id: 'dec-1', title: 'FINAL CALL — Benefits Expire Dec 31', type: 'End of Year Benefits', why: 'Benefits expire in days, not weeks', detail: 'This is the most urgent send of the year. Short message, one clear CTA, appointment link. Patients who haven\'t acted all year will act this week. Send early December, follow up mid-December.', patients: 234, estimatedRevenue: '$35,100', urgency: 'urgent', icon: '⏰', campaignType: 'End of Year Benefits' },
+      { id: 'dec-2', title: 'Gift Card for Frames', type: 'Mid-Year Benefits', why: 'Holiday gifts + expiring benefits = last push', detail: 'Some patients want to come in but can\'t book before Dec 31. Offering a gift card or gift certificate purchased against their benefits can save the revenue.', patients: 156, estimatedRevenue: '$23,400', urgency: 'recommended', icon: '🎁', campaignType: 'Mid-Year Benefits' },
+      { id: 'dec-3', title: 'New Year Preview — Plan Ahead', type: 'Mid-Year Benefits', why: 'Plant seeds for January while attention is high', detail: 'Start seeding January campaigns in late December. Patients are receptive to "new year, new benefits reset" messaging before January 1.', patients: 412, estimatedRevenue: '$61,800', urgency: 'upcoming', icon: '🎉', campaignType: 'Mid-Year Benefits' },
+    ],
+  },
+}
+
+const URGENCY_CONFIG: Record<Urgency, { label: string; className: string; dotColor: string }> = {
+  urgent:      { label: 'Send Now',     className: 'bg-rose-50 text-rose-700 border-rose-200',    dotColor: 'bg-rose-500'   },
+  recommended: { label: 'Recommended', className: 'bg-amber-50 text-amber-700 border-amber-200',  dotColor: 'bg-amber-400'  },
+  upcoming:    { label: 'Coming Up',    className: 'bg-slate-50 text-slate-600 border-slate-200',  dotColor: 'bg-slate-400'  },
+}
+
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+
+function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type: string) => void }) {
+  const [showCalendar, setShowCalendar] = useState(false)
+  const now = new Date()
+  const currentMonth = now.getMonth() + 1
+  const plan = MONTHLY_PLAN[currentMonth]
+
+  const urgentCount = plan.suggestions.filter(s => s.urgency === 'urgent').length
+
+  return (
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm mt-0.5">
+              <Sparkles className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-base">Campaign Intelligence</CardTitle>
+                <span className="flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" /> Always On
+                </span>
+                {urgentCount > 0 && (
+                  <span className="flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                    {urgentCount} action{urgentCount > 1 ? 's' : ''} needed now
+                  </span>
+                )}
+              </div>
+              <CardDescription className="text-xs mt-0.5">
+                {MONTH_NAMES[currentMonth - 1]} recommendations · {plan.season} · {plan.headline}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {plan.seasonIcon && (
+              <span className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500">
+                {plan.seasonIcon} {plan.season}
+              </span>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Suggestion cards */}
+        {plan.suggestions.map((s) => {
+          const urgencyCfg = URGENCY_CONFIG[s.urgency]
+          return (
+            <div
+              key={s.id}
+              className={`rounded-xl border p-4 ${
+                s.urgency === 'urgent'
+                  ? 'border-rose-200 bg-rose-50/40'
+                  : s.urgency === 'recommended'
+                  ? 'border-amber-200 bg-amber-50/30'
+                  : 'border-slate-200 bg-slate-50/50'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <span className="text-xl flex-shrink-0 mt-0.5">{s.icon}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <p className="text-sm font-semibold text-slate-800">{s.title}</p>
+                      <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${urgencyCfg.className}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${urgencyCfg.dotColor}`} />
+                        {urgencyCfg.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mb-2 leading-relaxed">{s.why} — {s.detail}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs font-semibold text-slate-700">{s.patients.toLocaleString()} patients</span>
+                      <span className="text-xs text-slate-300">·</span>
+                      <span className="text-xs font-bold text-emerald-700">{s.estimatedRevenue} available</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onSetupCampaign(s.campaignType)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
+                    s.urgency === 'urgent'
+                      ? 'bg-rose-600 text-white hover:bg-rose-700'
+                      : s.urgency === 'recommended'
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Set up <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Year calendar toggle */}
+        <button
+          onClick={() => setShowCalendar(v => !v)}
+          className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+        >
+          <span className="flex items-center gap-1.5">
+            <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+            View full-year campaign calendar
+          </span>
+          {showCalendar ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        </button>
+
+        {showCalendar && (
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+              {/* Q1 */}
+              <div className="p-4">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Snowflake className="h-3.5 w-3.5 text-blue-400" />
+                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Q1 — Winter</p>
+                </div>
+                {[1,2,3].map(m => (
+                  <div key={m} className={`mb-3 rounded-lg p-2.5 ${m === currentMonth ? 'bg-violet-50 border border-violet-200' : 'border border-transparent'}`}>
+                    <p className="text-xs font-semibold text-slate-600 mb-1.5">{MONTH_NAMES[m-1]}{m === currentMonth ? ' · Now' : ''}</p>
+                    {MONTHLY_PLAN[m].suggestions.slice(0,2).map(s => (
+                      <div key={s.id} className="flex items-center gap-1.5 mb-1">
+                        <span className="text-xs">{s.icon}</span>
+                        <span className="text-xs text-slate-500 leading-tight">{s.title}</span>
+                        {s.urgency === 'urgent' && <span className="h-1.5 w-1.5 rounded-full bg-rose-400 flex-shrink-0" />}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              {/* Q2 */}
+              <div className="p-4 border-t sm:border-t-0">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Flower2 className="h-3.5 w-3.5 text-pink-400" />
+                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Q2 — Spring</p>
+                </div>
+                {[4,5,6].map(m => (
+                  <div key={m} className={`mb-3 rounded-lg p-2.5 ${m === currentMonth ? 'bg-violet-50 border border-violet-200' : 'border border-transparent'}`}>
+                    <p className="text-xs font-semibold text-slate-600 mb-1.5">{MONTH_NAMES[m-1]}{m === currentMonth ? ' · Now' : ''}</p>
+                    {MONTHLY_PLAN[m].suggestions.slice(0,2).map(s => (
+                      <div key={s.id} className="flex items-center gap-1.5 mb-1">
+                        <span className="text-xs">{s.icon}</span>
+                        <span className="text-xs text-slate-500 leading-tight">{s.title}</span>
+                        {s.urgency === 'urgent' && <span className="h-1.5 w-1.5 rounded-full bg-rose-400 flex-shrink-0" />}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              {/* Q3 + Q4 */}
+              <div className="p-4 border-t lg:border-t-0">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Sun className="h-3.5 w-3.5 text-amber-400" />
+                  <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Q3 + Q4</p>
+                </div>
+                {[7,8,9,10,11,12].map(m => (
+                  <div key={m} className={`mb-2 rounded-lg px-2.5 py-2 ${m === currentMonth ? 'bg-violet-50 border border-violet-200' : 'border border-transparent'}`}>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-slate-600">{MONTH_NAMES[m-1]}{m === currentMonth ? ' · Now' : ''}</p>
+                      {m >= 9 && <span className="rounded-full bg-rose-50 border border-rose-200 px-1.5 text-xs font-semibold text-rose-600">Q4 Peak</span>}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">{MONTHLY_PLAN[m].suggestions[0].title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t border-slate-100 bg-slate-50 px-4 py-2.5">
+              <p className="text-xs text-slate-400">
+                <span className="inline-flex items-center gap-1 mr-3"><span className="h-1.5 w-1.5 rounded-full bg-rose-400" /> Send now</span>
+                <span className="inline-flex items-center gap-1 mr-3"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Recommended</span>
+                Suggestions update automatically each month based on your patient data and insurance calendar.
+              </p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
@@ -318,6 +645,11 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Campaign Suggestions Engine */}
+      <CampaignSuggestionsEngine
+        onSetupCampaign={(type) => navigate('/app/campaigns', { state: { openModal: true, campaignType: type } })}
+      />
 
       {/* Urgent alert */}
       <Card className="border-rose-200 bg-rose-50/60 shadow-sm">
