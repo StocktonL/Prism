@@ -275,10 +275,16 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/app/dashboard')}
+              onClick={() => navigate('/login')}
               className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
             >
               Sign In
+            </button>
+            <button
+              onClick={() => navigate('/signup')}
+              className="rounded-lg border border-teal-500/50 px-4 py-2 text-sm font-semibold text-teal-400 hover:bg-teal-500/10 transition-colors"
+            >
+              Sign Up
             </button>
             <button
               onClick={openDemo}
