@@ -131,7 +131,8 @@ as $$
   select practice_id from users where id = auth.uid()
 $$;
 
--- practices: users can only see their own practice row
+-- practices: users can only see/edit their own practice row
+-- INSERT is allowed for any authenticated user (creating their practice at signup)
 create policy "users see own practice"
   on practices for select
   using (id = current_practice_id());
@@ -140,10 +141,19 @@ create policy "users update own practice"
   on practices for update
   using (id = current_practice_id());
 
+create policy "authenticated users can create a practice"
+  on practices for insert
+  with check (auth.uid() is not null);
+
 -- users: users can see other users in the same practice
+-- INSERT allowed only for own row (wiring auth user → practice at signup)
 create policy "users see own practice users"
   on users for select
   using (practice_id = current_practice_id());
+
+create policy "users can insert own row"
+  on users for insert
+  with check (id = auth.uid());
 
 -- patients: full access scoped to practice
 create policy "practice sees own patients"
