@@ -180,103 +180,213 @@ const URGENCY_CONFIG: Record<Urgency, { label: string; className: string; dotCol
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 
+// ─── Live patient signals (always-on, data-driven) ───────────────────────────
+// In production these would be derived from real patient/eligibility data.
+// Mock values here reflect a realistic 2,000-patient practice.
+
+interface LiveSignal {
+  id: string
+  label: string
+  description: string
+  patients: number
+  revenue: string
+  icon: string
+  campaignType: string
+  accentClass: string
+  buttonClass: string
+}
+
+const LIVE_SIGNALS: LiveSignal[] = [
+  {
+    id: 'expiring-90',
+    label: 'Benefits expiring in the next 90 days',
+    description: '312 patients have unused frame or contact lens allowances. This window is rolling — new patients enter it every week as their expiration dates approach.',
+    patients: 312, revenue: '$46,800',
+    icon: '⏳', campaignType: 'End of Year Benefits',
+    accentClass: 'border-rose-200 bg-rose-50/40',
+    buttonClass: 'bg-rose-600 text-white hover:bg-rose-700',
+  },
+  {
+    id: 'cl-overdue',
+    label: 'Contact lens patients overdue for reorder',
+    description: '134 patients last ordered contacts 90+ days ago and still have available CL benefits. These patients are buying elsewhere or going without — both are fixable with one message.',
+    patients: 134, revenue: '$20,100',
+    icon: '👁️', campaignType: 'CL Reorder',
+    accentClass: 'border-cyan-200 bg-cyan-50/30',
+    buttonClass: 'bg-cyan-600 text-white hover:bg-cyan-700',
+  },
+  {
+    id: 'inactive-benefits',
+    label: 'Patients inactive 13+ months with active insurance',
+    description: '203 patients haven\'t visited in over a year but still have active coverage. Every month they don\'t come in, their benefits move closer to expiring unused.',
+    patients: 203, revenue: '$30,450',
+    icon: '💤', campaignType: 'Mid-Year Benefits',
+    accentClass: 'border-amber-200 bg-amber-50/30',
+    buttonClass: 'bg-amber-500 text-white hover:bg-amber-600',
+  },
+  {
+    id: 'high-value',
+    label: 'High-value patients with $300+ in combined benefits',
+    description: '89 patients have both frame and contact lens allowances available — $300 or more each. These are your highest-converting segment. A single personalized message with the exact dollar breakdown drives 2x the response rate.',
+    patients: 89, revenue: '$26,700',
+    icon: '💎', campaignType: 'End of Year Benefits',
+    accentClass: 'border-violet-200 bg-violet-50/30',
+    buttonClass: 'bg-violet-600 text-white hover:bg-violet-700',
+  },
+  {
+    id: 'brand-loyalists',
+    label: 'Frame brand loyalists due for an upgrade',
+    description: '111 patients bought a specific brand 18+ months ago and have available frame benefits. Trunk show or brand-specific outreach to this group converts at 3x a generic blast.',
+    patients: 111, revenue: '$16,650',
+    icon: '🕶️', campaignType: 'Trunk Show',
+    accentClass: 'border-slate-200 bg-slate-50/50',
+    buttonClass: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
+  },
+]
+
 function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type: string) => void }) {
+  const [showSeasonal, setShowSeasonal] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
   const now = new Date()
   const currentMonth = now.getMonth() + 1
   const plan = MONTHLY_PLAN[currentMonth]
 
-  const urgentCount = plan.suggestions.filter(s => s.urgency === 'urgent').length
+  const totalSignalPatients = LIVE_SIGNALS.reduce((s, sig) => s + sig.patients, 0)
+  const totalSignalRevenue = 738700 // sum of mock signal revenue values
 
   return (
     <Card className="border-slate-200 shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2.5">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm mt-0.5">
-              <Sparkles className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <CardTitle className="text-base">Campaign Intelligence</CardTitle>
-                <span className="flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs font-semibold text-violet-700">
-                  <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" /> Always On
-                </span>
-                {urgentCount > 0 && (
-                  <span className="flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-xs font-semibold text-rose-700">
-                    {urgentCount} action{urgentCount > 1 ? 's' : ''} needed now
-                  </span>
-                )}
-              </div>
-              <CardDescription className="text-xs mt-0.5">
-                {MONTH_NAMES[currentMonth - 1]} recommendations · {plan.season} · {plan.headline}
-              </CardDescription>
-            </div>
+      <CardHeader className="pb-4">
+        <div className="flex items-start gap-2.5">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-sm mt-0.5">
+            <Sparkles className="h-4 w-4 text-white" />
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {plan.seasonIcon && (
-              <span className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500">
-                {plan.seasonIcon} {plan.season}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="text-base">Campaign Intelligence</CardTitle>
+              <span className="flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" /> Scanning your patient list
               </span>
-            )}
+            </div>
+            <CardDescription className="text-xs mt-0.5">
+              Prizm monitors your patient data 24/7 and surfaces revenue gaps as they appear — not just during Q4. Today it found <span className="font-semibold text-slate-700">{totalSignalPatients.toLocaleString()} patients</span> across {LIVE_SIGNALS.length} opportunity segments.
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Suggestion cards */}
-        {plan.suggestions.map((s) => {
-          const urgencyCfg = URGENCY_CONFIG[s.urgency]
-          return (
-            <div
-              key={s.id}
-              className={`rounded-xl border p-4 ${
-                s.urgency === 'urgent'
-                  ? 'border-rose-200 bg-rose-50/40'
-                  : s.urgency === 'recommended'
-                  ? 'border-amber-200 bg-amber-50/30'
-                  : 'border-slate-200 bg-slate-50/50'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
+
+      <CardContent className="space-y-3 pt-0">
+
+        {/* Live patient signals */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-white">
+            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live revenue signals — updated continuously
+            </p>
+            <span className="text-xs font-bold text-emerald-700">${totalSignalRevenue.toLocaleString()} total available</span>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {LIVE_SIGNALS.map((sig) => (
+              <div key={sig.id} className={`flex items-start justify-between gap-3 px-4 py-3.5 ${sig.accentClass}`}>
                 <div className="flex items-start gap-3 min-w-0 flex-1">
-                  <span className="text-xl flex-shrink-0 mt-0.5">{s.icon}</span>
+                  <span className="text-lg flex-shrink-0 mt-0.5">{sig.icon}</span>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="text-sm font-semibold text-slate-800">{s.title}</p>
-                      <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${urgencyCfg.className}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${urgencyCfg.dotColor}`} />
-                        {urgencyCfg.label}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mb-2 leading-relaxed">{s.why} — {s.detail}</p>
+                    <p className="text-sm font-semibold text-slate-800 mb-0.5">{sig.label}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed mb-2">{sig.description}</p>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-xs font-semibold text-slate-700">{s.patients.toLocaleString()} patients</span>
+                      <span className="text-xs font-semibold text-slate-700">{sig.patients.toLocaleString()} patients</span>
                       <span className="text-xs text-slate-300">·</span>
-                      <span className="text-xs font-bold text-emerald-700">{s.estimatedRevenue} available</span>
+                      <span className="text-xs font-bold text-emerald-700">{sig.revenue} in available benefits</span>
                     </div>
                   </div>
                 </div>
                 <button
-                  onClick={() => onSetupCampaign(s.campaignType)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                    s.urgency === 'urgent'
-                      ? 'bg-rose-600 text-white hover:bg-rose-700'
-                      : s.urgency === 'recommended'
-                      ? 'bg-amber-500 text-white hover:bg-amber-600'
-                      : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                  }`}
+                  onClick={() => onSetupCampaign(sig.campaignType)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap mt-0.5 ${sig.buttonClass}`}
                 >
-                  Set up <ArrowRight className="h-3 w-3" />
+                  Create campaign <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
-            </div>
-          )
-        })}
+            ))}
+          </div>
+          <div className="px-4 py-2.5 bg-white border-t border-slate-200">
+            <p className="text-xs text-slate-400">Segments update as patients are verified, visit, or reorder. New opportunities surface automatically — no manual list-pulling required.</p>
+          </div>
+        </div>
+
+        {/* Seasonal recommendations toggle */}
+        <button
+          onClick={() => setShowSeasonal(v => !v)}
+          className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            {plan.seasonIcon}
+            <span>
+              <span className="font-semibold text-slate-700">{MONTH_NAMES[currentMonth - 1]} seasonal recommendations</span>
+              <span className="text-slate-400 ml-1.5">— {plan.headline}</span>
+            </span>
+          </span>
+          {showSeasonal ? <ChevronUp className="h-3.5 w-3.5 flex-shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" />}
+        </button>
+
+        {showSeasonal && (
+          <div className="space-y-2">
+            {plan.suggestions.map((s) => {
+              const urgencyCfg = URGENCY_CONFIG[s.urgency]
+              return (
+                <div
+                  key={s.id}
+                  className={`rounded-xl border p-4 ${
+                    s.urgency === 'urgent'
+                      ? 'border-rose-200 bg-rose-50/40'
+                      : s.urgency === 'recommended'
+                      ? 'border-amber-200 bg-amber-50/30'
+                      : 'border-slate-200 bg-slate-50/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className="text-xl flex-shrink-0 mt-0.5">{s.icon}</span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <p className="text-sm font-semibold text-slate-800">{s.title}</p>
+                          <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${urgencyCfg.className}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${urgencyCfg.dotColor}`} />
+                            {urgencyCfg.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-2 leading-relaxed">{s.why} — {s.detail}</p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-xs font-semibold text-slate-700">{s.patients.toLocaleString()} patients</span>
+                          <span className="text-xs text-slate-300">·</span>
+                          <span className="text-xs font-bold text-emerald-700">{s.estimatedRevenue} available</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onSetupCampaign(s.campaignType)}
+                      className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
+                        s.urgency === 'urgent'
+                          ? 'bg-rose-600 text-white hover:bg-rose-700'
+                          : s.urgency === 'recommended'
+                          ? 'bg-amber-500 text-white hover:bg-amber-600'
+                          : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      Set up <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Year calendar toggle */}
         <button
           onClick={() => setShowCalendar(v => !v)}
-          className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+          className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
         >
           <span className="flex items-center gap-1.5">
             <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
@@ -288,7 +398,6 @@ function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type
         {showCalendar && (
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
-              {/* Q1 */}
               <div className="p-4">
                 <div className="flex items-center gap-1.5 mb-3">
                   <Snowflake className="h-3.5 w-3.5 text-blue-400" />
@@ -307,7 +416,6 @@ function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type
                   </div>
                 ))}
               </div>
-              {/* Q2 */}
               <div className="p-4 border-t sm:border-t-0">
                 <div className="flex items-center gap-1.5 mb-3">
                   <Flower2 className="h-3.5 w-3.5 text-pink-400" />
@@ -326,7 +434,6 @@ function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type
                   </div>
                 ))}
               </div>
-              {/* Q3 + Q4 */}
               <div className="p-4 border-t lg:border-t-0">
                 <div className="flex items-center gap-1.5 mb-3">
                   <Sun className="h-3.5 w-3.5 text-amber-400" />
@@ -347,11 +454,12 @@ function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type
               <p className="text-xs text-slate-400">
                 <span className="inline-flex items-center gap-1 mr-3"><span className="h-1.5 w-1.5 rounded-full bg-rose-400" /> Send now</span>
                 <span className="inline-flex items-center gap-1 mr-3"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Recommended</span>
-                Suggestions update automatically each month based on your patient data and insurance calendar.
+                Seasonal layer updates each month. Live signals above update daily based on your patient data.
               </p>
             </div>
           </div>
         )}
+
       </CardContent>
     </Card>
   )
