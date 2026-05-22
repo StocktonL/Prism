@@ -54,7 +54,7 @@ export default function Signup() {
         if (!authData.user) throw new Error('No user returned from signup.')
 
         // 2. Create the practice row
-        const { data: practice, error: practiceError } = await supabase
+        const { data: practiceData, error: practiceError } = await supabase
           .from('practices')
           .insert({
             name: form.practiceName,
@@ -62,16 +62,17 @@ export default function Signup() {
             phone: form.phone || null,
             subscription_status: 'trial',
           })
-          .select()
+          .select('id')
           .single()
         if (practiceError) throw practiceError
+        if (!practiceData) throw new Error('Failed to create practice.')
 
         // 3. Create the user row linking auth user → practice
         const { error: userError } = await supabase
           .from('users')
           .insert({
             id: authData.user.id,
-            practice_id: practice.id,
+            practice_id: practiceData.id as string,
             email: form.email,
             role: 'owner',
           })
