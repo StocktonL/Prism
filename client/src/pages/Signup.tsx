@@ -45,38 +45,20 @@ export default function Signup() {
       setLoading(true)
 
       try {
-        // 1. Create the auth user in Supabase
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        // signUp passes practice info as metadata — a database trigger
+        // (handle_new_user) automatically creates the practice and user
+        // rows server-side, so this works even with email confirmation on.
+        const { error: authError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
+          options: {
+            data: {
+              practice_name: form.practiceName,
+              practice_phone: form.phone || null,
+            },
+          },
         })
         if (authError) throw authError
-        if (!authData.user) throw new Error('No user returned from signup.')
-
-        // 2. Create the practice row
-        const { data: practiceData, error: practiceError } = await supabase
-          .from('practices')
-          .insert({
-            name: form.practiceName,
-            email: form.email,
-            phone: form.phone || null,
-            subscription_status: 'trial',
-          })
-          .select('id')
-          .single()
-        if (practiceError) throw practiceError
-        if (!practiceData) throw new Error('Failed to create practice.')
-
-        // 3. Create the user row linking auth user → practice
-        const { error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            practice_id: practiceData.id as string,
-            email: form.email,
-            role: 'owner',
-          })
-        if (userError) throw userError
 
         setStep(2)
       } catch (err: unknown) {

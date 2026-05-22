@@ -180,6 +180,41 @@ create policy "practice sees own audit logs"
   on audit_logs for select
   using (practice_id = current_practice_id());
 
+-- ─── Auto-provision practice + user on signup ────────────────────────────────
+-- When Supabase creates a new auth user, this trigger fires automatically
+-- and creates the matching practice and user rows. It runs with security
+-- definer (elevated privileges) so it bypasses RLS — no session needed.
+-- Practice name and phone are passed as metadata from the signup form.
+
+create or replace function handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_practice_id uuid;
+begin
+  insert into practices (name, email, phone, subscription_status)
+  values (
+    coalesce(new.raw_user_meta_data->>'practice_name', 'My Practice'),
+    new.email,
+    nullif(new.raw_user_meta_data->>'practice_phone', ''),
+    'trial'
+  )
+  returning id into new_practice_id;
+
+  insert into users (id, practice_id, email, role)
+  values (new.id, new_practice_id, new.email, 'owner');
+
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_user();
+
 -- ─── Auto-update updated_at on patients ──────────────────────────────────────
 
 create or replace function update_updated_at()
