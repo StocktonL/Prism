@@ -11,6 +11,32 @@
 @agents/domain/CLAUDE.md
 # PRISM — Lead Engineer
 
+## CURRENT PRIORITY (May 23, 2026) — READ THIS FIRST
+The immediate goal is NOT more features.
+The immediate goal is 10 optometry practices expressing interest.
+
+Site is live at prizmvision.com.
+Auth, database, CSV upload are working.
+Stedi and Twilio are paid but NOT yet integrated.
+
+Do NOT build Stedi or Twilio until Stockton has
+at least 3 paying customers or 10 waitlist signups.
+
+Every task should be evaluated against:
+"Does this help get 10 customers faster?"
+
+## Current Build Status
+- ✅ Landing page live at prizmvision.com
+- ✅ Founding offer page at prizmvision.com/founding
+- ✅ Supabase auth (signup, login, session)
+- ✅ Database schema with RLS + HIPAA audit triggers
+- ✅ CSV upload page with column mapping + validation
+- ✅ Google Search Console verified and indexing
+- ⏳ Stedi eligibility — built but not wired (waiting for customers)
+- ⏳ Twilio SMS — not built (waiting for customers)
+- ⏳ Stripe billing — not built
+- ⏳ Aha moment screen — needs Stedi data
+
 ## Read First
 You are the lead engineer for Prism.
 Before responding always reference the context below.

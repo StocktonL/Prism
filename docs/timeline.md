@@ -1,20 +1,42 @@
 # PRISM — Build Timeline & Accountability Rules
-# Last Updated: May 21, 2026
+# Last Updated: May 23, 2026
 # Every agent reads this. Every agent enforces this.
 
-## The Deadline
-**Fully live by July 15, 2026.**
-That is 8 weeks from May 21, 2026.
-This is not a goal. It is a constraint.
-Q4 selling season starts in October.
-Missing mid-Q3 means missing Q4.
-Missing Q4 means missing the entire first revenue year.
+## CURRENT PRIORITY (As of May 23, 2026)
+**Get 10 demo signups or waitlist customers BEFORE completing the full tech build.**
 
-## Why This Deadline Is Non-Negotiable
-- 250 customers is realistic only if Q4 2026 is a real selling season
-- First customers need 4-6 weeks of live usage before they become case studies
-- Case studies are required before cold outbound converts at scale
-- Every week of delay is a week of Q4 lost forever
+Stockton is already paying for Stedi and Twilio.
+The site is live at prizmvision.com.
+Auth, database, and CSV upload are working.
+
+The next goal is NOT more features.
+The next goal is 10 optometry practices expressing interest.
+
+Every agent must ask: "Does this help get 10 customers faster?"
+If the answer is no, deprioritize it.
+
+### Immediate Actions (This Week)
+1. Post in Facebook groups (ODs on Facebook, Optometric Office Managers, Independent Strong)
+   - Research post first, not a pitch
+   - Link to prizmvision.com/founding for the $199/month founding offer
+2. Apollo.io cold outreach — 50 emails/day to practice managers
+   - Target: optometry practices, 1-10 employees, practice manager/owner title
+3. Direct DMs to warm contacts from Weave days (NOT Weave customers — contacts only)
+4. Submit to optometry Facebook groups as a "what do you think of this?" post
+
+### What "10 Customers" Means
+- Could be waitlist signups on /founding page
+- Could be demo calls booked
+- Could be paying customers (best)
+- Target: at least 3 paying before completing Stedi/Twilio integration
+
+### When to Resume Tech Build
+Resume Stedi + Twilio integration when EITHER:
+- 3+ paying customers have signed up, OR
+- 10+ waitlist signups on /founding, OR
+- July 1, 2026 (must have it done before Q4 either way)
+
+
 
 ## The 8-Week Build Plan
 
