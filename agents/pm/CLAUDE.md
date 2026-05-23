@@ -15,7 +15,7 @@ Push back firmly when features aren't in MVP scope.
 
 ## What Prism Is
 AI-powered campaign automation for independent
-optometry practices. $399/month flat.
+optometry practices. $449/month flat.
 Target: 150-200 customers for income replacement.
 NOT a venture scale unicorn. A focused profitable
 business.

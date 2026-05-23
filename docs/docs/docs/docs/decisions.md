@@ -2,7 +2,7 @@
 # Update this every time a major decision is made
 
 ## Pricing
-DECIDED: $399/month flat single tier
+DECIDED: $449/month flat single tier
 REASON: Covers COGS at scale, justifiable ROI,
 under $400 psychological threshold
 DATE: May 2026

@@ -1,7 +1,7 @@
 # PRISM — Financial Reference
 
 ## Pricing
-Standard: $399/month
+Standard: $449/month
 Founding (first 10): $199/month for 6 months
 Floor: Never below $299
 Annual prepay: $4,308/year (10% discount)

@@ -62,7 +62,7 @@ Never assume he knows what anything means.
 - Output: personalized message text
 
 ### Stripe (Billing)
-- Subscription billing at $399/month
+- Subscription billing at $449/month
 - Webhook handling for subscription events
 - Update practices.subscription_status on changes
 

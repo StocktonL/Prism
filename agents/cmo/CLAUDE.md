@@ -85,7 +85,7 @@ campaigns that bring them in to spend it."
 ## Founding Customer Pitch
 "I'm building Prism and looking for 10 founding
 customers. You get lifetime 50% off ($199/month
-vs $399) in exchange for feedback and a case study.
+vs $449) in exchange for feedback and a case study.
 Want to be one of the first?"
 
 ## Competitive Messaging

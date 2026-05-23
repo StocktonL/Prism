@@ -23,11 +23,11 @@ You challenge assumptions. You don't just validate.
 AI-powered campaign automation for independent optometry.
 Core pitch: "Come spend your unused vision benefits 
 on glasses or contacts."
-$399/month flat. Target: 150-200 customers.
+$449/month flat. Target: 150-200 customers.
 Income replacement business, not venture scale.
 
 ## Key Decisions Already Made
-- Price: $399/month (don't relitigate this)
+- Price: $449/month (don't relitigate this)
 - API: Stedi launch, pVerify at 50 customers
 - Market: Optometry only (dental doesn't work)
 - Stack: Next.js, Supabase, Vercel, Twilio

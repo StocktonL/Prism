@@ -39,7 +39,7 @@ NOT front desk staff
 The person who looks at monthly revenue reports
 
 ## Pricing
-$399/month flat. Single tier. Everything included.
+$449/month flat. Single tier. Everything included.
 Founding customers: $199/month for 6 months
 (first 10 customers, annual commit required)
 Price floor: never go below $299
@@ -271,7 +271,7 @@ Bootstrap first
 No investors yet
 
 ## Key Decisions Made
-Price: $399/month (never go below $299)
+Price: $449/month (never go below $299)
 API: Stedi launch, pVerify at 50 customers
 EHR: CSV first, RevolutionEHR API Phase 2
 Scope: Campaign automation + verification

@@ -128,12 +128,12 @@ If you have screen share, walk through in this order:
 
 They will ask: "What does it cost?"
 
-> "$399 a month. Flat. Everything included — verifications,
+> "$449 a month. Flat. Everything included — verifications,
 > campaigns, SMS, email, all of it. No per-patient fees,
 > no per-campaign fees."
 
 If they pause or wince:
-> "At $399 a month, you need one additional optical
+> "At $449 a month, you need one additional optical
 > sale per month to break even. One patient who comes
 > in because of a campaign and buys a $350 pair of glasses.
 > Most practices see 10 to 20 of those per campaign.
@@ -142,7 +142,7 @@ If they pause or wince:
 **If they ask about the founding rate:**
 > "We have a founding customer program right now —
 > first 10 practices lock in $199 a month for life
-> instead of $399. We have [X] spots left. It requires
+> instead of $449. We have [X] spots left. It requires
 > an annual commitment and I'll ask you for feedback
 > and a case study if the results are strong.
 > Want me to send you that page?"
@@ -239,7 +239,7 @@ If they ask you to prove it works, use these:
 - Benefit reminder open rate: 35–45% (vs 15% for generic email)
 - Appointment booking rate from campaigns: 10–20%
 - Annual recoverable revenue per practice: $15,000–50,000
-- Break-even on $399/month: 1 additional optical sale
+- Break-even on $449/month: 1 additional optical sale
 
 **Example math to walk through live:**
 > "Say you have 2,000 patients. About 800 of them
@@ -248,7 +248,7 @@ If they ask you to prove it works, use these:
 > If we convert 15% of those patients — that's 120
 > patients coming in. At $350 average optical sale,
 > that's $42,000 in revenue from one campaign.
-> Minus our $399 for the month."
+> Minus our $449 for the month."
 
 ---
 
@@ -279,6 +279,6 @@ If they ask you to prove it works, use these:
 **Open:** "How do you handle benefit recovery today?"
 **Hook:** One additional optical sale = break even
 **Demo order:** Patient list → total number → campaign → message preview
-**Price:** $399/mo flat. Founding: $199/mo locked for life.
+**Price:** $449/mo flat. Founding: $199/mo locked for life.
 **Close:** Book onboarding call this week. Q4 urgency.
 **Send:** prizmvision.com/founding after every call

@@ -91,7 +91,7 @@ Listen for:
 
 Always answer: "What's the ROI?"
 Use this: "Average practice recovers $15-50K
-in annual optical revenue. At $399/month
+in annual optical revenue. At $449/month
 ($4,788/year), you need to recover one additional
 sale per month to break even. Most see 10-20x ROI."
 

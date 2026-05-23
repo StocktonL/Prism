@@ -17,7 +17,7 @@ Has $20-35K to fund initial build.
 Bootstrap strategy — no investors yet.
 
 ## Pricing
-$399/month standard
+$449/month standard
 $199/month founding customers 
 (first 10 only, 6 months, annual commit)
 Floor price: never go below $299
@@ -95,8 +95,8 @@ Start pVerify negotiation at 40 customers.
 ## Margin Improvement Levers
 
 ### Lever 1: Raise Price (Biggest Impact)
-$399 → $449 at 150 customers = +$7,500 MRR
-$399 → $499 at 150 customers = +$15,000 MRR
+$449 → $499 at 25 customers = +$7,500 MRR
+$449 → $549 at 50 customers = +$15,000 MRR
 Zero additional cost. Pure profit.
 Test $449 after first 10 customers.
 Move to $499 after 25 customers with case studies.
@@ -116,7 +116,7 @@ at 150 customers
 
 ### Lever 4: Annual Prepay
 10% discount for annual payment
-Monthly: $399 × 12 = $4,788
+Monthly: $449 × 12 = $5,388
 Annual: $4,308 upfront
 Benefit: cash flow + lower churn (5% vs 15%)
 Target: 40% of customers on annual
