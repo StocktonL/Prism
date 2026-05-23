@@ -1,0 +1,21 @@
+first_name,last_name,date_of_birth,phone,email,insurance_carrier,member_id,group_number,last_visit_date,contact_lens_wearer
+Sarah,Mitchell,1985-03-12,8015550101,sarah.mitchell@email.com,VSP,VSP123456789,GRP001,2023-11-15,false
+James,Thornton,1972-07-28,8015550102,james.thornton@email.com,EyeMed,EYE987654321,GRP002,2023-08-20,true
+Maria,Gonzalez,1990-01-05,8015550103,maria.gonzalez@email.com,VSP,VSP234567890,GRP001,2024-01-10,false
+David,Park,1968-11-19,8015550104,david.park@email.com,EyeMed,EYE876543210,GRP003,2023-06-30,false
+Jennifer,Walsh,1995-04-22,8015550105,jennifer.walsh@email.com,VSP,VSP345678901,GRP001,2023-12-05,true
+Robert,Kimura,1980-09-14,8015550106,,Davis Vision,DAV111222333,GRP004,2023-09-18,false
+Ashley,Thompson,1988-06-03,8015550107,ashley.thompson@email.com,VSP,VSP456789012,GRP001,2024-02-14,true
+Michael,Okonkwo,1975-12-30,8015550108,michael.okonkwo@email.com,EyeMed,EYE765432109,GRP002,2023-07-22,false
+Lauren,Patel,1992-02-17,8015550109,lauren.patel@email.com,VSP,VSP567890123,GRP001,2023-10-08,false
+Christopher,Rivera,1983-08-09,8015550110,chris.rivera@email.com,EyeMed,EYE654321098,GRP003,2024-01-28,true
+Amanda,Foster,1970-05-25,8015550111,amanda.foster@email.com,VSP,VSP678901234,GRP001,2023-05-12,false
+Kevin,Nguyen,1998-10-11,8015550112,kevin.nguyen@email.com,EyeMed,EYE543210987,GRP002,2023-11-30,true
+Stephanie,Brooks,1986-03-07,8015550113,stephanie.brooks@email.com,Davis Vision,DAV222333444,GRP004,2024-03-01,false
+Daniel,Martinez,1977-01-23,8015550114,,VSP,VSP789012345,GRP001,2023-04-15,false
+Rachel,Coleman,1993-07-16,8015550115,rachel.coleman@email.com,EyeMed,EYE432109876,GRP003,2023-12-20,true
+Thomas,Jensen,1965-11-04,8015550116,thomas.jensen@email.com,VSP,VSP890123456,GRP001,2022-08-10,false
+Nicole,Washington,1991-04-29,8015550117,nicole.washington@email.com,EyeMed,EYE321098765,GRP002,2023-09-05,false
+Brandon,Lee,1984-09-18,8015550118,brandon.lee@email.com,VSP,VSP901234567,GRP001,2023-10-25,true
+Megan,Scott,1979-06-12,8015550119,megan.scott@email.com,Davis Vision,DAV333444555,GRP004,2024-01-05,false
+Tyler,Harris,1996-02-28,8015550120,tyler.harris@email.com,EyeMed,EYE210987654,GRP003,2023-08-14,false

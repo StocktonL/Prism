@@ -10,6 +10,7 @@ import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
 import Claims from './pages/Claims'
+import Upload from './pages/Upload'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -49,6 +50,7 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="eligibility" element={<Eligibility />} />
         <Route path="patients" element={<Patients />} />
+        <Route path="patients/upload" element={<Upload />} />
         <Route path="campaigns" element={<Campaigns />} />
         <Route path="claims" element={<Claims />} />
       </Route>
