@@ -11,6 +11,8 @@ import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
 import Claims from './pages/Claims'
 import Upload from './pages/Upload'
+import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -36,6 +38,8 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/founding" element={<Founding />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
 
       {/* Protected app */}
       <Route

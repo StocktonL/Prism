@@ -266,6 +266,7 @@ export default function Landing() {
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
             <a href="#verification" className="hover:text-white transition-colors">Eligibility</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
             <a
               href="/founding"
               className="font-semibold text-amber-400 hover:text-amber-300 transition-colors"
