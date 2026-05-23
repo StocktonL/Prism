@@ -22,6 +22,15 @@ Stedi and Twilio are paid but NOT yet integrated.
 Do NOT build Stedi or Twilio until Stockton has
 at least 3 paying customers or 10 waitlist signups.
 
+## Critical Constraints — Read Before Any Sales Advice
+- Stockton is STILL EMPLOYED at Weave (M-W in office)
+- His entire optometry network = Weave customers
+- He CANNOT solicit any of them (non-solicitation clause)
+- He has NO warm optometry contacts outside of Weave
+- Cold outreach (Apollo) and Facebook groups are his ONLY channels
+- No cold calling during work hours
+- All outreach must use stockton@prizmvision.com only
+
 Every task should be evaluated against:
 "Does this help get 10 customers faster?"
 
