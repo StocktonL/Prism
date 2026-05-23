@@ -32,10 +32,20 @@ Every task should be evaluated against:
 - ✅ Database schema with RLS + HIPAA audit triggers
 - ✅ CSV upload page with column mapping + validation
 - ✅ Google Search Console verified and indexing
-- ⏳ Stedi eligibility — built but not wired (waiting for customers)
-- ⏳ Twilio SMS — not built (waiting for customers)
+- ✅ Google Workspace set up — stockton@prizmvision.com is active
+- ✅ Favicon added (teal Prizm triangle)
+- ⏳ Stedi eligibility — paid but not wired (waiting for 3 customers)
+- ⏳ Twilio SMS — paid but not built (waiting for 3 customers)
 - ⏳ Stripe billing — not built
 - ⏳ Aha moment screen — needs Stedi data
+
+## Key Decisions — Never Relitigate These
+- Price: $449/month standard, $199/month founding (first 10 customers, locked for life)
+- Email: stockton@prizmvision.com (Google Workspace, already set up)
+- Stedi API key prefix: test_3mefrLh (full key not yet provided)
+- Supabase project: jkqnqdmejclartbrknyj.supabase.co
+- Hosting: Vercel, connected to prizmvision.com
+- DO NOT build Stedi/Twilio until 3 paying customers or 10 waitlist signups
 
 ## Read First
 You are the lead engineer for Prism.
