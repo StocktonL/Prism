@@ -21,11 +21,18 @@ export interface Patient {
   lastVerified: string
   status: 'active' | 'pending' | 'unverified'
   lastVisit: string
+  // Rx frame purchase
   lastFramePurchaseDate?: string
   lastFrameBrand?: string
   lastFrameModel?: string
+  // Sunglasses purchase (separate from Rx frames)
+  lastSunglassesPurchaseDate?: string
+  lastSunglassesBrand?: string
+  lastSunglassesModel?: string
+  // Contact lens history
   lastClOrderDate?: string
   lastClBrand?: string
+  clSupplyDays?: 30 | 60 | 90 | 365
   benefits: {
     exam: { covered: boolean; used: boolean; usedDate?: string }
     frames: { allowance: number; used: number }
@@ -43,7 +50,67 @@ export interface Patient {
   eligibilityHistory: Array<{ date: string; status: 'active' | 'inactive' | 'pending'; checkedBy: string }>
 }
 
+// ─── Segmentation helpers ─────────────────────────────────────────────────────
+
+export const LUXURY_BRANDS = [
+  'Maui Jim', 'Silhouette', 'Lindberg', 'Tom Ford', 'Oliver Peoples',
+  'Costa', 'Lafont', 'Mykita', 'Barton Perreira', 'Chanel', 'Dior',
+  'Gucci', 'Prada', 'ic! berlin',
+]
+
+export function isLuxuryBuyer(p: Patient): boolean {
+  return LUXURY_BRANDS.some(b =>
+    (p.lastFrameBrand ?? '').toLowerCase().includes(b.toLowerCase()) ||
+    (p.lastSunglassesBrand ?? '').toLowerCase().includes(b.toLowerCase())
+  )
+}
+
+export function isSunglassesBuyer(p: Patient): boolean {
+  return !!p.lastSunglassesBrand
+}
+
+const TODAY = new Date('2026-05-24')
+
+export function clNextReorderDate(p: Patient): Date | null {
+  if (!p.lastClOrderDate || !p.clSupplyDays) return null
+  const d = new Date(p.lastClOrderDate)
+  d.setDate(d.getDate() + p.clSupplyDays)
+  return d
+}
+
+export function isCLReorderDue(p: Patient, withinDays = 60): boolean {
+  const next = clNextReorderDate(p)
+  if (!next) return false
+  const diff = (next.getTime() - TODAY.getTime()) / (1000 * 60 * 60 * 24)
+  return diff <= withinDays
+}
+
+// Patient has >$75 in remaining frame allowance before benefit expiry
+export function isSecondPairCandidate(p: Patient): boolean {
+  const remaining = p.benefits.frames.allowance - p.benefits.frames.used
+  const end = new Date(p.benefits.benefitPeriodEnd)
+  return remaining > 75 && end > TODAY
+}
+
+// Spouse or child on someone else's policy
+export function isFamilyDependent(p: Patient): boolean {
+  return p.primaryInsurance.relationship !== 'Self'
+}
+
+// Self subscriber who has dependents in the patient list
+export function hasFamilyDependents(p: Patient, all: Patient[]): boolean {
+  if (p.primaryInsurance.relationship !== 'Self') return false
+  const myName = getPatientFullName(p)
+  return all.some(
+    o =>
+      o.id !== p.id &&
+      o.primaryInsurance.subscriberName === myName &&
+      o.primaryInsurance.carrier === p.primaryInsurance.carrier,
+  )
+}
+
 export const PATIENTS: Patient[] = [
+  // ─── 1 · Sarah Mitchell — VSP Self ───────────────────────────────────────
   {
     id: 1,
     firstName: 'Sarah',
@@ -67,8 +134,12 @@ export const PATIENTS: Patient[] = [
     lastFramePurchaseDate: '2024-03-15',
     lastFrameBrand: 'Maui Jim',
     lastFrameModel: 'Peahi',
+    lastSunglassesBrand: 'Maui Jim',
+    lastSunglassesModel: 'Breakwall',
+    lastSunglassesPurchaseDate: '2023-06-15',
     lastClOrderDate: '2025-04-10',
     lastClBrand: 'Acuvue Oasys',
+    clSupplyDays: 90,
     benefits: {
       exam: { covered: true, used: false },
       frames: { allowance: 150, used: 0 },
@@ -89,6 +160,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-06-22', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 2 · James Thornton — EyeMed Self ────────────────────────────────────
   {
     id: 2,
     firstName: 'James',
@@ -132,6 +205,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-01-08', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 3 · Linda Kowalski — Davis Vision Self ───────────────────────────────
   {
     id: 3,
     firstName: 'Linda',
@@ -152,6 +227,9 @@ export const PATIENTS: Patient[] = [
     lastVerified: '2026-05-14',
     status: 'pending',
     lastVisit: '2026-02-14',
+    lastClOrderDate: '2026-04-14',
+    lastClBrand: 'Proclear 1 Day',
+    clSupplyDays: 30,
     benefits: {
       exam: { covered: true, used: false },
       frames: { allowance: 175, used: 0 },
@@ -172,6 +250,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-05-20', status: 'active', checkedBy: 'Dr. Reynolds' },
     ],
   },
+
+  // ─── 4 · Marcus Rivera — Spectera Self ───────────────────────────────────
   {
     id: 4,
     firstName: 'Marcus',
@@ -189,13 +269,15 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1968-05-30',
       relationship: 'Self',
     },
-    // stale — older than 30 days
     lastVerified: '2025-11-20',
     status: 'unverified',
     lastVisit: '2025-11-20',
     lastFramePurchaseDate: '2024-11-18',
     lastFrameBrand: 'Oakley',
     lastFrameModel: 'Holbrook',
+    lastSunglassesBrand: 'Oakley',
+    lastSunglassesModel: 'Radar EV',
+    lastSunglassesPurchaseDate: '2023-08-05',
     benefits: {
       exam: { covered: true, used: false },
       frames: { allowance: 120, used: 0 },
@@ -216,6 +298,8 @@ export const PATIENTS: Patient[] = [
       { date: '2024-11-18', status: 'active', checkedBy: 'Dr. Reynolds' },
     ],
   },
+
+  // ─── 5 · Diana Patel — VSP Child (subscriber: Raj Patel) ─────────────────
   {
     id: 5,
     firstName: 'Diana',
@@ -240,6 +324,7 @@ export const PATIENTS: Patient[] = [
     lastFrameBrand: 'Kate Spade',
     lastClOrderDate: '2025-09-10',
     lastClBrand: 'Dailies Total 1',
+    clSupplyDays: 90,
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-04-22' },
       frames: { allowance: 150, used: 90 },
@@ -260,6 +345,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-09-10', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 6 · Robert Chen — UHC Vision Self ───────────────────────────────────
   {
     id: 6,
     firstName: 'Robert',
@@ -290,6 +377,9 @@ export const PATIENTS: Patient[] = [
     lastVisit: '2026-05-12',
     lastFramePurchaseDate: '2024-05-14',
     lastFrameBrand: 'Silhouette',
+    lastSunglassesBrand: 'Maui Jim',
+    lastSunglassesModel: 'Lighthouse',
+    lastSunglassesPurchaseDate: '2023-09-20',
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-12' },
       frames: { allowance: 200, used: 0 },
@@ -310,6 +400,8 @@ export const PATIENTS: Patient[] = [
       { date: '2024-05-14', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 7 · Amara Osei — Humana Child (subscriber: Kwame Osei) ──────────────
   {
     id: 7,
     firstName: 'Amara',
@@ -327,7 +419,6 @@ export const PATIENTS: Patient[] = [
       subscriberDob: '1970-02-28',
       relationship: 'Child',
     },
-    // stale — older than 30 days
     lastVerified: '2026-04-01',
     status: 'active',
     lastVisit: '2026-04-30',
@@ -335,6 +426,7 @@ export const PATIENTS: Patient[] = [
     lastFrameBrand: 'Nike',
     lastClOrderDate: '2026-04-30',
     lastClBrand: 'Biofinity',
+    clSupplyDays: 60,
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-04-30' },
       frames: { allowance: 150, used: 150 },
@@ -355,6 +447,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-04-28', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 8 · Thomas Garrett — Anthem Self ────────────────────────────────────
   {
     id: 8,
     firstName: 'Thomas',
@@ -395,6 +489,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-03-10', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 9 · Priya Nair — EyeMed Spouse (subscriber: Arjun Nair) ─────────────
   {
     id: 9,
     firstName: 'Priya',
@@ -417,6 +513,7 @@ export const PATIENTS: Patient[] = [
     lastVisit: '2026-05-10',
     lastClOrderDate: '2026-05-10',
     lastClBrand: 'Acuvue Oasys 1-Day',
+    clSupplyDays: 30,
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-10' },
       frames: { allowance: 200, used: 0 },
@@ -437,6 +534,8 @@ export const PATIENTS: Patient[] = [
       { date: '2025-05-14', status: 'active', checkedBy: 'Front Desk' },
     ],
   },
+
+  // ─── 10 · David Okafor — Davis Vision Self ───────────────────────────────
   {
     id: 10,
     firstName: 'David',
@@ -468,8 +567,12 @@ export const PATIENTS: Patient[] = [
     lastFramePurchaseDate: '2025-06-18',
     lastFrameBrand: 'Costa',
     lastFrameModel: 'Brine',
+    lastSunglassesBrand: 'Costa',
+    lastSunglassesModel: 'Saltbreak',
+    lastSunglassesPurchaseDate: '2025-03-10',
     lastClOrderDate: '2026-05-05',
     lastClBrand: 'Biofinity Toric',
+    clSupplyDays: 90,
     benefits: {
       exam: { covered: true, used: true, usedDate: '2026-05-05' },
       frames: { allowance: 175, used: 80 },
@@ -488,6 +591,140 @@ export const PATIENTS: Patient[] = [
       { date: '2026-05-17', status: 'active', checkedBy: 'Dr. Reynolds' },
       { date: '2025-06-18', status: 'active', checkedBy: 'Front Desk' },
       { date: '2025-01-10', status: 'active', checkedBy: 'Front Desk' },
+    ],
+  },
+
+  // ─── 11 · Michael Torres — VSP Self (father, subscriber for family) ───────
+  {
+    id: 11,
+    firstName: 'Michael',
+    lastName: 'Torres',
+    dob: '1981-04-17',
+    gender: 'Male',
+    phone: '(555) 512-3344',
+    email: 'michael.torres@gmail.com',
+    address: '890 Sycamore Lane, Naperville, IL 60563',
+    primaryInsurance: {
+      carrier: 'VSP',
+      memberId: 'VSP00561482',
+      groupNumber: 'G-44821',
+      subscriberName: 'Michael Torres',
+      subscriberDob: '1981-04-17',
+      relationship: 'Self',
+    },
+    lastVerified: '2026-05-20',
+    status: 'active',
+    lastVisit: '2026-02-28',
+    lastFramePurchaseDate: '2024-09-05',
+    lastFrameBrand: 'Maui Jim',
+    lastFrameModel: 'Stillwater',
+    lastSunglassesBrand: 'Maui Jim',
+    lastSunglassesModel: 'Ho\'okipa',
+    lastSunglassesPurchaseDate: '2024-04-12',
+    benefits: {
+      exam: { covered: true, used: false },
+      frames: { allowance: 150, used: 0 },
+      lenses: { covered: true, used: false },
+      contacts: { allowance: 0, used: 0 },
+      benefitPeriodEnd: '2026-12-31',
+      examCopay: 10,
+      materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 10, materials: 25, contactFitting: 0 },
+      outOfNetwork: { exam: 45, frames: 70, lenses: 50, contacts: 105 },
+      requiresPriorAuth: false,
+    },
+    eligibilityHistory: [
+      { date: '2026-05-20', status: 'active', checkedBy: 'Front Desk' },
+      { date: '2025-09-05', status: 'active', checkedBy: 'Dr. Reynolds' },
+    ],
+  },
+
+  // ─── 12 · Emma Torres — VSP Child (subscriber: Michael Torres) ───────────
+  {
+    id: 12,
+    firstName: 'Emma',
+    lastName: 'Torres',
+    dob: '2011-08-03',
+    gender: 'Female',
+    phone: '(555) 512-3344',
+    email: 'michael.torres@gmail.com',
+    address: '890 Sycamore Lane, Naperville, IL 60563',
+    primaryInsurance: {
+      carrier: 'VSP',
+      memberId: 'VSP00561483',
+      groupNumber: 'G-44821',
+      subscriberName: 'Michael Torres',
+      subscriberDob: '1981-04-17',
+      relationship: 'Child',
+    },
+    lastVerified: '2026-05-20',
+    status: 'active',
+    lastVisit: '2025-08-14',
+    lastFramePurchaseDate: '2025-08-14',
+    lastFrameBrand: 'Nike',
+    lastFrameModel: 'Flex',
+    benefits: {
+      exam: { covered: true, used: false },
+      frames: { allowance: 125, used: 0 },
+      lenses: { covered: true, used: false },
+      contacts: { allowance: 0, used: 0 },
+      benefitPeriodEnd: '2026-12-31',
+      examCopay: 10,
+      materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 10, materials: 25, contactFitting: 0 },
+      outOfNetwork: { exam: 45, frames: 70, lenses: 50, contacts: 105 },
+      requiresPriorAuth: false,
+    },
+    eligibilityHistory: [
+      { date: '2026-05-20', status: 'active', checkedBy: 'Front Desk' },
+      { date: '2025-08-14', status: 'active', checkedBy: 'Dr. Reynolds' },
+    ],
+  },
+
+  // ─── 13 · Jake Torres — VSP Child (subscriber: Michael Torres) ───────────
+  {
+    id: 13,
+    firstName: 'Jake',
+    lastName: 'Torres',
+    dob: '2014-02-19',
+    gender: 'Male',
+    phone: '(555) 512-3344',
+    email: 'michael.torres@gmail.com',
+    address: '890 Sycamore Lane, Naperville, IL 60563',
+    primaryInsurance: {
+      carrier: 'VSP',
+      memberId: 'VSP00561484',
+      groupNumber: 'G-44821',
+      subscriberName: 'Michael Torres',
+      subscriberDob: '1981-04-17',
+      relationship: 'Child',
+    },
+    lastVerified: '2026-05-20',
+    status: 'active',
+    lastVisit: '2025-07-22',
+    lastFramePurchaseDate: '2025-07-22',
+    lastFrameBrand: 'Nike',
+    benefits: {
+      exam: { covered: true, used: false },
+      frames: { allowance: 125, used: 0 },
+      lenses: { covered: true, used: false },
+      contacts: { allowance: 0, used: 0 },
+      benefitPeriodEnd: '2026-12-31',
+      examCopay: 10,
+      materialsCopay: 25,
+      planYear: { start: 'Jan 1, 2026', end: 'Dec 31, 2026' },
+      frequency: { exam: 'Once every 12 months', materials: 'Once every 12 months' },
+      copays: { exam: 10, materials: 25, contactFitting: 0 },
+      outOfNetwork: { exam: 45, frames: 70, lenses: 50, contacts: 105 },
+      requiresPriorAuth: false,
+    },
+    eligibilityHistory: [
+      { date: '2026-05-20', status: 'active', checkedBy: 'Front Desk' },
+      { date: '2025-07-22', status: 'active', checkedBy: 'Dr. Reynolds' },
     ],
   },
 ]

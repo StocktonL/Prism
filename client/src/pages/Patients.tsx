@@ -14,6 +14,10 @@ import {
   Stethoscope,
   Users,
   AlertTriangle,
+  Gem,
+  Sun,
+  RefreshCw,
+  Copy,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
@@ -24,7 +28,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { PATIENTS, getPatientFullName, type Patient } from '@/data/mockPatients'
+import {
+  PATIENTS,
+  getPatientFullName,
+  type Patient,
+  isLuxuryBuyer,
+  isSunglassesBuyer,
+  isCLReorderDue,
+  isSecondPairCandidate,
+  isFamilyDependent,
+  clNextReorderDate,
+} from '@/data/mockPatients'
 
 const CARRIERS = ['VSP', 'EyeMed', 'Davis Vision', 'Spectera', 'UHC Vision', 'Humana', 'Anthem']
 const RELATIONSHIPS = ['Self', 'Spouse', 'Child', 'Other']
@@ -400,7 +414,7 @@ function PatientDetailPanel({ patient, onClose }: PatientDetailProps) {
           </div>
 
           {/* Purchase History */}
-          {(patient.lastFrameBrand || patient.lastClBrand) && (
+          {(patient.lastFrameBrand || patient.lastSunglassesBrand || patient.lastClBrand) && (
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">Purchase History</p>
               <div className="space-y-3">
@@ -410,12 +424,33 @@ function PatientDetailPanel({ patient, onClose }: PatientDetailProps) {
                       <Glasses className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <p className="text-xs text-slate-400">Last Frame Purchase</p>
+                      <p className="text-xs text-slate-400">Last Rx Frame Purchase</p>
                       <p className="text-sm font-semibold text-slate-800">
                         {patient.lastFrameBrand}{patient.lastFrameModel ? ` — ${patient.lastFrameModel}` : ''}
                       </p>
                       {patient.lastFramePurchaseDate && (
                         <p className="text-xs text-slate-500">{formatDate(patient.lastFramePurchaseDate)}</p>
+                      )}
+                      {isLuxuryBuyer(patient) && (
+                        <span className="mt-1 inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          <Gem className="h-2.5 w-2.5" /> Luxury buyer
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {patient.lastSunglassesBrand && (
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-yellow-50">
+                      <Sun className="h-4 w-4 text-yellow-500" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Last Sunglasses Purchase</p>
+                      <p className="text-sm font-semibold text-slate-800">
+                        {patient.lastSunglassesBrand}{patient.lastSunglassesModel ? ` — ${patient.lastSunglassesModel}` : ''}
+                      </p>
+                      {patient.lastSunglassesPurchaseDate && (
+                        <p className="text-xs text-slate-500">{formatDate(patient.lastSunglassesPurchaseDate)}</p>
                       )}
                     </div>
                   </div>
@@ -431,7 +466,32 @@ function PatientDetailPanel({ patient, onClose }: PatientDetailProps) {
                       {patient.lastClOrderDate && (
                         <p className="text-xs text-slate-500">{formatDate(patient.lastClOrderDate)}</p>
                       )}
+                      {(() => {
+                        const next = clNextReorderDate(patient)
+                        if (!next) return null
+                        const today = new Date('2026-05-24')
+                        const diff = Math.round((next.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                        const label = diff < 0
+                          ? `Overdue by ${Math.abs(diff)} days`
+                          : diff === 0
+                          ? 'Due today'
+                          : `Next reorder in ${diff} days (${next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
+                        const color = diff <= 0 ? 'text-red-600' : diff <= 30 ? 'text-amber-600' : 'text-slate-400'
+                        return (
+                          <p className={`mt-0.5 flex items-center gap-1 text-xs font-medium ${color}`}>
+                            <RefreshCw className="h-2.5 w-2.5" /> {label}
+                          </p>
+                        )
+                      })()}
                     </div>
+                  </div>
+                )}
+                {isSecondPairCandidate(patient) && (
+                  <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2">
+                    <Copy className="h-3.5 w-3.5 text-violet-500 flex-shrink-0" />
+                    <p className="text-xs font-medium text-violet-700">
+                      Second pair candidate — ${patient.benefits.frames.allowance - patient.benefits.frames.used} in frame benefits unused
+                    </p>
                   </div>
                 )}
               </div>
@@ -469,19 +529,32 @@ function PatientDetailPanel({ patient, onClose }: PatientDetailProps) {
   )
 }
 
+type Segment = 'all' | 'luxury' | 'sunglasses' | 'cl_due' | 'second_pair' | 'family'
+
 // ---- Main Page ----
 export default function Patients() {
   const [patients, setPatients] = useState<Patient[]>(PATIENTS)
   const [query, setQuery] = useState('')
+  const [segment, setSegment] = useState<Segment>('all')
   const [showAdd, setShowAdd] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 
+  const segmentFilter = (p: Patient) => {
+    if (segment === 'luxury') return isLuxuryBuyer(p)
+    if (segment === 'sunglasses') return isSunglassesBuyer(p)
+    if (segment === 'cl_due') return isCLReorderDue(p)
+    if (segment === 'second_pair') return isSecondPairCandidate(p)
+    if (segment === 'family') return isFamilyDependent(p)
+    return true
+  }
+
   const filtered = patients.filter(
     (p) =>
-      getPatientFullName(p).toLowerCase().includes(query.toLowerCase()) ||
-      p.dob.includes(query) ||
-      p.primaryInsurance.carrier.toLowerCase().includes(query.toLowerCase()) ||
-      p.primaryInsurance.memberId.toLowerCase().includes(query.toLowerCase()),
+      segmentFilter(p) &&
+      (getPatientFullName(p).toLowerCase().includes(query.toLowerCase()) ||
+        p.dob.includes(query) ||
+        p.primaryInsurance.carrier.toLowerCase().includes(query.toLowerCase()) ||
+        p.primaryInsurance.memberId.toLowerCase().includes(query.toLowerCase())),
   )
 
   const totalActive = patients.filter((p) => p.status === 'active').length
@@ -531,6 +604,36 @@ export default function Patients() {
               </div>
             </CardContent>
           </Card>
+        ))}
+      </div>
+
+      {/* Segment chips */}
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            { key: 'all',        label: 'All Patients',     icon: <Users className="h-3.5 w-3.5" />,     count: patients.length },
+            { key: 'luxury',     label: 'Luxury Buyers',    icon: <Gem className="h-3.5 w-3.5" />,       count: patients.filter(isLuxuryBuyer).length },
+            { key: 'sunglasses', label: 'Sunglasses',       icon: <Sun className="h-3.5 w-3.5" />,       count: patients.filter(isSunglassesBuyer).length },
+            { key: 'cl_due',     label: 'CL Reorder Due',   icon: <RefreshCw className="h-3.5 w-3.5" />, count: patients.filter(p => isCLReorderDue(p)).length },
+            { key: 'second_pair', label: 'Second Pair',     icon: <Copy className="h-3.5 w-3.5" />,      count: patients.filter(isSecondPairCandidate).length },
+            { key: 'family',     label: 'Family Members',   icon: <Users className="h-3.5 w-3.5" />,     count: patients.filter(isFamilyDependent).length },
+          ] as { key: Segment; label: string; icon: React.ReactNode; count: number }[]
+        ).map((chip) => (
+          <button
+            key={chip.key}
+            onClick={() => setSegment(chip.key)}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              segment === chip.key
+                ? 'border-teal-500 bg-teal-600 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {chip.icon}
+            {chip.label}
+            <span className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${segment === chip.key ? 'bg-teal-700 text-teal-100' : 'bg-slate-100 text-slate-500'}`}>
+              {chip.count}
+            </span>
+          </button>
         ))}
       </div>
 

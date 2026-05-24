@@ -18,14 +18,54 @@ import {
   CalendarDays,
   Zap,
   Timer,
+  Contact2,
+  Glasses,
+  Sun,
+  GraduationCap,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { PATIENTS, getPatientFullName } from '@/data/mockPatients'
+import {
+  PATIENTS,
+  getPatientFullName,
+  isLuxuryBuyer,
+  isSunglassesBuyer,
+  isCLReorderDue,
+  isSecondPairCandidate,
+  isFamilyDependent,
+} from '@/data/mockPatients'
 
-type CampaignType = 'Trunk Show' | 'End of Year Benefits' | 'Mid-Year Reminder' | 'Custom Campaign'
+type CampaignType =
+  | 'Trunk Show'
+  | 'End of Year Benefits'
+  | 'Mid-Year Reminder'
+  | 'Contact Lens Reorder'
+  | 'Second Pair'
+  | 'Summer Sunglasses'
+  | 'Back to School'
+  | 'Custom Campaign'
 type CampaignStatus = 'Active' | 'Scheduled' | 'Completed' | 'Draft'
 type ScheduleMode = 'now' | 'scheduled' | 'staggered'
-type CriteriaKey = 'unused_benefits' | 'expiring_30' | 'expiring_60' | 'expiring_90' | 'last_visit_6' | 'last_visit_12' | 'last_visit_18' | 'last_visit_24' | 'carrier_vsp' | 'carrier_eyemed' | 'carrier_davis' | 'carrier_spectera' | 'all'
+type CriteriaKey =
+  | 'all'
+  | 'unused_benefits'
+  | 'expiring_30'
+  | 'expiring_60'
+  | 'expiring_90'
+  | 'last_visit_6'
+  | 'last_visit_12'
+  | 'last_visit_18'
+  | 'last_visit_24'
+  | 'carrier_vsp'
+  | 'carrier_eyemed'
+  | 'carrier_davis'
+  | 'carrier_spectera'
+  | 'luxury_buyer'
+  | 'cl_reorder_due_30'
+  | 'cl_reorder_due_60'
+  | 'second_pair'
+  | 'sunglasses_buyer'
+  | 'family_dependent'
+  | 'back_to_school'
 
 interface Campaign {
   id: number
@@ -140,6 +180,38 @@ const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.Rea
     defaultMessage: "Hi {{first_name}}, you still have {{frame_allowance}} remaining on your {{carrier}} frame benefit and your exam is covered. Don't let it go to waste — call (555) 800-2020 today.",
   },
   {
+    type: 'Contact Lens Reorder',
+    description: 'Reach patients whose CL supply is due for a refill',
+    icon: <Contact2 className="h-5 w-5 text-blue-600" />,
+    iconBg: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    defaultMessage: "Hi {{first_name}}, your {{cl_brand}} supply should be running low! You still have {{contacts_allowance}} in {{carrier}} contact lens benefits. Call (555) 800-2020 to reorder — we'll have them ready in 3 days.",
+  },
+  {
+    type: 'Second Pair',
+    description: 'Patients with unused frame $ and no second pair yet',
+    icon: <Glasses className="h-5 w-5 text-violet-600" />,
+    iconBg: 'bg-violet-50',
+    borderColor: 'border-violet-300',
+    defaultMessage: 'Hi {{first_name}}, you still have {{frame_allowance}} in unused {{carrier}} frame benefits. A second pair — prescription sunglasses, readers, or a backup — is a great way to use them before they expire. Call (555) 800-2020.',
+  },
+  {
+    type: 'Summer Sunglasses',
+    description: 'Target past sunglasses buyers with frame benefits available',
+    icon: <Sun className="h-5 w-5 text-yellow-600" />,
+    iconBg: 'bg-yellow-50',
+    borderColor: 'border-yellow-300',
+    defaultMessage: 'Hi {{first_name}}, summer is here! Your {{carrier}} plan has {{frame_allowance}} ready to use on prescription sunglasses. Protect your eyes and use your benefits — call (555) 800-2020.',
+  },
+  {
+    type: 'Back to School',
+    description: 'Families with children — get eyes ready before the school year',
+    icon: <GraduationCap className="h-5 w-5 text-indigo-600" />,
+    iconBg: 'bg-indigo-50',
+    borderColor: 'border-indigo-300',
+    defaultMessage: 'Hi {{first_name}}, back to school is right around the corner! Make sure your child has a current eye exam and new glasses before the year starts. You have {{frame_allowance}} in {{carrier}} benefits ready — call (555) 800-2020.',
+  },
+  {
     type: 'Custom Campaign',
     description: 'Build your own message and patient list',
     icon: <PenLine className="h-5 w-5 text-slate-600" />,
@@ -156,6 +228,9 @@ const MERGE_TAGS = [
   { tag: '{{contacts_allowance}}', label: 'Contacts $', preview: '$130' },
   { tag: '{{lens_benefit}}', label: 'Lens Benefit', preview: 'covered lenses' },
   { tag: '{{benefit_expiry}}', label: 'Expiry Date', preview: 'Dec 31' },
+  { tag: '{{cl_brand}}', label: 'CL Brand', preview: 'Acuvue Oasys' },
+  { tag: '{{frame_brand}}', label: 'Frame Brand', preview: 'Maui Jim' },
+  { tag: '{{sunglasses_brand}}', label: 'Sunglass Brand', preview: 'Maui Jim' },
 ]
 
 function previewMessage(msg: string) {
@@ -166,22 +241,38 @@ function previewMessage(msg: string) {
     .replace(/{{contacts_allowance}}/g, '$130')
     .replace(/{{lens_benefit}}/g, 'covered lenses')
     .replace(/{{benefit_expiry}}/g, 'Dec 31')
+    .replace(/{{cl_brand}}/g, 'Acuvue Oasys')
+    .replace(/{{frame_brand}}/g, 'Maui Jim')
+    .replace(/{{sunglasses_brand}}/g, 'Maui Jim')
 }
 
-const CRITERIA_OPTIONS: { key: CriteriaKey; label: string; reach: number }[] = [
-  { key: 'all', label: 'All patients', reach: PATIENTS.length },
-  { key: 'unused_benefits', label: 'Has unused benefits', reach: 7 },
-  { key: 'expiring_30', label: 'Benefits expiring within 30 days', reach: 312 },
-  { key: 'expiring_60', label: 'Benefits expiring within 60 days', reach: 489 },
-  { key: 'expiring_90', label: 'Benefits expiring within 90 days', reach: 671 },
-  { key: 'last_visit_6', label: 'Last visit more than 6 months ago', reach: 94 },
-  { key: 'last_visit_12', label: 'Last visit more than 12 months ago', reach: 189 },
-  { key: 'last_visit_18', label: 'Last visit more than 18 months ago', reach: 243 },
-  { key: 'last_visit_24', label: 'Last visit more than 24 months ago', reach: 301 },
-  { key: 'carrier_vsp', label: 'VSP patients only', reach: PATIENTS.filter((p) => p.primaryInsurance.carrier === 'VSP').length },
-  { key: 'carrier_eyemed', label: 'EyeMed patients only', reach: PATIENTS.filter((p) => p.primaryInsurance.carrier === 'EyeMed').length },
-  { key: 'carrier_davis', label: 'Davis Vision patients only', reach: PATIENTS.filter((p) => p.primaryInsurance.carrier === 'Davis Vision').length },
-  { key: 'carrier_spectera', label: 'Spectera patients only', reach: PATIENTS.filter((p) => p.primaryInsurance.carrier === 'Spectera').length },
+const CRITERIA_OPTIONS: { key: CriteriaKey; label: string; reach: number; group?: string }[] = [
+  // ── Benefit status ──────────────────────────────────────────────────────────
+  { key: 'all',           label: 'All patients',                          reach: PATIENTS.length,                                                          group: 'General' },
+  { key: 'unused_benefits', label: 'Has unused benefits',                 reach: 7,                                                                        group: 'General' },
+  { key: 'expiring_30',   label: 'Benefits expiring within 30 days',     reach: 312,                                                                       group: 'General' },
+  { key: 'expiring_60',   label: 'Benefits expiring within 60 days',     reach: 489,                                                                       group: 'General' },
+  { key: 'expiring_90',   label: 'Benefits expiring within 90 days',     reach: 671,                                                                       group: 'General' },
+  // ── Recency ─────────────────────────────────────────────────────────────────
+  { key: 'last_visit_6',  label: 'Last visit more than 6 months ago',    reach: 94,                                                                        group: 'Recency' },
+  { key: 'last_visit_12', label: 'Last visit more than 12 months ago',   reach: 189,                                                                       group: 'Recency' },
+  { key: 'last_visit_18', label: 'Last visit more than 18 months ago',   reach: 243,                                                                       group: 'Recency' },
+  { key: 'last_visit_24', label: 'Last visit more than 24 months ago',   reach: 301,                                                                       group: 'Recency' },
+  // ── Carrier ──────────────────────────────────────────────────────────────────
+  { key: 'carrier_vsp',     label: 'VSP patients only',         reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'VSP').length,        group: 'Carrier' },
+  { key: 'carrier_eyemed',  label: 'EyeMed patients only',      reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'EyeMed').length,     group: 'Carrier' },
+  { key: 'carrier_davis',   label: 'Davis Vision patients only', reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'Davis Vision').length, group: 'Carrier' },
+  { key: 'carrier_spectera', label: 'Spectera patients only',   reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'Spectera').length,   group: 'Carrier' },
+  // ── Purchase behavior ────────────────────────────────────────────────────────
+  { key: 'luxury_buyer',       label: 'Luxury frame buyers (Maui Jim, Silhouette, Costa…)', reach: PATIENTS.filter(isLuxuryBuyer).length,       group: 'Behavior' },
+  { key: 'sunglasses_buyer',   label: 'Past sunglasses buyers',                             reach: PATIENTS.filter(isSunglassesBuyer).length,   group: 'Behavior' },
+  { key: 'second_pair',        label: 'Second pair opportunity (>$75 frame $ remaining)',   reach: PATIENTS.filter(isSecondPairCandidate).length, group: 'Behavior' },
+  // ── Contact lenses ───────────────────────────────────────────────────────────
+  { key: 'cl_reorder_due_30',  label: 'CL reorder due within 30 days',   reach: PATIENTS.filter(p => isCLReorderDue(p, 30)).length,             group: 'Contacts' },
+  { key: 'cl_reorder_due_60',  label: 'CL reorder due within 60 days',   reach: PATIENTS.filter(p => isCLReorderDue(p, 60)).length,             group: 'Contacts' },
+  // ── Family ───────────────────────────────────────────────────────────────────
+  { key: 'family_dependent',   label: 'Spouse and child patients',        reach: PATIENTS.filter(isFamilyDependent).length,                      group: 'Family' },
+  { key: 'back_to_school',     label: 'Children with benefits available', reach: PATIENTS.filter(p => p.primaryInsurance.relationship === 'Child' && isSecondPairCandidate(p)).length, group: 'Family' },
 ]
 
 function statusBadge(status: CampaignStatus) {
@@ -206,10 +297,14 @@ function statusBadge(status: CampaignStatus) {
 
 function typeBadge(type: CampaignType) {
   const map: Record<CampaignType, string> = {
-    'Trunk Show': 'text-amber-700 bg-amber-50',
+    'Trunk Show':          'text-amber-700 bg-amber-50',
     'End of Year Benefits': 'text-rose-700 bg-rose-50',
-    'Mid-Year Reminder': 'text-teal-700 bg-teal-50',
-    'Custom Campaign': 'text-slate-600 bg-slate-100',
+    'Mid-Year Reminder':   'text-teal-700 bg-teal-50',
+    'Contact Lens Reorder': 'text-blue-700 bg-blue-50',
+    'Second Pair':         'text-violet-700 bg-violet-50',
+    'Summer Sunglasses':   'text-yellow-700 bg-yellow-50',
+    'Back to School':      'text-indigo-700 bg-indigo-50',
+    'Custom Campaign':     'text-slate-600 bg-slate-100',
   }
   return (
     <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${map[type]}`}>{type}</span>
