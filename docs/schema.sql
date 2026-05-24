@@ -44,6 +44,8 @@ create table if not exists patients (
   last_sunglasses_purchase date,
   last_sunglasses_brand text,
   last_sunglasses_model text,
+  insurance_relationship text,           -- Self / Spouse / Child / Other
+  subscriber_name text,                  -- name of the policy subscriber (for family linking)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -53,6 +55,8 @@ create table if not exists patients (
 -- alter table patients add column if not exists last_sunglasses_purchase date;
 -- alter table patients add column if not exists last_sunglasses_brand text;
 -- alter table patients add column if not exists last_sunglasses_model text;
+-- alter table patients add column if not exists insurance_relationship text;
+-- alter table patients add column if not exists subscriber_name text;
 
 create table if not exists eligibility_checks (
   id uuid primary key default gen_random_uuid(),
