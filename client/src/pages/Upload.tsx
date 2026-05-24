@@ -26,6 +26,21 @@ interface ParsedRow {
   group_number: string
   last_visit_date: string
   contact_lens_wearer: boolean
+  // Rx frames
+  last_frame_purchase: string
+  last_frame_brand: string
+  last_frame_model: string
+  // Sunglasses
+  last_sunglasses_purchase: string
+  last_sunglasses_brand: string
+  last_sunglasses_model: string
+  // Contact lenses
+  last_cl_order: string
+  last_cl_brand: string
+  cl_supply_days: number | null
+  // Family / insurance relationship
+  insurance_relationship: string
+  subscriber_name: string
 }
 
 interface ValidationReport {
@@ -72,6 +87,27 @@ function normalizeCarrier(raw: string): string {
   return CARRIER_MAP[raw.toLowerCase().trim()] ?? raw.trim()
 }
 
+function normalizeCLSupplyDays(raw: string): number | null {
+  if (!raw) return null
+  const lower = raw.toLowerCase()
+  if (lower.includes('annual') || lower.includes('year')) return 365
+  const n = parseInt(raw.replace(/\D/g, ''), 10)
+  if (isNaN(n) || n <= 0) return null
+  if (n <= 30) return 30
+  if (n <= 60) return 60
+  if (n <= 90) return 90
+  return 365
+}
+
+function normalizeRelationship(raw: string): string {
+  const r = raw.toLowerCase().trim()
+  if (['self', 'insured', 'subscriber', 'member'].includes(r)) return 'Self'
+  if (['spouse', 'husband', 'wife', 'partner', 'domestic partner'].includes(r)) return 'Spouse'
+  if (['child', 'dependent', 'son', 'daughter', 'kid', 'student'].includes(r)) return 'Child'
+  if (r) return 'Other'
+  return ''
+}
+
 // ── CSV parsing ───────────────────────────────────────────────────────────────
 
 function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
@@ -86,37 +122,72 @@ function parseCSV(text: string): { headers: string[]; rows: Record<string, strin
 
 // Column mapping: their header → our field
 const FIELD_OPTIONS = [
-  { value: 'first_name', label: 'First Name' },
-  { value: 'last_name', label: 'Last Name' },
-  { value: 'date_of_birth', label: 'Date of Birth' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'email', label: 'Email' },
-  { value: 'insurance_carrier', label: 'Insurance Carrier' },
-  { value: 'member_id', label: 'Member ID' },
-  { value: 'group_number', label: 'Group Number' },
-  { value: 'last_visit_date', label: 'Last Visit Date' },
-  { value: 'contact_lens_wearer', label: 'Contact Lens Wearer' },
-  { value: '__skip__', label: '— Skip this column —' },
+  // Demographics
+  { value: 'first_name',           label: 'First Name' },
+  { value: 'last_name',            label: 'Last Name' },
+  { value: 'date_of_birth',        label: 'Date of Birth' },
+  { value: 'phone',                label: 'Phone' },
+  { value: 'email',                label: 'Email' },
+  // Insurance
+  { value: 'insurance_carrier',    label: 'Insurance Carrier' },
+  { value: 'member_id',            label: 'Member ID' },
+  { value: 'group_number',         label: 'Group Number' },
+  { value: 'insurance_relationship', label: 'Relationship to Subscriber' },
+  { value: 'subscriber_name',      label: 'Subscriber Name' },
+  // Visit
+  { value: 'last_visit_date',      label: 'Last Visit Date' },
+  // Rx frames
+  { value: 'last_frame_purchase',  label: 'Last Frame Purchase Date' },
+  { value: 'last_frame_brand',     label: 'Last Frame Brand' },
+  { value: 'last_frame_model',     label: 'Last Frame Model / Style' },
+  // Sunglasses
+  { value: 'last_sunglasses_purchase', label: 'Last Sunglasses Purchase Date' },
+  { value: 'last_sunglasses_brand', label: 'Last Sunglasses Brand' },
+  { value: 'last_sunglasses_model', label: 'Last Sunglasses Model' },
+  // Contact lenses
+  { value: 'contact_lens_wearer',  label: 'Contact Lens Wearer' },
+  { value: 'last_cl_order',        label: 'Last CL Order Date' },
+  { value: 'last_cl_brand',        label: 'CL Brand' },
+  { value: 'cl_supply_days',       label: 'CL Supply Days (30 / 60 / 90 / 365)' },
+  { value: '__skip__',             label: '— Skip this column —' },
 ]
 
 const REQUIRED_FIELDS = ['first_name', 'last_name']
 
-// Auto-detect mappings from common header names
+// Auto-detect mappings from common header names across RevolutionEHR, Eyefinity, Crystal PM, etc.
 function autoMap(headers: string[]): Record<string, string> {
   const map: Record<string, string> = {}
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const n = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
   headers.forEach(h => {
-    const n = normalize(h)
-    if (['firstname', 'first', 'fname'].includes(n)) map[h] = 'first_name'
-    else if (['lastname', 'last', 'lname'].includes(n)) map[h] = 'last_name'
-    else if (['dob', 'dateofbirth', 'birthdate', 'birthday'].includes(n)) map[h] = 'date_of_birth'
-    else if (['phone', 'cell', 'mobile', 'phonenumber', 'cellphone'].includes(n)) map[h] = 'phone'
-    else if (['email', 'emailaddress', 'mail'].includes(n)) map[h] = 'email'
-    else if (['carrier', 'insurance', 'insurancecarrier', 'plan', 'insuranceprovider'].includes(n)) map[h] = 'insurance_carrier'
-    else if (['memberid', 'member', 'insid', 'insuranceid', 'policyid'].includes(n)) map[h] = 'member_id'
-    else if (['groupnumber', 'group', 'groupid', 'groupno'].includes(n)) map[h] = 'group_number'
-    else if (['lastvisit', 'lastvisitdate', 'lastappointment', 'lastappt'].includes(n)) map[h] = 'last_visit_date'
-    else if (['contactlens', 'cl', 'contactlenswearer', 'contacts'].includes(n)) map[h] = 'contact_lens_wearer'
+    const k = n(h)
+    // Demographics
+    if      (['firstname', 'first', 'fname'].includes(k))                                       map[h] = 'first_name'
+    else if (['lastname', 'last', 'lname'].includes(k))                                         map[h] = 'last_name'
+    else if (['dob', 'dateofbirth', 'birthdate', 'birthday'].includes(k))                       map[h] = 'date_of_birth'
+    else if (['phone', 'cell', 'mobile', 'phonenumber', 'cellphone', 'homephone'].includes(k)) map[h] = 'phone'
+    else if (['email', 'emailaddress', 'mail'].includes(k))                                     map[h] = 'email'
+    // Insurance core
+    else if (['carrier', 'insurance', 'insurancecarrier', 'plan', 'insuranceprovider', 'visionplan', 'primarycarrier'].includes(k)) map[h] = 'insurance_carrier'
+    else if (['memberid', 'insid', 'insuranceid', 'policyid', 'primarymemberid'].includes(k))  map[h] = 'member_id'
+    else if (['groupnumber', 'group', 'groupid', 'groupno', 'primarygroupnumber'].includes(k)) map[h] = 'group_number'
+    // Insurance relationship / family
+    else if (['relationship', 'insurancerelationship', 'subscriberrelationship', 'insuredrelationship', 'relationshiptosubscriber', 'reltosubscriber', 'patientrelationship'].includes(k)) map[h] = 'insurance_relationship'
+    else if (['subscribername', 'policyholder', 'insuredname', 'subscriber', 'policyholdernaem', 'insuredfirstlast', 'guarantorname'].includes(k)) map[h] = 'subscriber_name'
+    // Visit
+    else if (['lastvisit', 'lastvisitdate', 'lastappointment', 'lastappt', 'lastexam', 'lastexamdate'].includes(k)) map[h] = 'last_visit_date'
+    // Rx frames
+    else if (['lastframepurchase', 'lastframepurchasedate', 'framedate', 'lastframedate', 'framepurchasedate', 'rxframedate'].includes(k)) map[h] = 'last_frame_purchase'
+    else if (['lastframebrand', 'framebrand', 'rxframebrand', 'framemfr', 'framemanufacturer', 'mfr', 'brand'].includes(k)) map[h] = 'last_frame_brand'
+    else if (['lastframemodel', 'framemodel', 'framestyle', 'frameskn', 'style', 'framesku'].includes(k)) map[h] = 'last_frame_model'
+    // Sunglasses
+    else if (['lastsuglasses', 'sunglassesdate', 'lastsg', 'sundate', 'lastsunglassespurchase', 'sgdate'].includes(k)) map[h] = 'last_sunglasses_purchase'
+    else if (['sunglassesbrand', 'sgbrand', 'sunbrand', 'planobrand', 'sunglasbrand'].includes(k)) map[h] = 'last_sunglasses_brand'
+    else if (['sunglassesmodel', 'sgmodel', 'sunmodel', 'sunglasstyle'].includes(k))           map[h] = 'last_sunglasses_model'
+    // Contact lenses
+    else if (['contactlens', 'contactlenswearer', 'clwearer', 'wearscl', 'wearscontacts'].includes(k)) map[h] = 'contact_lens_wearer'
+    else if (['lastclorder', 'lastclorderdate', 'clorderdate', 'contactlensdate', 'lastcontactlens', 'lastcl', 'cldate', 'lastclpurchase'].includes(k)) map[h] = 'last_cl_order'
+    else if (['clbrand', 'contactlensbrand', 'lensbrand', 'contactbrand', 'cllens'].includes(k)) map[h] = 'last_cl_brand'
+    else if (['clsupply', 'clsupplydays', 'supplycldays', 'contactsupply', 'cldays', 'supplydays', 'lensdays', 'clsupplylength'].includes(k)) map[h] = 'cl_supply_days'
     else map[h] = '__skip__'
   })
   return map
@@ -180,17 +251,33 @@ export default function UploadPage() {
         if (field && field !== '__skip__') mapped[field] = row[h] ?? ''
       })
 
+      const contact_lens_wearer = ['true', '1', 'yes', 'y'].includes((mapped.contact_lens_wearer ?? '').toLowerCase())
       const patient: ParsedRow = {
-        first_name: mapped.first_name?.trim() ?? '',
-        last_name: mapped.last_name?.trim() ?? '',
-        date_of_birth: normalizeDate(mapped.date_of_birth ?? ''),
-        phone: normalizePhone(mapped.phone ?? ''),
-        email: mapped.email?.trim() ?? '',
+        first_name:     mapped.first_name?.trim() ?? '',
+        last_name:      mapped.last_name?.trim() ?? '',
+        date_of_birth:  normalizeDate(mapped.date_of_birth ?? ''),
+        phone:          normalizePhone(mapped.phone ?? ''),
+        email:          mapped.email?.trim() ?? '',
         insurance_carrier: normalizeCarrier(mapped.insurance_carrier ?? ''),
-        member_id: mapped.member_id?.trim() ?? '',
-        group_number: mapped.group_number?.trim() ?? '',
+        member_id:      mapped.member_id?.trim() ?? '',
+        group_number:   mapped.group_number?.trim() ?? '',
         last_visit_date: normalizeDate(mapped.last_visit_date ?? ''),
-        contact_lens_wearer: ['true', '1', 'yes', 'y'].includes((mapped.contact_lens_wearer ?? '').toLowerCase()),
+        contact_lens_wearer,
+        // Rx frames
+        last_frame_purchase: normalizeDate(mapped.last_frame_purchase ?? ''),
+        last_frame_brand:    mapped.last_frame_brand?.trim() ?? '',
+        last_frame_model:    mapped.last_frame_model?.trim() ?? '',
+        // Sunglasses
+        last_sunglasses_purchase: normalizeDate(mapped.last_sunglasses_purchase ?? ''),
+        last_sunglasses_brand:    mapped.last_sunglasses_brand?.trim() ?? '',
+        last_sunglasses_model:    mapped.last_sunglasses_model?.trim() ?? '',
+        // Contact lenses
+        last_cl_order:   normalizeDate(mapped.last_cl_order ?? ''),
+        last_cl_brand:   mapped.last_cl_brand?.trim() ?? '',
+        cl_supply_days:  normalizeCLSupplyDays(mapped.cl_supply_days ?? ''),
+        // Family
+        insurance_relationship: normalizeRelationship(mapped.insurance_relationship ?? ''),
+        subscriber_name: mapped.subscriber_name?.trim() ?? '',
       }
 
       if (!patient.first_name || !patient.last_name) return

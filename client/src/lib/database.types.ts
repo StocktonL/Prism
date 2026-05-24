@@ -64,6 +64,8 @@ export interface Database {
           last_sunglasses_purchase: string | null
           last_sunglasses_brand: string | null
           last_sunglasses_model: string | null
+          insurance_relationship: string | null
+          subscriber_name: string | null
           created_at: string
           updated_at: string
         }
@@ -89,6 +91,8 @@ export interface Database {
           last_sunglasses_purchase?: string | null
           last_sunglasses_brand?: string | null
           last_sunglasses_model?: string | null
+          insurance_relationship?: string | null
+          subscriber_name?: string | null
         }
         Update: Partial<Database['public']['Tables']['patients']['Insert']>
       }
