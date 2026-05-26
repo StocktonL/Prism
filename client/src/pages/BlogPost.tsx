@@ -5,15 +5,20 @@ import { POSTS } from './Blog'
 
 function renderMarkdown(content: string): string {
   return content
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-white mt-10 mb-4">$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-bold text-white mt-6 mb-3">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold text-white mt-12 mb-4">$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-white mt-6 mb-2">$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em class="text-slate-300">$1</em>')
+    .replace(/\*(.+?)\*/g, '<em class="text-slate-300 not-italic">$1</em>')
     .replace(/^---$/gm, '<hr class="my-8 border-white/10" />')
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-slate-300">$1</li>')
-    .replace(/(<li[\s\S]*?<\/li>)/g, '<ul class="my-4 space-y-2">$1</ul>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-teal-400 underline hover:text-teal-300">$1</a>')
-    .replace(/^(?!<[h|u|l|h]|---|\s*$)(.+)$/gm, '<p class="text-slate-400 leading-relaxed mb-4">$1</p>')
+    .replace(/^\d+\. (.+)$/gm, '<li class="text-slate-300 leading-relaxed list-decimal ml-6">$1</li>')
+    .replace(/^- (.+)$/gm, '<li class="text-slate-300 leading-relaxed list-disc ml-6">$1</li>')
+    .replace(/((?:<li[^>]*>.*?<\/li>\n?)+)/g, (match) => {
+      const isOrdered = match.includes('list-decimal')
+      const tag = isOrdered ? 'ol' : 'ul'
+      return `<${tag} class="my-4 space-y-2">${match}</${tag}>`
+    })
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-teal-400 underline underline-offset-2 hover:text-teal-300 transition-colors">$1</a>')
+    .replace(/^(?!<[huo]|<\/|---|\s*$)(.+)$/gm, '<p class="text-slate-400 leading-relaxed mb-4">$1</p>')
     .replace(/\n{2,}/g, '\n')
 }
 
