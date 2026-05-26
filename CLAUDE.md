@@ -10,6 +10,7 @@
 @agents/backend/CLAUDE.md
 @agents/domain/CLAUDE.md
 @agents/api/CLAUDE.md
+@agents/cs/CLAUDE.md
 # PRISM — Lead Engineer
 
 ## CURRENT PRIORITY (May 23, 2026) — READ THIS FIRST

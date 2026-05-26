@@ -510,6 +510,52 @@ Never write patient data to any vendor without a signed BAA.
 
 ---
 
+## Stripe Integration Patterns (Skill: stripe-integration)
+Always use idempotency keys on charge/subscription creation:
+```typescript
+await stripe.subscriptions.create({ ... }, {
+  idempotencyKey: `sub_create_${practiceId}`
+})
+```
+Treat webhooks as state transitions, not triggers.
+Never fulfill an order/subscription based on client-side confirmation —
+always wait for the webhook event from Stripe.
+Webhook signature verification is mandatory — constructEvent throws if invalid.
+Raw body required for webhook signature verification:
+  In Vercel functions, disable body parsing for the webhook route.
+Handle these events at minimum:
+  invoice.payment_succeeded → mark active
+  invoice.payment_failed → mark past_due, email practice
+  customer.subscription.deleted → mark cancelled, restrict access
+Idempotency: process each event once — store event IDs to deduplicate.
+
+## Claude API Patterns (Skill: claude-api)
+Default model: claude-haiku-4-5-20251001 for message generation (cheapest).
+Use claude-sonnet-4-6 only for complex reasoning tasks.
+Always implement prompt caching for repeated system prompts:
+```typescript
+const response = await anthropic.messages.create({
+  model: 'claude-haiku-4-5-20251001',
+  max_tokens: 200,
+  system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+  messages: [{ role: 'user', content: patientContext }]
+})
+```
+Batch message generation — never generate one at a time in a loop.
+Cache generated messages — regenerate only when patient data changes.
+Never include PHI in system prompts — pass patient data in user turn only.
+Track token usage per campaign for cost monitoring.
+
+## Vercel Deployment (Skill: vercel-deployment-specialist)
+Serverless function limits: 10s timeout (Hobby), 60s (Pro), 300s (Enterprise).
+For long-running tasks (batch eligibility checks): use background functions
+  or break into chunks of 50 patients max per invocation.
+Environment variables: never commit to git — always set in Vercel dashboard.
+Edge vs Serverless: use Edge for auth middleware, Serverless for API routes.
+Cold starts: keep functions under 5MB bundle size — avoid heavy dependencies.
+Preview deployments: use separate Supabase project for staging (not production DB).
+Function logs: available in Vercel dashboard → Functions tab → real-time.
+
 ## How You Respond
 1. State which integration you're building and what BAA/registration is needed first
 2. Write production-ready TypeScript with proper error handling
