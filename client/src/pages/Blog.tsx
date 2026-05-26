@@ -12,6 +12,152 @@ export interface BlogPost {
 
 export const POSTS: BlogPost[] = [
   {
+    slug: 'optometry-patient-outreach-campaigns',
+    title: '5 Patient Outreach Campaigns Every Independent Optometry Practice Should Be Running',
+    description: 'Most optometry practices run one benefit reminder in November. Here are the five campaigns that drive optical revenue year-round — with exact messaging examples for VSP and EyeMed patients.',
+    date: 'May 26, 2026',
+    readTime: '8 min read',
+    content: `
+## Why One Benefit Reminder a Year Is Leaving Money on the Table
+
+If your optometry practice sends one patient outreach message per year — the November "your benefits are expiring" blast — you're recovering maybe 10–20% of the optical revenue sitting in your patient list.
+
+The other 80% walks out the door every January 1 when unused VSP and EyeMed benefits reset to zero.
+
+The practices that consistently outperform on optical revenue don't have better patients, better location, or lower prices. They run systematic patient outreach campaigns throughout the year — not just in Q4. And the campaigns that work don't say "you might have benefits available." They say: "Sarah, you have \$175 in unused EyeMed frame benefits. Here's how to use them."
+
+This guide covers the five campaigns that drive optical revenue for independent practices, when to run them, and exactly what to say.
+
+---
+
+## Campaign 1: End-of-Year Benefits Expiring (October–November)
+
+**Who it's for:** Any patient with VSP, EyeMed, Davis Vision, or Spectera benefits who hasn't used their frame or contact lens allowance for the year.
+
+**When to run it:** October 1 through November 30. Starting in October gives patients time to act before holiday schedules get crowded. Waiting until December means you're competing with every other practice that remembered at the last minute.
+
+**Why it works:** This is the highest-urgency campaign of the year. Patients paid premiums all year for coverage they're about to lose. A message that includes the exact dollar amount and the exact deadline converts significantly better than a generic reminder.
+
+**What to say:**
+
+Generic (low conversion): *"Don't forget — your vision benefits may expire soon. Call us to schedule."*
+
+Personalized (high conversion): *"Hi Sarah — you have \$175 in unused EyeMed frame benefits that expire December 31. It's enough to cover new frames with nothing out of pocket. Want us to hold a time for you?"*
+
+The difference between these two messages is the difference between a patient thinking "I should probably do that sometime" and a patient picking up the phone.
+
+**What you need:** A current patient list with insurance information, plus actual eligibility data — not guesses — so you know which patients have remaining benefits and how much. Running eligibility checks manually for 2,000+ patients isn't realistic, which is why this campaign often doesn't happen until it's too late.
+
+---
+
+## Campaign 2: New Benefit Year (January–February)
+
+**Who it's for:** Patients whose insurance just reset on January 1. This includes the majority of VSP patients and many EyeMed patients.
+
+**When to run it:** January 2–February 28. This is the most underused window in optometry. While every other practice is silent, you can be the first voice patients hear after their benefits renew.
+
+**Why it works:** Patients who didn't use their benefits last year often have some vague guilt or intention to "do it this year." A timely message in early January catches them when that intention is fresh. There's no deadline urgency, but there is novelty — the new benefit year is a genuine reason to reach out.
+
+**What to say:**
+
+*"Hi James — your VSP benefits renewed on January 1, which means you have a fresh \$150 frame allowance and covered annual exam. Happy to get you scheduled anytime this month."*
+
+This message is informational, not pushy. It gives the patient something useful: the exact amount of coverage they have available. Patients who didn't know their benefits reset will often book immediately.
+
+**What you need:** The same eligibility data that drives your Q4 campaign, refreshed for the new benefit year. If you ran eligibility checks in Q4, run them again in January — plan data changes.
+
+---
+
+## Campaign 3: Contact Lens Annual Benefit Reminder (May–June and August–September)
+
+**Who it's for:** Patients who are contact lens wearers with a CL benefit from their vision plan. VSP typically covers \$150–\$160 in contact lens materials per year; EyeMed covers \$150–\$200 depending on the plan.
+
+**When to run it:** Twice a year — once in late spring (May–June) and once in late summer (August–September), timed roughly 12 months after a patient's last contact lens order.
+
+**Why it works:** Contact lens patients have a predictable reorder cadence. A patient who ordered in June of last year is likely running low by May or June of this year. Pairing that timing with their remaining CL benefit creates a compelling reason to come in rather than reorder from an online retailer.
+
+**What to say:**
+
+*"Hi Marcus — it's been about a year since your last contact lens order, and your VSP benefit covers \$160 toward your next supply. That's enough for a full year of lenses with very little out of pocket. Want me to pull your prescription and get an order started?"*
+
+**What you need:** Contact lens wearer flags in your patient data (most EHRs track this), plus last order dates and current CL benefit from eligibility verification.
+
+---
+
+## Campaign 4: Back-to-School Families (July–August)
+
+**Who it's for:** Patients who have children on their vision plan — specifically families whose kids are due for an annual exam before the school year starts.
+
+**When to run it:** July 1–August 15. School starts in late August or September in most markets. Families are scheduling during July and early August.
+
+**Why it works:** Back-to-school is one of the highest-traffic periods for pediatric optometry. Parents are already thinking about school supplies, physicals, and checkups. A message that connects the annual exam to their insurance coverage — and includes the specific dollar amount — converts the "I should do that" into a scheduled appointment.
+
+**What to say:**
+
+*"Hi Jennifer — VSP covers your child's annual eye exam before school starts, plus \$150 toward new glasses if their prescription changed. August is filling up — want to grab a time in the next few weeks?"*
+
+**What you need:** Family-level patient data. If your patient records include dependents or if parents and children are both in your practice, you can segment this campaign accurately. If not, a general back-to-school message to all patients with children's coverage can still perform well.
+
+---
+
+## Campaign 5: Mid-Year Benefits Check-In (April–May)
+
+**Who it's for:** Patients whose plans reset mid-year (July 1) rather than January 1. This includes some EyeMed plans, Davis Vision plans, and Spectera. It also works as a general "you have benefits you haven't used" message for patients who are sitting on unused allowances halfway through the year.
+
+**When to run it:** April–May, about 60 days before a mid-year reset.
+
+**Why it works:** Most practices have no idea which patients have mid-year resets. Running this campaign means you're reaching patients that your competitors are completely ignoring — because competitors only think about benefits in Q4. For these patients, you're the only practice that ever told them their benefits were about to reset.
+
+**What to say:**
+
+*"Hi Rachel — your Davis Vision benefits reset on July 1, which means your current \$200 frame allowance expires in about 60 days. A lot of our patients prefer coming in the spring before things get busy. Want to get scheduled?"*
+
+---
+
+## The Operational Reality: Why Most Practices Only Run One Campaign
+
+Reading this, most practice managers are thinking: "This makes sense, but there's no way we can run five separate campaigns per year on top of everything else we're doing."
+
+That's the right instinct. The manual version of this — pulling insurance data, running eligibility checks, segmenting by benefit amount, writing personalized messages, sending and tracking — is a weeks-long project that competes with every other priority in the practice.
+
+The practices that run all five campaigns aren't doing it manually. They've built a system:
+
+1. **Patient data is exported from the EHR once** (RevolutionEHR, Eyefinity, Crystal PM, or any other system can export a CSV)
+2. **Eligibility is verified in batch** — not one patient at a time, but the entire list at once using an eligibility API
+3. **Campaigns are segmented automatically** based on benefit amounts, expiration dates, CL wearer status, and last visit date
+4. **Messages are personalized per patient** with their actual dollar amounts — not templated blasts
+5. **Outreach is sent via SMS and email** on a schedule, not in a manual push every few months
+
+The result is a practice that looks proactive and attentive to patients — because it is — without the staff hours that manual outreach would require.
+
+---
+
+## What the Revenue Math Looks Like
+
+Assume a practice with 2,000 active patients:
+
+- **End-of-year campaign:** 800 patients with unused frame benefits × 10% book appointments × \$375 average optical sale = **\$30,000 in recovered revenue**
+- **New year campaign:** 200 early-year bookers × \$375 = **\$7,500**
+- **CL benefit reminder (twice):** 400 CL patients × 8% response × \$200 average CL order = **\$6,400**
+- **Back-to-school:** 150 family bookings × \$350 average = **\$5,250**
+- **Mid-year check-in:** 100 bookings × \$375 = **\$3,750**
+
+Conservative total across five campaigns: **\$52,900 in additional annual optical revenue** from patients already in the practice's system.
+
+Against a practice management tool at \$449/month (\$5,388/year), that's roughly a 10:1 return — and that's using conservative booking rates. Practices with strong patient relationships and accurate eligibility data typically see higher response rates than those numbers.
+
+---
+
+## Getting Started
+
+The fastest path to running these campaigns is knowing what's in your patient list. Export your patients from your EHR, check what insurance coverage they have, and look at the total dollar figure of unused benefits across the practice.
+
+For most independent practices, that number is between \$80,000 and \$200,000 — and it resets to zero every January 1 unless someone reaches out.
+
+If you want a tool built specifically for this workflow — one that verifies benefits in batch, segments your patient list automatically, and sends personalized campaigns year-round — [Prizm](https://prizmvision.com/founding) was built for independent optometry practices to do exactly that.
+    `,
+  },
+  {
     slug: 'vision-benefits-expiring-patients',
     title: 'How to Reach Patients With Vision Benefits Expiring Before December 31',
     description: 'Most practices lose $15–50K in optical revenue every year to unused VSP and EyeMed benefits. Here\'s how to reach those patients before December 31.',
