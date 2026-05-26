@@ -218,7 +218,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       memberId,
       benefits,
       checkedAt: new Date().toISOString(),
-      raw, // retained for debugging — remove once parsing is verified
     })
   } catch (err) {
     console.error('Stedi request failed:', err)

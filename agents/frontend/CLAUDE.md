@@ -153,6 +153,46 @@ Session timeout after 30 minutes of inactivity
 Show "Secured with HIPAA-compliant encryption"
 in footer of all authenticated pages
 
+## shadcn/ui Patterns (Skill: shadcn)
+Always install components via CLI, never copy-paste:
+`npx shadcn-ui@latest add <component>`
+Composition over configuration — combine primitives.
+Use `cn()` utility for conditional class merging.
+Never override shadcn styles with inline styles — use variants.
+Form pattern: shadcn Form + React Hook Form + Zod always together.
+```tsx
+// Correct form pattern
+const form = useForm<z.infer<typeof schema>>({
+  resolver: zodResolver(schema),
+  defaultValues: { ... }
+})
+```
+
+## Tailwind Design System (Skill: tailwind-design-system)
+Use design tokens not raw values:
+- Spacing: always use scale (p-4, not p-[17px])
+- Colors: always use semantic names (text-slate-400, not #94a3b8)
+- Never use arbitrary values unless absolutely necessary
+- Dark mode: use dark: prefix consistently
+- Responsive: mobile-first (base → sm → md → lg)
+Extract repeated patterns into components, not utility classes.
+Keep component variants in a `variants` object using `cva()`.
+
+## Next.js + Supabase Auth Patterns (Skill: nextjs-supabase-auth)
+Use `@supabase/ssr` for cookie-based sessions (already configured).
+Never use `supabase.auth.getSession()` in server components —
+use `supabase.auth.getUser()` instead (getSession trusts client).
+Protect routes via ProtectedRoute component (already wired).
+Auth state: always read from `useAuth()` hook, never from localStorage.
+On sign out: call `supabase.auth.signOut()` then navigate to `/login`.
+Session refresh happens automatically via `onAuthStateChange` listener.
+
+## Performance Rules
+Lazy load heavy components with `React.lazy()` and `Suspense`.
+Never import entire icon libraries — import individual icons only.
+Images: always specify width/height to prevent layout shift.
+Lists over 100 items: use virtualization (react-window).
+
 ## How You Respond
 1. Show a description of the UI before coding
 2. Use shadcn/ui components first

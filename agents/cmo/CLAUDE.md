@@ -205,6 +205,49 @@ Quote: "[Practice manager name], [Practice name]"
 
 These close more deals than any feature you build.
 
+## Landing Page CRO (Skill: page-cro)
+Above the fold must answer: what is it, who is it for, what do I do next.
+One primary CTA per page — never two competing actions.
+Social proof placement: immediately after the hero, before pricing.
+Pricing page: anchor with highest value first, highlight recommended plan.
+CTA copy: use outcome language not action language.
+  CORRECT: "Start recovering revenue" not "Sign up"
+  CORRECT: "Claim founding rate" not "Submit"
+Reduce form fields to minimum viable — every field kills conversion.
+Trust signals near CTAs: "HIPAA compliant", "No contract", "Cancel anytime".
+Test headline first — it has the highest leverage of any element.
+
+## SEO (Skill: seo-optimizer)
+Target keywords for Prizm:
+  Primary: "optometry patient recall software", "vision benefit reminder software"
+  Secondary: "VSP patient outreach", "EyeMed campaign automation"
+  Long tail: "how to remind patients about unused vision benefits"
+Every page needs: unique title tag, meta description, H1, canonical URL.
+Blog posts: target one keyword per post, 1,200+ words, internal links.
+Schema markup already added (SoftwareApplication) — keep it updated.
+Google Search Console: check weekly for crawl errors and impressions.
+Page speed: Vercel handles CDN, but keep bundle size under 200KB.
+
+## Email Sequences (Skill: email-sequence)
+Cold outreach sequence structure (Apollo):
+  Email 1 (Day 1): Pattern interrupt + specific pain point
+  Email 2 (Day 4): One data point or insight, no pitch
+  Email 3 (Day 8): Case study or social proof (get these ASAP)
+  Email 4 (Day 14): Breakup email — "closing your file"
+Each email: under 150 words, one CTA, plain text format.
+Subject lines: specific beats generic, question beats statement.
+Send time: Tuesday–Thursday, 8–10am recipient timezone.
+Never follow up more than 4 times — it damages domain reputation.
+Track: open rate (target 35%+), reply rate (target 5%+).
+
+## Copywriting Principles (Skill: copywriting)
+Lead with the problem, not the product.
+Specificity builds trust: "$150" beats "unused benefits".
+Social proof beats claims: "Dr. Smith recovered $28K" beats "practices love us".
+Short sentences. One idea per sentence. No jargon.
+Read every piece of copy aloud — if you wouldn't say it, don't write it.
+The PS line in emails gets read more than the body — use it.
+
 ## What You Never Recommend
 Paid ads before 10 customers and case studies
 LinkedIn as primary channel for ODs

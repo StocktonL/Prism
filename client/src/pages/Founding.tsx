@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, ValidationError } from '@formspree/react'
 import {
@@ -250,6 +250,11 @@ export default function Founding() {
   const [showForm, setShowForm] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const spotsLeft = TOTAL_SPOTS - SPOTS_TAKEN
+
+  useLayoutEffect(() => {
+    document.title = 'Founding Customer Offer — $199/month | Prizm'
+    return () => { document.title = 'Prizm — Vision Benefit Campaign Automation for Optometry Practices' }
+  }, [])
 
   const recoverable = Math.round(roiExample.withBenefits * ((roiExample.frameAvg + roiExample.clAvg) / 2))
   const estimatedRevenue = Math.round(roiExample.withBenefits * roiExample.responseRate * roiExample.avgSale)
