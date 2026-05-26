@@ -479,9 +479,9 @@ const stats = [
     nav: '/app/eligibility',
   },
   {
-    title: 'Revenue Recovered',
+    title: 'Est. Revenue Opportunity',
     value: '$24,180',
-    sub: '$449 subscription · 54x ROI this month',
+    sub: 'based on active campaigns',
     icon: <DollarSign className="h-5 w-5 text-emerald-600" />,
     bg: 'bg-emerald-50',
     trend: '+18% vs last month',
@@ -581,9 +581,9 @@ const verifStatusConfig: Record<VerifStatus, { label: string; icon: React.ReactN
 // ─── Revenue pipeline ─────────────────────────────────────────────────────────
 
 const pipelineStages = [
-  { label: 'Sending This Week',      patients: 47,  value: '$11,280', description: 'Benefits expire within 30 days', color: 'bg-rose-500',  textColor: 'text-rose-700',  bg: 'bg-rose-50',  border: 'border-rose-200',  pill: 'bg-rose-100 text-rose-700'   },
-  { label: 'Queued — Next 2 Weeks',  patients: 89,  value: '$21,540', description: 'Benefits expire in 31–60 days', color: 'bg-amber-400', textColor: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', pill: 'bg-amber-100 text-amber-700' },
-  { label: 'Scheduled — Next Month', patients: 156, value: '$37,920', description: 'Benefits expire in 61–90 days', color: 'bg-teal-500',  textColor: 'text-teal-700',  bg: 'bg-teal-50',  border: 'border-teal-200',  pill: 'bg-teal-100 text-teal-700'   },
+  { label: 'Est. Booked — This Week',    patients: 47,  value: '$11,280', description: 'Benefits expire within 30 days', color: 'bg-rose-500',  textColor: 'text-rose-700',  bg: 'bg-rose-50',  border: 'border-rose-200',  pill: 'bg-rose-100 text-rose-700'   },
+  { label: 'Est. Opportunity — 2 Weeks', patients: 89,  value: '$21,540', description: 'Benefits expire in 31–60 days', color: 'bg-amber-400', textColor: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', pill: 'bg-amber-100 text-amber-700' },
+  { label: 'Est. Opportunity — Month',   patients: 156, value: '$37,920', description: 'Benefits expire in 61–90 days', color: 'bg-teal-500',  textColor: 'text-teal-700',  bg: 'bg-teal-50',  border: 'border-teal-200',  pill: 'bg-teal-100 text-teal-700'   },
 ]
 
 // ─── Claims ───────────────────────────────────────────────────────────────────
@@ -701,7 +701,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
-          <p className="mt-1 text-sm text-slate-500">You've recovered <span className="font-semibold text-emerald-600">$24,180</span> this month. 312 patients have benefits expiring.</p>
+          <p className="mt-1 text-sm text-slate-500">Est. <span className="font-semibold text-emerald-600">$24,180</span> in campaign revenue opportunity this month. 312 patients have benefits expiring.</p>
         </div>
         <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 self-start flex-shrink-0">
           <Lock className="h-3.5 w-3.5 text-emerald-600" />
@@ -992,7 +992,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Revenue engine */}
+      {/* Campaign Revenue Estimates */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -1002,12 +1002,13 @@ export default function Dashboard() {
               </div>
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
-                  Revenue Engine
+                  Campaign Revenue Estimates
                   <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Running
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs">Prizm automatically sends personalized benefit reminders as patient allowances near expiration</CardDescription>
+                <p className="text-xs text-slate-500 mt-1">Estimated based on industry booking rates — actual results vary</p>
               </div>
             </div>
             <button onClick={() => navigate('/app/campaigns')} className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors">

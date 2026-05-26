@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, User } from 'lucide-react'
 import SiteNav from '../components/SiteNav'
@@ -256,13 +257,24 @@ If you're looking for a tool built specifically for this workflow, [Prizm](https
 ]
 
 export default function Blog() {
+  useEffect(() => {
+    document.title = 'Optometry Patient Outreach Campaigns | Prizm Blog'
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'Year-round patient campaign strategies for independent optometry practices. VSP and EyeMed benefit recovery guides.'
+      )
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <SiteNav />
 
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-black text-white mb-2">Prizm Blog</h1>
-        <p className="text-slate-400 mb-12">Optical revenue strategies for independent optometry practices.</p>
+        <h1 className="text-3xl font-black text-white mb-2">Optometry Revenue Strategies</h1>
+        <p className="text-slate-400 mb-12">Year-round patient campaign guides for independent optometry practices.</p>
 
         <div className="space-y-5">
           {POSTS.map(post => (

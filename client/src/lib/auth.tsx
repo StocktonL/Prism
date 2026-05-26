@@ -30,6 +30,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  // HIPAA requirement: 30-minute inactivity timeout
+  useEffect(() => {
+    const TIMEOUT_MS = 1800000 // 30 minutes
+    let timeoutId: ReturnType<typeof setTimeout>
+
+    function resetTimer() {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        supabase.auth.signOut()
+      }, TIMEOUT_MS)
+    }
+
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'] as const
+
+    events.forEach(event => window.addEventListener(event, resetTimer))
+    resetTimer() // start the timer on mount
+
+    return () => {
+      clearTimeout(timeoutId)
+      events.forEach(event => window.removeEventListener(event, resetTimer))
+    }
+  }, [])
+
   async function signOut() {
     await supabase.auth.signOut()
   }

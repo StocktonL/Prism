@@ -83,12 +83,31 @@ interface Campaign {
   patients: string[]
 }
 
-// 80% of SMS replies convert to booked appointments; avg optical transaction $400
+// Industry benchmark rates used for estimated ROI funnel
+// Actual results vary — no EHR integration to confirm real sales
 const BOOKING_RATE = 0.80
 const AVG_TRANSACTION = 400
 
 function calcRevenue(replied: number) {
   return Math.round(replied * BOOKING_RATE * AVG_TRANSACTION)
+}
+
+// Estimated ROI funnel — based on industry benchmarks
+const EST_DELIVERY_RATE = 0.97   // 97% of sent messages delivered
+const EST_ENGAGEMENT_RATE = 0.11 // 11% of delivered click/respond
+const EST_BOOKING_RATE = 0.10    // 10% of delivered book an appointment
+const EST_AVG_TRANSACTION = 375  // average optical transaction
+
+function FunnelRow({ label, value, color, sublabel }: { label: string; value: number; color: string; sublabel?: string }) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <div>
+        <span className="text-sm text-slate-300">{label}</span>
+        {sublabel && <span className="text-xs text-slate-600 ml-2">{sublabel}</span>}
+      </div>
+      <span className={`text-sm font-bold ${color}`}>{value.toLocaleString()}</span>
+    </div>
+  )
 }
 
 const INITIAL_CAMPAIGNS: Campaign[] = [
@@ -722,29 +741,24 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
             <p className="mt-2 text-xs text-teal-600">Each patient receives their actual verified benefit amounts at send time.</p>
           </div>
 
-          {/* Revenue attributed */}
-          {campaign.revenueAttributed > 0 && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-emerald-600">Revenue Attributed</p>
-              <p className="text-3xl font-black text-emerald-700">${campaign.revenueAttributed.toLocaleString()}</p>
-              <p className="text-xs text-emerald-600 mt-1">optical revenue recovered from this campaign</p>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
-                  <p className="text-sm font-bold text-slate-800">{campaign.smsReplied}</p>
-                  <p className="text-xs text-slate-500">replied</p>
-                </div>
-                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
-                  <p className="text-sm font-bold text-slate-800">{campaign.appointmentsBooked}</p>
-                  <p className="text-xs text-slate-500">booked</p>
-                </div>
-                <div className="rounded-lg bg-white border border-emerald-200 px-2 py-2">
-                  <p className="text-sm font-bold text-slate-800">${AVG_TRANSACTION}</p>
-                  <p className="text-xs text-slate-500">avg sale</p>
+          {/* Estimated ROI Funnel */}
+          {campaign.patientsReached > 0 && (
+            <div className="rounded-xl bg-slate-800/50 border border-white/5 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Estimated Performance</span>
+                <span className="text-xs text-slate-600">Based on industry benchmarks</span>
+              </div>
+              <div className="space-y-2">
+                <FunnelRow label="Patients Reached" value={campaign.patientsReached} color="text-white" />
+                <FunnelRow label="Est. Delivered" value={Math.round(campaign.patientsReached * EST_DELIVERY_RATE)} color="text-teal-400" sublabel="97% delivery rate" />
+                <FunnelRow label="Est. Engaged" value={Math.round(campaign.patientsReached * EST_ENGAGEMENT_RATE)} color="text-emerald-400" sublabel="11% engagement" />
+                <FunnelRow label="Est. Appointments" value={Math.round(campaign.patientsReached * EST_BOOKING_RATE)} color="text-amber-400" sublabel="10% booking rate" />
+                <div className="border-t border-white/5 pt-2 mt-2 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-white">Est. Optical Revenue</span>
+                  <span className="text-lg font-black text-teal-400">${(Math.round(campaign.patientsReached * EST_BOOKING_RATE) * EST_AVG_TRANSACTION).toLocaleString()}</span>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-emerald-500">
-                {replyRate}% response rate · {Math.round(BOOKING_RATE * 100)}% booking conversion · ${AVG_TRANSACTION} avg optical transaction
-              </p>
+              <p className="text-xs text-slate-600 mt-3">Actual results vary. Average optical transaction $375 per appointment.</p>
             </div>
           )}
 
@@ -810,15 +824,18 @@ export default function Campaigns() {
   }, [location.state])
 
   const totalSms = campaigns.reduce((sum, c) => sum + c.smsDelivered, 0)
-  const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenueAttributed, 0)
   const totalReplied = campaigns.reduce((sum, c) => sum + c.smsReplied, 0)
   const avgResponseRate = totalSms > 0 ? Math.round((totalReplied / totalSms) * 100) : 0
 
+  // Est. Revenue Opportunity: sum of (reach × 10% booking rate × $375) for sent/completed campaigns
+  const sentCampaigns = campaigns.filter(c => c.status === 'Active' || c.status === 'Completed')
+  const totalEstRevenue = sentCampaigns.reduce((sum, c) => sum + Math.round(c.patientsReached * EST_BOOKING_RATE * EST_AVG_TRANSACTION), 0)
+
   const stats = [
-    { label: 'Total Campaigns',   value: campaigns.length,         icon: <Megaphone   className="h-5 w-5 text-violet-600" />, bg: 'bg-violet-50'  },
-    { label: 'Avg Response Rate', value: `${avgResponseRate}%`,    icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />,   bg: 'bg-blue-50'    },
-    { label: 'SMS Delivered',     value: totalSms.toLocaleString(), icon: <Send        className="h-5 w-5 text-teal-600" />,   bg: 'bg-teal-50'    },
-    { label: 'Revenue Recovered', value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign className="h-5 w-5 text-emerald-600" />, bg: 'bg-emerald-50' },
+    { label: 'Total Campaigns',        value: campaigns.length,                        icon: <Megaphone    className="h-5 w-5 text-violet-600" />,  bg: 'bg-violet-50',  subtitle: undefined },
+    { label: 'Avg Response Rate',      value: `${avgResponseRate}%`,                   icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />,    bg: 'bg-blue-50',    subtitle: undefined },
+    { label: 'SMS Delivered',          value: totalSms.toLocaleString(),               icon: <Send         className="h-5 w-5 text-teal-600" />,    bg: 'bg-teal-50',    subtitle: undefined },
+    { label: 'Est. Revenue Opportunity', value: `$${totalEstRevenue.toLocaleString()}`, icon: <DollarSign  className="h-5 w-5 text-emerald-600" />, bg: 'bg-emerald-50', subtitle: 'based on 10% booking rate' },
   ]
 
   function openNewCampaign(type?: CampaignType, brand?: string) {
@@ -855,6 +872,7 @@ export default function Campaigns() {
               <div>
                 <p className="text-xs font-medium text-slate-500">{s.label}</p>
                 <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                {s.subtitle && <p className="text-xs text-slate-500 mt-0.5">{s.subtitle}</p>}
               </div>
             </CardContent>
           </Card>
@@ -925,12 +943,12 @@ export default function Campaigns() {
                         <p className="text-xs text-slate-400">Response</p>
                       </div>
                       <div className="text-center">
-                        <p className={`font-semibold ${campaign.revenueAttributed > 0 ? 'text-emerald-700' : 'text-slate-400'}`}>
-                          {campaign.revenueAttributed > 0
-                            ? `$${campaign.revenueAttributed.toLocaleString()}`
+                        <p className={`font-semibold ${campaign.patientsReached > 0 && (campaign.status === 'Active' || campaign.status === 'Completed') ? 'text-emerald-700' : 'text-slate-400'}`}>
+                          {campaign.patientsReached > 0 && (campaign.status === 'Active' || campaign.status === 'Completed')
+                            ? `$${(Math.round(campaign.patientsReached * EST_BOOKING_RATE) * EST_AVG_TRANSACTION).toLocaleString()}`
                             : '—'}
                         </p>
-                        <p className="text-xs text-slate-400">Revenue</p>
+                        <p className="text-xs text-slate-400">Est. Revenue</p>
                       </div>
                     </div>
                     {statusBadge(campaign.status)}

@@ -53,6 +53,7 @@ export default function BlogPost() {
             <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {post.readTime}</span>
             <span>{post.date}</span>
           </div>
+          <p className="text-xs text-slate-600 mt-3">5 years in optometry B2B SaaS · Founder, Prizm</p>
         </header>
 
         <div

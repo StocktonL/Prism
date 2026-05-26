@@ -260,7 +260,7 @@ export default function Founding() {
   const estimatedRevenue = Math.round(roiExample.withBenefits * roiExample.responseRate * roiExample.avgSale)
 
   return (
-    <div className="min-h-screen bg-[#0A0E27] text-white">
+    <div className="min-h-screen bg-slate-950 text-white">
 
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
@@ -296,6 +296,7 @@ export default function Founding() {
               $199/month. Forever.
             </span>
           </h1>
+          <p className="text-sm text-teal-400 font-medium mt-2">Only 10 founding spots available</p>
 
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-4">
             Prizm launches at $449/month. The first 10 practices to commit get lifetime access at $199 — that's a $3,000/year discount locked in permanently.
@@ -319,7 +320,7 @@ export default function Founding() {
             </button>
           </div>
 
-          <p className="mt-4 text-xs text-slate-600">No credit card now. Agreement sent within 24 hours.</p>
+          <p className="mt-4 text-xs text-slate-600">HIPAA BAA included · No credit card to start · Cancel after year one · No long-term lock-in</p>
         </div>
 
         {/* Stats bar */}
@@ -462,7 +463,7 @@ export default function Founding() {
           >
             Claim my founding spot <ArrowRight className="h-4 w-4" />
           </button>
-          <p className="mt-4 text-xs text-slate-600">No credit card. Agreement within 24 hours.</p>
+          <p className="mt-4 text-xs text-slate-600">HIPAA BAA included · No credit card to start · Cancel after year one · No long-term lock-in</p>
 
           <div className="mt-8 flex items-center justify-center gap-6 text-xs text-slate-600">
             <span className="flex items-center gap-1.5"><Lock className="h-3 w-3" /> HIPAA compliant</span>

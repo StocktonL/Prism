@@ -1,5 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+      const delay = Math.min(100 * Math.pow(2, attempt) * (1 + Math.random() * 0.1), 5000)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error('Max retries exceeded')
+}
+
 // Stedi/Change Healthcare payer IDs for vision carriers
 const PAYER_IDS: Record<string, string> = {
   'VSP':          '39026',
@@ -169,6 +182,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'STEDI_API_KEY not configured in environment' })
   }
 
+  const practiceNpi = process.env.PRACTICE_NPI
+  if (!practiceNpi) {
+    return res.status(500).json({ error: 'Practice NPI not configured. Contact support.' })
+  }
+
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
 
   const stediPayload = {
@@ -176,7 +194,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     tradingPartnerServiceId: payerId,
     provider: {
       organizationName: process.env.PRACTICE_NAME ?? 'Prizm Vision',
-      npi: process.env.PRACTICE_NPI ?? '1234567893', // replace with real NPI
+      npi: practiceNpi,
     },
     subscriber: {
       memberId,
@@ -191,23 +209,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
   }
 
+  // TODO: Check eligibility_checks table for cached result < 30 days old
+  // const cached = await checkEligibilityCache(patientId, carrier)
+  // if (cached) return res.json(cached)
+  // Requires Supabase service role connection — implement when Supabase is wired
+
   try {
-    const stediRes = await fetch(
-      'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Key ${apiKey}`,
-          'Content-Type': 'application/json',
+    const stediRes = await withRetry(() =>
+      fetch(
+        'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Key ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(stediPayload),
         },
-        body: JSON.stringify(stediPayload),
-      },
+      )
     )
 
     if (!stediRes.ok) {
-      const errText = await stediRes.text()
-      console.error('Stedi error', stediRes.status, errText)
-      return res.status(stediRes.status).json({ error: 'Eligibility check failed', detail: errText })
+      // Log only the status code — errText may contain PHI from the upstream payer
+      console.error('Stedi eligibility check failed:', stediRes.status)
+      return res.status(502).json({ error: 'Eligibility check failed. Please try again.' })
     }
 
     const raw = await stediRes.json() as Record<string, unknown>
@@ -220,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       checkedAt: new Date().toISOString(),
     })
   } catch (err) {
-    console.error('Stedi request failed:', err)
+    console.error('Stedi request failed:', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ error: 'Could not reach eligibility network. Try again.' })
   }
 }

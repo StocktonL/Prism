@@ -306,7 +306,7 @@ export default function Landing() {
           <div className="text-center mb-14">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5">
               <Sparkles className="h-3.5 w-3.5 text-teal-400" />
-              <span className="text-xs font-semibold text-teal-300">AI-powered campaign automation for optometry</span>
+              <span className="text-xs font-semibold text-teal-300">Year-round optical revenue recovery for independent optometry</span>
             </div>
 
             <h1 className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl font-black leading-[1.08] tracking-tight">
@@ -316,7 +316,7 @@ export default function Landing() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
-              Prizm tells every patient exactly how much they have left — their frame allowance, contact lens benefit, exam coverage — and sends personalized campaigns that bring them back before it expires.
+              Independent optometry practices recover $15–50K in optical revenue every year by reaching patients before their benefits expire. Prizm runs those campaigns automatically — personalized with each patient's exact dollar amounts.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -372,7 +372,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10">
             <Stat value="25,000" label="independent optometry practices in the US" />
-            <Stat value="$2.4B" label="in vision benefits that expire unused every year" />
+            <Stat value="$2.4B" label="in vision benefits that expire unused every year in the US" />
             <Stat value="$150" label="average unused frame allowance per patient" />
             <Stat value="20%" label="average response rate on benefit-specific messages" />
           </div>
