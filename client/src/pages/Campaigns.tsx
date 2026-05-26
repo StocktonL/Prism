@@ -358,7 +358,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
   const [staggerStartDate, setStaggerStartDate] = useState('')
   const [staggerDays, setStaggerDays] = useState(7)
   const [criteria, setCriteria] = useState<CriteriaKey>(preselectedBrand ? 'all' : 'unused_benefits')
-  const MAX_CHARS = 160
+  const MAX_CHARS = 320
 
   // Patients who purchased this brand — shown in brand targeting banner
   const brandPatients = preselectedBrand
@@ -501,7 +501,9 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label className="text-xs font-medium text-slate-700">Message</label>
-                  <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>{message.length}/{MAX_CHARS} chars</span>
+                  <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : message.length > 160 ? 'text-amber-400' : 'text-slate-400'}`}>
+                    {message.length} chars · {message.length <= 160 ? '1 segment' : message.length <= 320 ? '2 segments' : 'too long'}
+                  </span>
                 </div>
                 <div className="mb-2 flex flex-wrap gap-1.5">
                   {MERGE_TAGS.map((t) => (
@@ -529,7 +531,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                     <p className="mt-1.5 text-xs text-teal-600 font-medium">Hard dollar amounts pulled from each patient's verified benefits at send time.</p>
                   </div>
                 )}
-                <p className="mt-1.5 text-xs text-slate-400">Messages over 160 characters count as 2 SMS.</p>
+                <p className="mt-1.5 text-xs text-slate-400">Up to 320 characters (2 SMS segments). Twilio auto-splits — patients see one message. Avoid emoji to stay in 1-segment pricing.</p>
               </div>
               <div>
                 <label className="mb-2 block text-xs font-medium text-slate-700">Schedule</label>
