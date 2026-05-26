@@ -256,26 +256,32 @@ If you're looking for a tool built specifically for this workflow, [Prizm](https
 
 export default function Blog() {
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-slate-100 px-6 py-4">
-        <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1.5">
-          <ArrowLeft className="h-4 w-4" /> Back to Prizm
+    <div className="min-h-screen bg-slate-950 text-white">
+      <nav className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/90 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/50">
+            <span className="text-xs font-black text-white">P</span>
+          </div>
+          <span className="text-base font-bold tracking-tight text-white">Prizm</span>
+        </Link>
+        <Link to="/" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+          <ArrowLeft className="h-4 w-4" /> Back to site
         </Link>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-black text-slate-900 mb-2">Prizm Blog</h1>
-        <p className="text-slate-500 mb-12">Optical revenue strategies for independent optometry practices.</p>
+        <h1 className="text-3xl font-black text-white mb-2">Prizm Blog</h1>
+        <p className="text-slate-400 mb-12">Optical revenue strategies for independent optometry practices.</p>
 
-        <div className="space-y-8">
+        <div className="space-y-5">
           {POSTS.map(post => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="block group">
-              <article className="border border-slate-100 rounded-2xl p-6 hover:border-teal-200 hover:shadow-sm transition-all">
-                <h2 className="text-lg font-bold text-slate-900 group-hover:text-teal-600 transition-colors mb-2">
+              <article className="border border-white/8 rounded-2xl p-6 bg-white/3 hover:border-teal-500/40 hover:bg-white/5 transition-all">
+                <h2 className="text-base font-bold text-white group-hover:text-teal-400 transition-colors mb-2 leading-snug">
                   {post.title}
                 </h2>
-                <p className="text-sm text-slate-500 mb-4">{post.description}</p>
-                <div className="flex items-center gap-4 text-xs text-slate-400">
+                <p className="text-sm text-slate-400 mb-4 leading-relaxed">{post.description}</p>
+                <div className="flex items-center gap-4 text-xs text-slate-500">
                   <span className="flex items-center gap-1"><User className="h-3 w-3" /> Stockton Lundell</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {post.readTime}</span>
                   <span>{post.date}</span>
@@ -285,6 +291,10 @@ export default function Blog() {
           ))}
         </div>
       </div>
+
+      <footer className="border-t border-white/5 px-6 py-8 text-center">
+        <p className="text-xs text-slate-600">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a></p>
+      </footer>
     </div>
   )
 }
