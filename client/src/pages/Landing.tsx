@@ -666,7 +666,7 @@ export default function Landing() {
             <span className="text-sm font-bold text-white">Prizm</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-600">
-            <a href="mailto:hello@prizmvision.com" className="hover:text-slate-400 transition-colors">hello@prizmvision.com</a>
+            <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a>
             <span>·</span>
             <span>Built for independent optometry</span>
           </div>

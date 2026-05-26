@@ -318,9 +318,24 @@ export default function UploadPage() {
         ...report.missingInsurance,
       ]
 
+      // Fetch existing patients to deduplicate against the database
+      const { data: existing } = await supabase
+        .from('patients')
+        .select('first_name, last_name, date_of_birth')
+        .eq('practice_id', practice_id)
+
+      const existingKeys = new Set(
+        (existing ?? []).map(p => `${p.first_name?.toLowerCase()}|${p.last_name?.toLowerCase()}|${p.date_of_birth ?? ''}`)
+      )
+
+      const newPatients = allPatients.filter(p => {
+        const key = `${p.first_name?.toLowerCase()}|${p.last_name?.toLowerCase()}|${p.date_of_birth ?? ''}`
+        return !existingKeys.has(key)
+      })
+
       // Insert in batches of 100
-      for (let i = 0; i < allPatients.length; i += 100) {
-        const batch = allPatients.slice(i, i + 100).map(p => ({ ...p, practice_id }))
+      for (let i = 0; i < newPatients.length; i += 100) {
+        const batch = newPatients.slice(i, i + 100).map(p => ({ ...p, practice_id }))
         const { error } = await supabase.from('patients').insert(batch)
         if (error) throw error
       }
