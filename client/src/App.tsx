@@ -14,6 +14,7 @@ import Upload from './pages/Upload'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
 import ForgotPassword from './pages/ForgotPassword'
+import Checklist from './pages/Checklist'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/checklist" element={<Checklist />} />
 
       {/* Protected app */}
       <Route
