@@ -56,14 +56,14 @@ function normalizePhone(raw: string): string {
   return raw.replace(/\D/g, '').slice(0, 10)
 }
 
-function normalizeDate(raw: string): string {
-  if (!raw) return ''
+function normalizeDate(raw: string): string | null {
+  if (!raw || !raw.trim()) return null
   // MM/DD/YYYY → YYYY-MM-DD
   const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
   if (mdy) return `${mdy[3]}-${mdy[1].padStart(2, '0')}-${mdy[2].padStart(2, '0')}`
   // already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
-  return raw
+  return null
 }
 
 const CARRIER_MAP: Record<string, string> = {

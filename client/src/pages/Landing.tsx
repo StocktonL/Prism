@@ -586,7 +586,7 @@ export default function Landing() {
               <span className="text-6xl font-black text-white">$449</span>
               <span className="text-slate-400 mb-2">/month</span>
             </div>
-            <p className="text-sm text-slate-400 mb-1">Includes 1,500 verifications · $0.25/check after that.</p>
+            <p className="text-sm text-slate-400 mb-1">Includes 1,500 verifications · $0.15/check after that.</p>
             <p className="text-xs text-slate-500 mb-6">Most practices never exceed the included amount.</p>
             <div className="space-y-3 mb-8">
               {[
