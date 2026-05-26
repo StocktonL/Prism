@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Clock, User } from 'lucide-react'
+import { Clock, User } from 'lucide-react'
+import SiteNav from '../components/SiteNav'
 
 export interface BlogPost {
   slug: string
@@ -257,17 +258,7 @@ If you're looking for a tool built specifically for this workflow, [Prizm](https
 export default function Blog() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <nav className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/90 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/50">
-            <span className="text-xs font-black text-white">P</span>
-          </div>
-          <span className="text-base font-bold tracking-tight text-white">Prizm</span>
-        </Link>
-        <Link to="/" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
-          <ArrowLeft className="h-4 w-4" /> Back to site
-        </Link>
-      </nav>
+      <SiteNav />
 
       <div className="max-w-2xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-black text-white mb-2">Prizm Blog</h1>
