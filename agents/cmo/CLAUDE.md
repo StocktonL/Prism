@@ -230,15 +230,160 @@ Page speed: Vercel handles CDN, but keep bundle size under 200KB.
 
 ## Email Sequences (Skill: email-sequence)
 Cold outreach sequence structure (Apollo):
-  Email 1 (Day 1): Pattern interrupt + specific pain point
+  Email 1 (Day 0): Pattern interrupt + specific pain point
   Email 2 (Day 4): One data point or insight, no pitch
-  Email 3 (Day 8): Case study or social proof (get these ASAP)
-  Email 4 (Day 14): Breakup email — "closing your file"
+  Email 3 (Day 8): Timing urgency + Calendly link
+  Email 4 (Day 14): Breakup email — deadline on founding rate
 Each email: under 150 words, one CTA, plain text format.
 Subject lines: specific beats generic, question beats statement.
-Send time: Tuesday–Thursday, 8–10am recipient timezone.
+Send time: Monday–Thursday, 7–10am recipient timezone.
 Never follow up more than 4 times — it damages domain reputation.
-Track: open rate (target 35%+), reply rate (target 5%+).
+Track: CTOR (not open rate — open rate is unreliable), reply rate (target 4-8%).
+
+Proven subject lines for optometry outreach:
+  Email 1: "Your Q4 benefit patients — what's the plan?"
+  Email 2: "The revenue number inside your patient list"
+  Email 3: "Most practices miss 60% of their Q4 revenue window"
+  Email 4: "Leaving the founding rate open until [specific date]"
+
+Apollo sequence settings:
+  Daily send limit: 20/day week 1, 35/day week 2, 50/day week 3+
+  Send days: Mon–Thu only (never Friday or weekends)
+  Auto-pause on reply: ON (critical — never miss this)
+  Finish on meeting booked: ON
+
+## Email Deliverability (Skill: email-marketing)
+Authentication must be set up BEFORE first send — in this order:
+  1. SPF — DNS record authorizing your sending IP
+  2. DKIM — cryptographic signature proving email origin
+  3. DMARC — start at p=none (monitor), tighten over time
+  Check current status at mail-tester.com — need 9/10+ score.
+
+Domain warming for new domains (prizmvision.com):
+  Week 1: 20 emails/day max
+  Week 2: 35 emails/day max
+  Week 3+: 50 emails/day max
+  Never jump volume suddenly — ISPs flag it as suspicious.
+
+Deliverability signals (ranked by weight):
+  1. Engagement rate (opens, clicks, replies) — most important
+  2. Spam complaint rate — must stay BELOW 0.1% (1 in 1,000)
+  3. Bounce rate — hard bounces suppress immediately, never retry
+  4. Authentication (SPF/DKIM/DMARC)
+  5. Sending consistency — don't send 500 one day, 0 the next
+
+The spam word myth: specific trigger words don't cause spam filtering.
+Modern systems evaluate hundreds of signals. Engagement history dominates.
+Natural writing avoids most triggers automatically.
+
+If emails land in spam:
+  Check authentication first → review bounce/complaint rates →
+  assess engagement → reduce volume to engaged list → expand gradually.
+
+## Email Copywriting Principles (Skill: email-marketing)
+The 7-element email anatomy:
+  1. Subject line — opens the email (clarity + relevance beat cleverness)
+  2. Preheader text — secondary inbox hook (use it, don't leave blank)
+  3. Sender name — recognition is the #1 driver of opens, not subject line
+  4. Opening line — must earn the next sentence
+  5. Body copy — one purpose, scannable, active voice
+  6. CTA — specific over generic, one primary action
+  7. P.S. — highest-engagement element, use it for urgency or bonus
+
+Subject line rules:
+  Under 50 characters for mobile reliability
+  Clarity is non-negotiable — bait-and-switch kills trust permanently
+  Urgency works when used sparingly (not every email)
+  Personalisation adds value when it's meaningful, not just a name token
+  Never use deceptive "Re:" or "Fwd:" prefixes
+
+CTA rules:
+  One primary CTA per email — never two competing actions
+  Specific language: "Book 20 minutes Thursday" not "Learn more"
+  For cold outreach: reply-to-book beats calendar link in emails 1-2
+
+P.S. line: practice managers skim emails — the P.S. gets read.
+Use it to restate the founding rate deadline or key benefit.
+Example: "P.S. The $199/month founding rate closes at 10 practices.
+Five spots are gone. Reply if you want to talk before it fills."
+
+Copywriting principles applied to optometry outreach:
+  Lead with the problem, not the product
+  Specificity builds trust: "$150 frame benefit" beats "unused benefits"
+  Dollar amounts always — never vague language
+  Social proof beats claims (get case studies ASAP)
+  Short sentences. One idea per sentence. No jargon.
+  Read every email aloud — if you wouldn't say it, don't write it
+
+Legal requirements for every marketing email (CAN-SPAM):
+  Physical postal address in every email
+  Functional unsubscribe mechanism
+  Honest subject lines — no deception
+  Clear sender identification
+  Note: Cold outreach to B2B is generally CAN-SPAM compliant
+  (opt-out model, not opt-in) — but honor unsubscribes immediately.
+
+## Email Metrics (Skill: email-marketing)
+CTOR (Click-to-Open Rate) = clicks ÷ opens — the real content metric.
+Open rate is unreliable: Apple Mail Privacy Protection pre-fetches
+pixels, Gmail caches them, spam filters trigger false positives.
+Use open rates for trend direction only. Never make major decisions
+on small open rate differences.
+
+Targets for cold outreach without case studies:
+  Open rate: 30-40% (directional only)
+  Reply rate: 4-8%
+  Bounce rate: under 3% (if above 5%, stop and fix list quality)
+  Spam complaint rate: under 0.1% — this is the critical one
+
+Hard bounce = permanent delivery failure. Suppress immediately.
+Never retry a hard bounced address — it damages sender reputation.
+Soft bounce = temporary failure. Retry is fine.
+
+## Segmentation Rules (Skill: email-marketing)
+Do NOT over-segment a small list. At under 1,000 contacts,
+heavy segmentation reduces sample sizes and compromises testing.
+Wait until low thousands before applying advanced segmentation.
+
+For Apollo outreach right now — one list, one sequence.
+Segment later when you have data on which titles/practice sizes respond.
+
+Dynamic segments (auto-update): use for ongoing campaigns.
+Static segments (fixed at creation): use for A/B test control cells.
+
+When a list does warrant segmentation (post-100 customers):
+  By insurance carriers in patient panel (VSP-heavy vs EyeMed-heavy)
+  By practice size (1-5 employees vs 6-20)
+  By engagement level (opened 2+ emails vs cold)
+  By last reply/demo date (re-engagement cadence)
+
+## Automation Sequences to Build (Post-MVP)
+Priority order for when Prizm has an email tool wired:
+
+1. Welcome sequence (highest ROI — 51% more revenue than single email)
+   Email 1: Deliver lead magnet immediately (never delay this)
+   Email 2: Set expectations, show the aha moment
+   Email 3: First campaign walkthrough
+   Email 4: Check-in — did they upload their CSV?
+
+2. Re-engagement sequence (for cold leads who went dark)
+   Target: contacts who opened 2+ emails but never replied
+   Email 1: "We miss you" — what's changed at Prizm
+   Email 2: New case study or insight
+   Email 3: Explicit opt-out offer — clean the list
+
+3. Post-demo nurture (for demos that didn't close)
+   Day 1: Thank you + one-pager summary
+   Day 7: New insight or data point
+   Day 21: "Q4 is getting closer" — urgency check-in
+   Day 45: Final follow-up before archiving
+
+Automation rules:
+  Map the logic before building — diagram first
+  Test every trigger before going live
+  Define an exit condition for every sequence
+  Never use noreply@ — use monitored stockton@prizmvision.com
+  Monitor regularly — automations are not set-and-forget
 
 ## Copywriting Principles (Skill: copywriting)
 Lead with the problem, not the product.
