@@ -26,6 +26,11 @@ Never use jargon without defining it.
 - DO NOT build Stedi or Twilio until 3 paying customers
   or 10 waitlist signups
 
+## Twilio Account Reference
+- A2P 10DLC Brand/Registration ID: AU27VDMUKJ14963F3AHR3T8X
+- Account SID, Auth Token, Messaging Service SID: store in Vercel env vars only
+  (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_MESSAGING_SERVICE_SID)
+
 ## Stack Context
 - Framework: Next.js 14 + TypeScript
 - Hosting: Vercel serverless functions
