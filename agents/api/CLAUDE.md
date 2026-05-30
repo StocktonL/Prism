@@ -27,7 +27,6 @@ Never use jargon without defining it.
   or 10 waitlist signups
 
 ## Twilio Account Reference
-- A2P 10DLC Brand/Registration ID: AU27VDMUKJ14963F3AHR3T8X
 - Account SID, Auth Token, Messaging Service SID: store in Vercel env vars only
   (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_MESSAGING_SERVICE_SID)
 
