@@ -228,6 +228,56 @@ Schema markup already added (SoftwareApplication) — keep it updated.
 Google Search Console: check weekly for crawl errors and impressions.
 Page speed: Vercel handles CDN, but keep bundle size under 200KB.
 
+## Google Indexing Standards (Apply to Every Page — New and Existing)
+Source: https://support.google.com/webmasters/answer/9012289
+
+Every public-facing page (/, /founding, /blog, /blog/*) MUST meet ALL
+of the following before it can be indexed. Jordan (frontend) implements.
+Morgan (CMO) audits every new page before it goes live.
+
+### Crawlability (Non-Negotiable)
+- Page is publicly accessible — no login required
+- Not blocked by robots.txt (verify at prizmvision.com/robots.txt)
+- No "noindex" meta tag or HTTP header on any public page
+- Server returns HTTP 200 — no redirect loops, no 404s
+- HTTPS enforced — Vercel handles this, verify it's not broken
+
+### Head Tags (Required on Every Public Page)
+- Unique <title> — under 60 characters, includes primary keyword
+- Meta description — 120–160 characters, includes primary keyword
+- Canonical: <link rel="canonical" href="https://prizmvision.com/[path]" />
+- Open Graph: og:type, og:title, og:description, og:url, og:site_name
+- Twitter card meta tags
+
+### Structured Data / Schema (Required by Page Type)
+- Home page: SoftwareApplication schema (already live — keep updated)
+- Blog posts: BlogPosting schema — headline, datePublished, dateModified,
+  author (Stockton Lundell), publisher (Prizm), url, mainEntityOfPage
+- Future landing pages: WebPage or FAQPage schema as appropriate
+- Validate all schema at: https://search.google.com/test/rich-results
+
+### SPA / JavaScript Rendering (Critical — This App Is a React SPA)
+Google must see page content WITHOUT JavaScript for first-wave indexing.
+- Marketing pages (/, /founding, /blog, /blog/*): content must exist in
+  static HTML — pre-rendered at build time OR in a <noscript> tag.
+  Never rely on useEffect to set meta tags on pages that need to rank.
+- Blog posts: always add new posts to client/scripts/prerender-blog.mjs
+  so the build generates static HTML for each post automatically.
+- App pages (/app/*): excluded from indexing via robots.txt — no action needed.
+
+### Sitemap (Update on Every New Public Page)
+- Add new URLs to client/public/sitemap.xml
+- Set <lastmod> to today's date when content changes
+- Priority: homepage 1.0, /founding 0.9, blog posts 0.8, /blog index 0.7
+- Sitemap submitted in Google Search Console
+
+### Checklist After Every New Page or Major Content Change
+1. Update sitemap.xml with the URL and today's date
+2. Verify page passes: https://search.google.com/test/rich-results
+3. Submit in Google Search Console → URL Inspection → Request Indexing
+4. If DNS error on first try, wait 24 hours and retry — it's temporary
+5. Check impressions in Search Console after 2 weeks
+
 ## Email Sequences (Skill: email-sequence)
 Cold outreach sequence structure (Apollo):
   Email 1 (Day 0): Pattern interrupt + specific pain point

@@ -193,6 +193,40 @@ Never import entire icon libraries — import individual icons only.
 Images: always specify width/height to prevent layout shift.
 Lists over 100 items: use virtualization (react-window).
 
+## Google Indexing Standards (Enforce on Every Public Page)
+Source: https://support.google.com/webmasters/answer/9012289
+
+Every public page (/, /founding, /blog, /blog/*) must ship with ALL of:
+
+### Head Tags
+- Unique <title> under 60 chars with target keyword
+- Meta description 120–160 chars with target keyword
+- <link rel="canonical" href="https://prizmvision.com/[path]" />
+- og:type, og:title, og:description, og:url, og:site_name meta tags
+- Twitter card meta tags
+
+### Schema
+- Home: SoftwareApplication (already live)
+- Blog posts: BlogPosting with headline, datePublished, dateModified,
+  author, publisher, url, mainEntityOfPage
+- Validate at: https://search.google.com/test/rich-results
+
+### SPA Pre-rendering (Critical)
+This is a React SPA. Google needs content in static HTML, not just JS.
+- Never use useEffect alone to set meta tags on pages that need SEO
+- Blog posts: add every new post to client/scripts/prerender-blog.mjs
+  so the build generates a static HTML file with full content
+- Marketing pages: if content is JS-only, add a <noscript> fallback
+
+### Sitemap
+- Add every new public URL to client/public/sitemap.xml
+- Set <lastmod> to today's date on any content change
+
+### After Every New Public Page
+1. Sitemap updated
+2. Rich Results Test passes
+3. Tell Stockton to submit URL in Google Search Console
+
 ## How You Respond
 1. Show a description of the UI before coding
 2. Use shadcn/ui components first
