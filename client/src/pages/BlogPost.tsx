@@ -28,10 +28,67 @@ export default function BlogPost() {
   const post = POSTS.find(p => p.slug === slug)
 
   useEffect(() => {
-    if (post) {
-      document.title = `${post.title} — Prizm Blog`
-      const metaDesc = document.querySelector('meta[name="description"]')
-      if (metaDesc) metaDesc.setAttribute('content', post.description)
+    if (!post) return
+
+    const url = `https://prizmvision.com/blog/${post.slug}`
+
+    document.title = `${post.title} — Prizm Blog`
+
+    const setMeta = (selector: string, attr: string, value: string) => {
+      let el = document.querySelector(selector)
+      if (!el) {
+        el = document.createElement('meta')
+        selector.split(/[\[\]="]+/).filter(Boolean).forEach((part, i, arr) => {
+          if (i < arr.length - 1) el!.setAttribute(arr[i - 1] ?? 'name', part)
+        })
+        document.head.appendChild(el)
+      }
+      el.setAttribute(attr, value)
+    }
+
+    // Standard meta
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) metaDesc.setAttribute('content', post.description)
+
+    // Canonical
+    let canonical = document.querySelector('link[rel="canonical"]')
+    if (!canonical) { canonical = document.createElement('link'); canonical.setAttribute('rel', 'canonical'); document.head.appendChild(canonical) }
+    canonical.setAttribute('href', url)
+
+    // Open Graph
+    const ogTags: [string, string][] = [
+      ['og:type', 'article'],
+      ['og:url', url],
+      ['og:title', `${post.title} — Prizm Blog`],
+      ['og:description', post.description],
+      ['og:site_name', 'Prizm'],
+    ]
+    ogTags.forEach(([property, content]) => {
+      let el = document.querySelector(`meta[property="${property}"]`)
+      if (!el) { el = document.createElement('meta'); el.setAttribute('property', property); document.head.appendChild(el) }
+      el.setAttribute('content', content)
+    })
+
+    // BlogPosting JSON-LD schema
+    const schemaId = 'blog-post-schema'
+    let schema = document.getElementById(schemaId)
+    if (!schema) { schema = document.createElement('script'); schema.id = schemaId; schema.setAttribute('type', 'application/ld+json'); document.head.appendChild(schema) }
+    schema.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.description,
+      url,
+      datePublished: post.date,
+      dateModified: post.date,
+      author: { '@type': 'Person', name: 'Stockton Lundell', jobTitle: 'Founder, Prizm' },
+      publisher: { '@type': 'Organization', name: 'Prizm', url: 'https://prizmvision.com' },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    })
+
+    return () => {
+      schema?.remove()
+      canonical?.setAttribute('href', 'https://prizmvision.com')
     }
   }, [post])
 
