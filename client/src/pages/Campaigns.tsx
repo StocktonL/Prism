@@ -463,7 +463,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
 
           {/* Step 2 */}
           {step === 2 && (
-            <div className="space-y-4 px-6 py-5">
+            <div className="space-y-5 px-6 py-5">
 
               {/* Brand targeting banner */}
               {preselectedBrand && brandPatients.length > 0 && (
@@ -494,80 +494,187 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                 </div>
               )}
 
+              {/* Campaign Name */}
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700">Campaign Name</label>
-                <input className="input-field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Campaign name" />
-              </div>
-              <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <label className="text-xs font-medium text-slate-700">Message</label>
-                  <span className={`text-xs font-medium ${message.length > MAX_CHARS ? 'text-red-500' : message.length > 160 ? 'text-amber-400' : 'text-slate-400'}`}>
-                    {message.length} chars · {message.length <= 160 ? '1 segment' : message.length <= 320 ? '2 segments' : 'too long'}
-                  </span>
-                </div>
-                <div className="mb-2 flex flex-wrap gap-1.5">
-                  {MERGE_TAGS.map((t) => (
-                    <button
-                      key={t.tag}
-                      type="button"
-                      onClick={() => setMessage((m) => m + t.tag)}
-                      className="rounded-md border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 hover:bg-teal-100 transition-colors"
-                      title={`Inserts patient's ${t.label} from verified benefits`}
-                    >
-                      + {t.label}
-                    </button>
-                  ))}
-                </div>
-                <textarea
-                  className="input-field min-h-[90px] resize-none font-mono text-xs"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Enter your SMS message..."
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                  <PenLine className="h-3.5 w-3.5 text-slate-400" />
+                  Campaign Name
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. End of Year Benefits — December 2026"
                 />
-                {message && (
-                  <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="mb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Live preview — how Sarah's message will read:</p>
-                    <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(message)}</p>
-                    <p className="mt-1.5 text-xs text-teal-600 font-medium">Hard dollar amounts pulled from each patient's verified benefits at send time.</p>
-                  </div>
-                )}
-                <p className="mt-1.5 text-xs text-slate-400">Up to 320 characters (2 SMS segments). Twilio auto-splits — patients see one message. Avoid emoji to stay in 1-segment pricing.</p>
               </div>
+
+              {/* SMS Composer */}
+              <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                {/* Composer header */}
+                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-teal-600" />
+                    <span className="text-sm font-semibold text-slate-700">SMS Message</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          message.length > MAX_CHARS ? 'bg-red-500' :
+                          message.length > 160 ? 'bg-amber-400' : 'bg-teal-500'
+                        }`}
+                        style={{ width: `${Math.min((message.length / MAX_CHARS) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-bold tabular-nums ${
+                      message.length > MAX_CHARS ? 'text-red-500' :
+                      message.length > 160 ? 'text-amber-500' : 'text-slate-400'
+                    }`}>
+                      {message.length}/{MAX_CHARS}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  {/* Merge tag pills */}
+                  <div>
+                    <p className="mb-2 text-xs text-slate-400">Insert patient data:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {MERGE_TAGS.map((t) => (
+                        <button
+                          key={t.tag}
+                          type="button"
+                          onClick={() => setMessage((m) => m + t.tag)}
+                          className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 hover:border-teal-300 transition-all"
+                          title={`Preview: ${t.preview}`}
+                        >
+                          <span className="text-teal-400 leading-none">+</span>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Textarea */}
+                  <textarea
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 resize-none transition focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 leading-relaxed"
+                    rows={4}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Write your message here, or click the buttons above to insert patient data like first name and benefit amounts…"
+                  />
+
+                  {/* Segment indicator */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex gap-1">
+                      <div className={`h-1 w-10 rounded-full transition-colors ${message.length > 0 ? 'bg-teal-500' : 'bg-slate-200'}`} />
+                      <div className={`h-1 w-10 rounded-full transition-colors ${message.length > 160 ? 'bg-teal-500' : 'bg-slate-200'}`} />
+                    </div>
+                    <span className="text-xs text-slate-400">
+                      {message.length <= 160
+                        ? '1 segment · billed as 1 message'
+                        : message.length <= 320
+                        ? '2 segments · Twilio auto-splits, patients see one message'
+                        : 'Too long — stay under 320 characters'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live SMS Preview */}
+              {message && (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-px flex-1 bg-slate-100" />
+                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Live Preview</span>
+                    <div className="h-px flex-1 bg-slate-100" />
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-slate-100 to-slate-50 p-5">
+                    <div className="mx-auto max-w-[260px]">
+                      {/* Phone chrome */}
+                      <div className="rounded-2xl bg-white shadow-lg border border-slate-200 overflow-hidden">
+                        {/* Contact bar */}
+                        <div className="border-b border-slate-100 bg-white px-4 py-2.5 flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs font-bold text-white shadow-sm">P</div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-800 leading-tight">Your Practice</p>
+                            <p className="text-xs text-slate-400 leading-tight">SMS</p>
+                          </div>
+                        </div>
+                        {/* Message area */}
+                        <div className="bg-slate-50 px-3 py-4 min-h-[100px]">
+                          <div className="flex justify-end mb-1">
+                            <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-teal-500 px-3 py-2 shadow-sm">
+                              <p className="text-xs text-white leading-relaxed">{previewMessage(message)}</p>
+                            </div>
+                          </div>
+                          <p className="text-center text-xs text-slate-400 mt-3">Reply STOP to opt out</p>
+                        </div>
+                      </div>
+                      <p className="mt-2.5 text-center text-xs text-slate-500 leading-relaxed">
+                        Personalized for <span className="font-semibold text-teal-600">Sarah (VSP · $150 frame)</span>
+                        <br />Real amounts pulled at send time
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Schedule */}
               <div>
-                <label className="mb-2 block text-xs font-medium text-slate-700">Schedule</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                  <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                  When to Send
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
                   {[
-                    { mode: 'now' as ScheduleMode,       icon: <Zap className="h-4 w-4" />,         label: 'Send Now',       sub: 'All at once, immediately'    },
-                    { mode: 'scheduled' as ScheduleMode, icon: <CalendarDays className="h-4 w-4" />, label: 'Specific Date',  sub: 'All at once on a chosen day' },
-                    { mode: 'staggered' as ScheduleMode, icon: <Timer className="h-4 w-4" />,        label: 'Staggered Send', sub: 'Spread over days or weeks'   },
+                    { mode: 'now' as ScheduleMode,       icon: <Zap className="h-5 w-5" />,         label: 'Send Now',   sub: 'Immediately'      },
+                    { mode: 'scheduled' as ScheduleMode, icon: <CalendarDays className="h-5 w-5" />, label: 'Scheduled',  sub: 'Choose a date'    },
+                    { mode: 'staggered' as ScheduleMode, icon: <Timer className="h-5 w-5" />,        label: 'Staggered',  sub: 'Spread over days' },
                   ].map((opt) => (
                     <button
                       key={opt.mode}
                       type="button"
                       onClick={() => setScheduleMode(opt.mode)}
-                      className={`flex flex-col items-center gap-1.5 rounded-lg border py-3 px-2 text-center transition-colors ${scheduleMode === opt.mode ? 'border-teal-400 bg-teal-50 text-teal-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                      className={`relative flex flex-col items-center gap-2 rounded-xl border-2 py-4 px-2 text-center transition-all ${
+                        scheduleMode === opt.mode
+                          ? 'border-teal-500 bg-teal-50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      }`}
                     >
-                      {opt.icon}
-                      <span className="text-xs font-semibold leading-tight">{opt.label}</span>
-                      <span className="text-xs text-slate-400 leading-tight">{opt.sub}</span>
+                      <div className={`transition-colors ${scheduleMode === opt.mode ? 'text-teal-600' : 'text-slate-400'}`}>
+                        {opt.icon}
+                      </div>
+                      <div>
+                        <span className={`block text-xs font-bold ${scheduleMode === opt.mode ? 'text-teal-700' : 'text-slate-600'}`}>{opt.label}</span>
+                        <span className={`text-xs ${scheduleMode === opt.mode ? 'text-teal-500' : 'text-slate-400'}`}>{opt.sub}</span>
+                      </div>
+                      {scheduleMode === opt.mode && (
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-8 rounded-t-full bg-teal-500" />
+                      )}
                     </button>
                   ))}
                 </div>
                 {scheduleMode === 'scheduled' && (
-                  <div className="mt-3">
-                    <label className="mb-1 block text-xs font-medium text-slate-600">Send date</label>
-                    <input type="date" className="input-field" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-600">Send date</label>
+                    <input
+                      type="date"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                    />
                   </div>
                 )}
                 {scheduleMode === 'staggered' && (
                   <div className="mt-3 rounded-xl border border-teal-200 bg-teal-50/50 p-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-slate-600">Start date</label>
+                        <label className="mb-1 block text-xs font-semibold text-slate-600">Start date</label>
                         <input type="date" className="input-field" value={staggerStartDate} onChange={(e) => setStaggerStartDate(e.target.value)} />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-slate-600">Spread over</label>
+                        <label className="mb-1 block text-xs font-semibold text-slate-600">Spread over</label>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[{ days: 3, label: '3 days' }, { days: 5, label: '5 days' }, { days: 7, label: '1 week' }, { days: 14, label: '2 weeks' }].map((opt) => (
                             <button key={opt.days} type="button" onClick={() => setStaggerDays(opt.days)}
