@@ -306,7 +306,7 @@ export default function Landing() {
           <div className="text-center mb-14">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5">
               <Sparkles className="h-3.5 w-3.5 text-teal-400" />
-              <span className="text-xs font-semibold text-teal-300">Year-round optical revenue recovery for independent optometry</span>
+              <span className="text-xs font-semibold text-teal-300">Vision benefit reminder software for independent optometry</span>
             </div>
 
             <h1 className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl font-black leading-[1.08] tracking-tight">
