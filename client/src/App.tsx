@@ -17,6 +17,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
 import ForgotPassword from './pages/ForgotPassword'
 import Checklist from './pages/Checklist'
+import Sitemap from './pages/Sitemap'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/checklist" element={<Checklist />} />
+      <Route path="/sitemap-page" element={<Sitemap />} />
 
       {/* Protected app */}
       <Route
