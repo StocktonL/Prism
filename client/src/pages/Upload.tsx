@@ -11,7 +11,21 @@ import {
   ChevronRight,
   Loader2,
   ArrowLeft,
+  TrendingUp,
+  Users,
+  DollarSign,
 } from 'lucide-react'
+
+const CARRIER_AVERAGES: Record<string, { frame: number; cl: number }> = {
+  'VSP':           { frame: 150, cl: 130 },
+  'EyeMed':        { frame: 200, cl: 150 },
+  'Davis Vision':  { frame: 150, cl: 100 },
+  'Spectera':      { frame: 130, cl: 120 },
+  'UHC Vision':    { frame: 150, cl: 125 },
+  'MetLife Vision':{ frame: 130, cl: 100 },
+  'Anthem':        { frame: 150, cl: 120 },
+  'Humana':        { frame: 140, cl: 110 },
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -195,11 +209,17 @@ function autoMap(headers: string[]): Record<string, string> {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-type Step = 'upload' | 'mapping' | 'validation' | 'importing'
+type Step = 'upload' | 'mapping' | 'validation' | 'importing' | 'aha'
+
+interface AhaData {
+  totalImported: number
+  withBenefits: number
+  estimatedRevenue: number
+}
 
 export default function UploadPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [step, setStep] = useState<Step>('upload')
@@ -210,6 +230,7 @@ export default function UploadPage() {
   const [report, setReport] = useState<ValidationReport | null>(null)
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
+  const [ahaData, setAhaData] = useState<AhaData | null>(null)
 
   // ── File handling ──────────────────────────────────────────────────────────
 
@@ -340,7 +361,30 @@ export default function UploadPage() {
         if (error) throw error
       }
 
-      navigate('/app/patients?imported=true')
+      // Calculate aha moment from imported patients
+      let withBenefits = 0
+      let estimatedRevenue = 0
+      for (const p of newPatients) {
+        const avg = CARRIER_AVERAGES[p.insurance_carrier]
+        if (!avg) continue
+        withBenefits++
+        estimatedRevenue += avg.frame
+        if (p.contact_lens_wearer) estimatedRevenue += avg.cl
+      }
+      setAhaData({ totalImported: newPatients.length, withBenefits, estimatedRevenue })
+      setStep('aha')
+
+      // Fire batch eligibility verification in background — don't await
+      if (session?.access_token) {
+        fetch('/api/eligibility-batch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({}),
+        }).catch(() => {})
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Import failed. Please try again.'
       setImportError(msg)
@@ -494,6 +538,63 @@ export default function UploadPage() {
       </div>
     )
   }
+
+  if (step === 'aha' && ahaData) return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 mb-4">
+          <TrendingUp className="h-8 w-8 text-teal-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          {ahaData.withBenefits.toLocaleString()} patients have unused vision benefits
+        </h1>
+        <p className="text-sm text-slate-500">
+          {ahaData.totalImported.toLocaleString()} patients imported from {fileName}
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-teal-600 p-8 text-white text-center mb-6">
+        <p className="text-sm font-medium text-teal-200 mb-1">Estimated Recoverable Revenue</p>
+        <p className="text-5xl font-bold tracking-tight mb-2">
+          ${ahaData.estimatedRevenue.toLocaleString()}
+        </p>
+        <p className="text-xs text-teal-300">
+          Based on average carrier allowances &middot; Exact amounts verifying now
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 text-center">
+          <div className="flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 mx-auto mb-2">
+            <Users className="h-5 w-5 text-blue-600" />
+          </div>
+          <p className="text-2xl font-bold text-slate-900">{ahaData.totalImported.toLocaleString()}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Total Patients Imported</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 text-center">
+          <div className="flex items-center justify-center h-9 w-9 rounded-full bg-teal-50 mx-auto mb-2">
+            <DollarSign className="h-5 w-5 text-teal-600" />
+          </div>
+          <p className="text-2xl font-bold text-teal-600">{ahaData.withBenefits.toLocaleString()}</p>
+          <p className="text-xs text-slate-500 mt-0.5">With Insurance Benefits</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2.5 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 mb-6">
+        <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+        <p className="text-sm text-blue-700">
+          Verifying exact benefit amounts with insurance carriers in the background&hellip;
+        </p>
+      </div>
+
+      <button
+        onClick={() => navigate('/app/patients')}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-500 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors"
+      >
+        View Patient List <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  )
 
   return null
 }

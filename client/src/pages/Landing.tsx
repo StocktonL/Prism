@@ -423,7 +423,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Eligibility + Claims */}
+      {/* Eligibility */}
       <section id="verification" className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
@@ -454,29 +454,29 @@ export default function Landing() {
 
             <div className="space-y-4">
               <div className="rounded-2xl bg-slate-900 border border-slate-700/60 p-5">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Claims Snapshot · Today</p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Benefits Verified Today</p>
                 <div className="space-y-2">
                   {[
-                    { patient: 'Sarah Mitchell', carrier: 'VSP', amount: '$287', status: 'Submitted', color: 'text-blue-400' },
-                    { patient: 'James Okafor', carrier: 'EyeMed', amount: '$412', status: 'Approved', color: 'text-emerald-400' },
-                    { patient: 'Linda Chen', carrier: 'Davis Vision', amount: '$195', status: 'Approved', color: 'text-emerald-400' },
-                    { patient: 'Marcus Webb', carrier: 'Spectera', amount: '$338', status: 'Pending', color: 'text-amber-400' },
-                  ].map((c) => (
-                    <div key={c.patient} className="flex items-center justify-between rounded-xl bg-slate-800 px-3 py-2.5">
+                    { patient: 'Sarah Mitchell', carrier: 'VSP',          frame: '$150', cl: '$130', status: 'Active',   color: 'text-emerald-400' },
+                    { patient: 'James Okafor',   carrier: 'EyeMed',       frame: '$200', cl: '$0',   status: 'Active',   color: 'text-emerald-400' },
+                    { patient: 'Linda Chen',     carrier: 'Davis Vision', frame: '$150', cl: '$100', status: 'Active',   color: 'text-emerald-400' },
+                    { patient: 'Marcus Webb',    carrier: 'Spectera',     frame: '$0',   cl: '$0',   status: 'Inactive', color: 'text-slate-500'   },
+                  ].map((p) => (
+                    <div key={p.patient} className="flex items-center justify-between rounded-xl bg-slate-800 px-3 py-2.5">
                       <div>
-                        <p className="text-sm font-medium text-white">{c.patient}</p>
-                        <p className="text-xs text-slate-500">{c.carrier}</p>
+                        <p className="text-sm font-medium text-white">{p.patient}</p>
+                        <p className="text-xs text-slate-500">{p.carrier}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-white">{c.amount}</p>
-                        <p className={`text-xs font-medium ${c.color}`}>{c.status}</p>
+                        <p className="text-sm font-bold text-white">{p.frame !== '$0' ? `${p.frame} frames` : p.cl !== '$0' ? `${p.cl} CL` : '—'}</p>
+                        <p className={`text-xs font-medium ${p.color}`}>{p.status}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 flex items-center justify-between">
-                  <span className="text-xs text-emerald-300">4 claims today</span>
-                  <span className="text-sm font-bold text-emerald-400">$1,232 billed</span>
+                <div className="mt-4 rounded-xl bg-teal-500/10 border border-teal-500/20 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-teal-300">38 verified today</span>
+                  <span className="text-sm font-bold text-teal-400">$4,820 in benefits found</span>
                 </div>
               </div>
 
@@ -539,8 +539,8 @@ export default function Landing() {
               {
                 icon: <FileCheck className="h-5 w-5 text-violet-400" />,
                 bg: 'bg-violet-500/10 border-violet-500/20',
-                title: 'Claims tracking',
-                body: "See every claim submitted, approved, or pending. Know exactly what's billed and what's been paid — at a glance.",
+                title: 'Automatic campaign scheduling',
+                body: 'Set it once and Prizm sends the right message at the right time — 30-day expiry alerts, mid-year reminders, CL reorder windows. No manual work.',
               },
               {
                 icon: <Zap className="h-5 w-5 text-cyan-400" />,
@@ -595,7 +595,6 @@ export default function Landing() {
                 'AI-personalized messages per patient',
                 'SMS + email delivery',
                 'Revenue tracking and attribution',
-                'Claims tracking dashboard',
                 'HIPAA BAA included',
               ].map((f) => (
                 <div key={f} className="flex items-center gap-2.5">

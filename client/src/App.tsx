@@ -9,7 +9,6 @@ import Dashboard from './pages/Dashboard'
 import Eligibility from './pages/Eligibility'
 import Patients from './pages/Patients'
 import Campaigns from './pages/Campaigns'
-import Claims from './pages/Claims'
 import Upload from './pages/Upload'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
@@ -66,7 +65,6 @@ function AppRoutes() {
         <Route path="patients" element={<Patients />} />
         <Route path="patients/upload" element={<Upload />} />
         <Route path="campaigns" element={<Campaigns />} />
-        <Route path="claims" element={<Claims />} />
       </Route>
 
       {/* Legacy redirects */}
@@ -74,7 +72,6 @@ function AppRoutes() {
       <Route path="/eligibility" element={<Navigate to="/app/eligibility" replace />} />
       <Route path="/patients" element={<Navigate to="/app/patients" replace />} />
       <Route path="/campaigns" element={<Navigate to="/app/campaigns" replace />} />
-      <Route path="/claims" element={<Navigate to="/app/claims" replace />} />
     </Routes>
   )
 }

@@ -14,7 +14,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
 }
 
 // Stedi/Change Healthcare payer IDs for vision carriers
-const PAYER_IDS: Record<string, string> = {
+export const PAYER_IDS: Record<string, string> = {
   'VSP':          '39026',
   'EyeMed':       '68068',
   'Davis Vision': '48714',
@@ -64,7 +64,7 @@ function controlNumber(): string {
 // Parse the Stedi JSON 271 response into benefit amounts we actually use.
 // The 271 structure varies by payer — VSP and EyeMed return different field paths.
 // We log the raw response so parsing can be refined on real test data.
-function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
+export function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
   const result: ParsedBenefits = {
     active: false,
     planYear: { start: '', end: '' },
