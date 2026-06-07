@@ -22,7 +22,6 @@ import {
   CheckSquare,
   Eye,
   RotateCcw,
-  FileCheck,
   Lock,
   Glasses,
   Sparkles,
@@ -586,25 +585,6 @@ const pipelineStages = [
   { label: 'Est. Opportunity — Month',   patients: 156, value: '$37,920', description: 'Benefits expire in 61–90 days', color: 'bg-teal-500',  textColor: 'text-teal-700',  bg: 'bg-teal-50',  border: 'border-teal-200',  pill: 'bg-teal-100 text-teal-700'   },
 ]
 
-// ─── Claims ───────────────────────────────────────────────────────────────────
-
-interface ClaimRow { patient: string; carrier: string; amount: string; service: string; status: 'approved' | 'submitted' | 'pending' | 'denied' }
-
-const todaysClaims: ClaimRow[] = [
-  { patient: 'Sarah Mitchell', carrier: 'VSP',          amount: '$287', service: 'Exam + frames',  status: 'approved'  },
-  { patient: 'James Okafor',   carrier: 'EyeMed',       amount: '$412', service: 'Exam + CL fit',  status: 'approved'  },
-  { patient: 'Linda Chen',     carrier: 'Davis Vision', amount: '$195', service: 'Frames only',    status: 'submitted' },
-  { patient: 'Marcus Webb',    carrier: 'Spectera',     amount: '$338', service: 'Exam + frames',  status: 'pending'   },
-  { patient: 'Priya Nair',     carrier: 'VSP',          amount: '$156', service: 'Contacts only',  status: 'approved'  },
-]
-
-const claimStatusConfig = {
-  approved:  { label: 'Approved',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  submitted: { label: 'Submitted', className: 'bg-blue-50 text-blue-700 border-blue-200'          },
-  pending:   { label: 'Pending',   className: 'bg-amber-50 text-amber-700 border-amber-200'        },
-  denied:    { label: 'Denied',    className: 'bg-red-50 text-red-700 border-red-200'              },
-}
-
 // ─── This week's sends ────────────────────────────────────────────────────────
 
 interface ScheduledSend { name: string; carrier: string; frameAllowance: string; contactAllowance: string; reason: string; sendDay: string; channel: 'SMS' | 'Email'; status: 'sending-today' | 'scheduled' }
@@ -1064,8 +1044,8 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Bottom row — campaigns + claims + verification */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Bottom row — campaigns + verification */}
+      <div className="grid gap-4 lg:grid-cols-2">
 
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
@@ -1083,47 +1063,6 @@ export default function Dashboard() {
                 <ArrowRight className="h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
               </button>
             ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50">
-                  <FileCheck className="h-4 w-4 text-violet-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-base">Claims Today</CardTitle>
-                  <CardDescription className="text-xs">Submitted via Stedi clearinghouse</CardDescription>
-                </div>
-              </div>
-              <button onClick={() => navigate('/app/claims')} className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors">
-                All claims <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100">
-              {todaysClaims.map((c) => {
-                const cfg = claimStatusConfig[c.status]
-                return (
-                  <div key={c.patient} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => navigate('/app/claims')}>
-                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                      {c.patient.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-slate-800">{c.patient}</p>
-                      <p className="text-xs text-slate-400">{c.carrier} · {c.service}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-xs font-bold text-slate-800">{c.amount}</span>
-                      <span className={`rounded-full border px-1.5 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
           </CardContent>
         </Card>
 
