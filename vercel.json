@@ -1,8 +1,8 @@
 {
   "buildCommand": "npm run build -w client",
   "outputDirectory": "client/dist",
-  "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/:path*", "destination": "/index.html" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
   ]
 }
