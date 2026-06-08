@@ -553,7 +553,7 @@ export default function Patients() {
 
   useEffect(() => {
     async function load() {
-      if (!user) return
+      if (!user) { setLoading(false); return }
       try {
         const { data: userData } = await supabase
           .from('users')
