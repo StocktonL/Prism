@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Megaphone,
@@ -267,17 +267,23 @@ function previewMessage(msg: string) {
 
 // ---- Token Editor ----
 
+// Constant so Tailwind includes these classes in the CSS bundle
+const PILL_CLASSES =
+  'inline-flex items-center rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700 mx-0.5 select-none cursor-default align-middle'
+
 function buildPillHtml(raw: string): string {
   return raw.replace(/\{\{(\w+)\}\}/g, (match) => {
     const tag = MERGE_TAGS.find((t) => t.tag === match)
     const label = tag?.label ?? match
-    return `<span contenteditable="false" data-token="${match}" class="inline-flex items-center rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700 mx-0.5 select-none cursor-default align-middle">${label}</span>`
+    // Use a data attribute to store the token; span content is display only
+    return `<span contenteditable="false" data-token="${match}" class="${PILL_CLASSES}">${label}</span>`
   })
 }
 
 function extractRaw(el: HTMLElement): string {
+  // [^<]* (not .*?) ensures we never cross tag boundaries when matching span content
   return el.innerHTML
-    .replace(/<span[^>]*data-token="([^"]*)"[^>]*>.*?<\/span>/g, '$1')
+    .replace(/<span[^>]*data-token="([^"]*)"[^>]*>[^<]*<\/span>/g, '$1')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
@@ -297,27 +303,30 @@ const TokenEditor = forwardRef<TokenEditorHandle, {
 }>(function TokenEditor({ value, onChange, placeholder }, ref) {
   const divRef = useRef<HTMLDivElement>(null)
 
-  useImperativeHandle(ref, () => ({
-    insertAtCursor(tag: string) {
-      doInsert(tag)
-    },
-  }))
+  useImperativeHandle(ref, () => ({ insertAtCursor: doInsert }))
+
+  // useLayoutEffect (not useEffect) runs synchronously after DOM commit, before
+  // the browser paints — this prevents any flash of raw {{token}} text.
+  useLayoutEffect(() => {
+    const el = divRef.current
+    if (!el) return
+    // Guard: skip if the DOM already reflects this value (user is typing)
+    if (extractRaw(el) === value) return
+    el.innerHTML = buildPillHtml(value)
+  }, [value])
 
   function doInsert(tag: string) {
-    if (!divRef.current) return
+    const el = divRef.current
+    if (!el) return
     const label = MERGE_TAGS.find((t) => t.tag === tag)?.label ?? tag
     const span = document.createElement('span')
     span.setAttribute('contenteditable', 'false')
     span.setAttribute('data-token', tag)
-    span.className = 'inline-flex items-center rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700 mx-0.5 select-none cursor-default align-middle'
+    span.className = PILL_CLASSES
     span.textContent = label
 
     const sel = window.getSelection()
-    if (
-      sel &&
-      sel.rangeCount > 0 &&
-      divRef.current.contains(sel.getRangeAt(0).commonAncestorContainer)
-    ) {
+    if (sel && sel.rangeCount > 0 && el.contains(sel.getRangeAt(0).commonAncestorContainer)) {
       const range = sel.getRangeAt(0)
       range.deleteContents()
       range.insertNode(span)
@@ -326,24 +335,19 @@ const TokenEditor = forwardRef<TokenEditorHandle, {
       sel.removeAllRanges()
       sel.addRange(range)
     } else {
-      divRef.current.appendChild(span)
+      el.appendChild(span)
       const range = document.createRange()
       range.setStartAfter(span)
       range.collapse(true)
       if (sel) { sel.removeAllRanges(); sel.addRange(range) }
     }
 
-    onChange(extractRaw(divRef.current))
+    onChange(extractRaw(el))
   }
 
-  useEffect(() => {
-    if (!divRef.current) return
-    if (extractRaw(divRef.current) === value) return
-    divRef.current.innerHTML = buildPillHtml(value)
-  }, [value])
-
   function handleInput() {
-    if (divRef.current) onChange(extractRaw(divRef.current))
+    const el = divRef.current
+    if (el) onChange(extractRaw(el))
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -359,7 +363,9 @@ const TokenEditor = forwardRef<TokenEditorHandle, {
     if (document.caretRangeFromPoint) {
       range = document.caretRangeFromPoint(e.clientX, e.clientY)
     } else if ('caretPositionFromPoint' in document) {
-      const pos = (document as unknown as { caretPositionFromPoint: (x: number, y: number) => { offsetNode: Node; offset: number } | null }).caretPositionFromPoint(e.clientX, e.clientY)
+      const pos = (document as unknown as {
+        caretPositionFromPoint: (x: number, y: number) => { offsetNode: Node; offset: number } | null
+      }).caretPositionFromPoint(e.clientX, e.clientY)
       if (pos) {
         range = document.createRange()
         range.setStart(pos.offsetNode, pos.offset)
