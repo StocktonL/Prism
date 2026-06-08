@@ -23,6 +23,7 @@ const POSTS = [
   {
     slug: 'optometry-patient-outreach-campaigns',
     title: '5 Patient Outreach Campaigns Every Independent Optometry Practice Should Be Running',
+    shortTitle: '5 Optometry Outreach Campaigns That Drive Revenue | Prizm',
     description: 'Most optometry practices run one benefit reminder in November. Here are the five campaigns that drive optical revenue year-round — with exact messaging examples for VSP and EyeMed patients.',
     dateISO: '2026-05-26',
     dateDisplay: 'May 26, 2026',
@@ -115,6 +116,7 @@ Against a practice management tool at $449/month ($5,388/year), that's roughly a
   {
     slug: 'vision-benefits-expiring-patients',
     title: 'How to Reach Patients With Vision Benefits Expiring Before December 31',
+    shortTitle: 'Reach Patients With Expiring Vision Benefits | Prizm',
     description: "Most practices lose $15–50K in optical revenue every year to unused VSP and EyeMed benefits. Here's how to reach those patients before December 31.",
     dateISO: '2026-05-23',
     dateDisplay: 'May 23, 2026',
@@ -192,6 +194,7 @@ For most practices, that number is larger than expected — and it's the cleares
   {
     slug: 'vision-benefit-reminder-software-guide',
     title: 'Vision Benefit Reminder Software: The Complete Guide for Optometry Practices',
+    shortTitle: 'Vision Benefit Reminder Software Guide | Prizm',
     description: 'Everything independent optometry practices need to know about vision benefit reminder software — what it is, how it works, what results to expect, and how to choose the right tool.',
     dateISO: '2026-06-04',
     dateDisplay: 'June 4, 2026',
@@ -321,7 +324,7 @@ function buildHtml(template, post) {
   })
 
   const headTags = `
-  <title>${post.title} — Prizm Blog</title>
+  <title>${post.shortTitle}</title>
   <meta name="description" content="${safeDesc}" />
   <link rel="canonical" href="${url}" />
   <meta property="og:type" content="article" />
@@ -329,6 +332,11 @@ function buildHtml(template, post) {
   <meta property="og:title" content="${safeTitle} — Prizm Blog" />
   <meta property="og:description" content="${safeDesc}" />
   <meta property="og:site_name" content="Prizm" />
+  <meta property="og:image" content="https://prizmvision.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${safeTitle} — Prizm Blog" />
+  <meta name="twitter:description" content="${safeDesc}" />
+  <meta name="twitter:image" content="https://prizmvision.com/og-image.png" />
   <script type="application/ld+json">${schema}</script>`
 
   const noscriptContent = `
@@ -346,8 +354,57 @@ function buildHtml(template, post) {
   html = html.replace(/<title>[^<]*<\/title>/, '')
   html = html.replace(/<meta name="description"[^>]*\/?>/, '')
   html = html.replace(/<meta property="og:[^"]*"[^>]*\/?>/g, '')
+  html = html.replace(/<meta name="twitter:[^"]*"[^>]*\/?>/g, '')
   html = html.replace('</head>', `${headTags}\n</head>`)
   html = html.replace('<body>', `<body>\n${noscriptContent}`)
+  return html
+}
+
+const STATIC_PAGES = [
+  {
+    path: 'founding',
+    headTags: `
+  <title>Founding Customer Offer — $199/month | Prizm</title>
+  <meta name="description" content="Join Prizm as a founding customer. Get lifetime access to vision benefit reminder software at $199/month — locked forever. Only 10 spots. Built for independent optometry." />
+  <link rel="canonical" href="https://prizmvision.com/founding" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://prizmvision.com/founding" />
+  <meta property="og:title" content="Founding Customer Offer — $199/month | Prizm" />
+  <meta property="og:description" content="Join Prizm as a founding customer. Get lifetime access to vision benefit reminder software at $199/month — locked forever. Only 10 spots. Built for independent optometry." />
+  <meta property="og:site_name" content="Prizm" />
+  <meta property="og:image" content="https://prizmvision.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Founding Customer Offer — $199/month | Prizm" />
+  <meta name="twitter:description" content="Only 10 founding spots. Lifetime access at $199/month instead of $449. Vision benefit reminder software for independent optometry." />
+  <meta name="twitter:image" content="https://prizmvision.com/og-image.png" />`,
+  },
+  {
+    path: 'blog',
+    headTags: `
+  <title>Optometry Vision Benefit Blog | Prizm</title>
+  <meta name="description" content="Guides for independent optometry practices on vision benefit reminders, VSP patient outreach, and optical revenue recovery. By Prizm." />
+  <link rel="canonical" href="https://prizmvision.com/blog" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://prizmvision.com/blog" />
+  <meta property="og:title" content="Optometry Vision Benefit Blog | Prizm" />
+  <meta property="og:description" content="Guides for independent optometry practices on vision benefit reminders, VSP patient outreach, and optical revenue recovery." />
+  <meta property="og:site_name" content="Prizm" />
+  <meta property="og:image" content="https://prizmvision.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Optometry Vision Benefit Blog | Prizm" />
+  <meta name="twitter:description" content="Guides for independent optometry practices on vision benefit reminders, VSP patient outreach, and optical revenue recovery." />
+  <meta name="twitter:image" content="https://prizmvision.com/og-image.png" />`,
+  },
+]
+
+function buildStaticHtml(template, page) {
+  let html = template
+  html = html.replace(/<title>[^<]*<\/title>/, '')
+  html = html.replace(/<meta name="description"[^>]*\/?>/, '')
+  html = html.replace(/<meta property="og:[^"]*"[^>]*\/?>/g, '')
+  html = html.replace(/<meta name="twitter:[^"]*"[^>]*\/?>/g, '')
+  html = html.replace(/<link rel="canonical"[^>]*\/?>/, '')
+  html = html.replace('</head>', `${page.headTags}\n</head>`)
   return html
 }
 
@@ -366,4 +423,12 @@ for (const post of POSTS) {
   console.log(`✓ Pre-rendered /blog/${post.slug}`)
 }
 
-console.log('Blog pre-rendering complete.')
+for (const page of STATIC_PAGES) {
+  const outDir = path.join(distDir, page.path)
+  // For /blog, only create index.html — don't overwrite slug subdirectories
+  fs.mkdirSync(outDir, { recursive: true })
+  fs.writeFileSync(path.join(outDir, 'index.html'), buildStaticHtml(template, page))
+  console.log(`✓ Pre-rendered /${page.path}`)
+}
+
+console.log('Pre-rendering complete.')
