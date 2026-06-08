@@ -29,6 +29,7 @@
     "@vercel/node": "^5.8.3",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.5",
