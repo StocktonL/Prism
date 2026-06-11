@@ -371,10 +371,10 @@ export default function Landing() {
       <section className="border-y border-white/5 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10">
-            <Stat value="25,000" label="independent optometry practices in the US" />
-            <Stat value="$2.4B" label="in vision benefits that expire unused every year in the US" />
-            <Stat value="$150" label="average unused frame allowance per patient" />
-            <Stat value="20%" label="average response rate on benefit-specific messages" />
+            <Stat value="15+" label="campaign types — benefit reminders, trunk shows, back to school, and more" />
+            <Stat value="$2.4B" label="in vision benefits expire unused every year — your patients' money" />
+            <Stat value="90-day" label="benefit cache — verify once, run multiple campaigns for free" />
+            <Stat value="$449/mo" label="flat — no per-message fees, no per-verification charges" />
           </div>
         </div>
       </section>
@@ -653,28 +653,138 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-8">
-        <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-teal-400 to-cyan-600">
-              <svg viewBox="0 0 24 24" className="h-3 w-3 fill-white" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
-              </svg>
-            </div>
-            <span className="text-sm font-bold text-white">Prizm</span>
+      {/* EHR Compatibility */}
+      <section className="border-t border-white/5 bg-white/[0.02] py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10">Works with every major practice management system</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {[
+              { name: 'RevolutionEHR', share: '~35% of practices' },
+              { name: 'Eyefinity', share: '~25% of practices' },
+              { name: 'Crystal PM', share: '~15% of practices' },
+              { name: 'Compulink', share: '~10% of practices' },
+              { name: 'My Vision Express', share: '~8% of practices' },
+            ].map((ehr) => (
+              <div key={ehr.name} className="flex flex-col items-center gap-2 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-5 text-center hover:border-white/10 transition-colors">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5">
+                  <FileCheck className="h-4 w-4 text-teal-400" />
+                </div>
+                <span className="text-sm font-semibold text-white">{ehr.name}</span>
+                <span className="text-xs text-slate-500">{ehr.share}</span>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center gap-4 text-xs text-slate-600">
-            <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a>
-            <span>·</span>
-            <span>Built for independent optometry</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1">
-            <Lock className="h-3 w-3 text-emerald-400" />
-            <span className="text-xs font-medium text-emerald-400">HIPAA Compliant</span>
+          <p className="text-center text-xs text-slate-600 mt-6">No EHR integration required — export a CSV, upload, done. Setup takes under an hour.</p>
+        </div>
+      </section>
+
+      {/* Trust / Built-on strip */}
+      <section className="border-t border-white/5 py-12">
+        <div className="mx-auto max-w-7xl px-6">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-600 mb-8">Secured &amp; powered by</p>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            {[
+              { name: 'Twilio', desc: 'HIPAA-eligible SMS' },
+              { name: 'Supabase', desc: 'HIPAA-tier database' },
+              { name: 'Stripe', desc: 'PCI-compliant billing' },
+              { name: 'Vercel', desc: 'SOC 2 hosting' },
+              { name: 'Stedi', desc: 'Eligibility API' },
+              { name: 'Anthropic', desc: 'AI messaging' },
+            ].map((vendor) => (
+              <div key={vendor.name} className="flex flex-col items-center gap-1 opacity-50 hover:opacity-80 transition-opacity">
+                <span className="text-sm font-bold text-slate-300 tracking-tight">{vendor.name}</span>
+                <span className="text-xs text-slate-600">{vendor.desc}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <p className="text-center text-xs text-slate-700 mt-4">© 2026 Prizm Vision. All rights reserved.</p>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 bg-slate-950/60 py-14">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-bold text-white">Prizm</span>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed mb-4">AI-powered campaign automation for independent optometry practices.</p>
+              <p className="text-xs text-slate-600">Highland, UT</p>
+              <a href="mailto:stockton@prizmvision.com" className="text-xs text-slate-600 hover:text-teal-400 transition-colors">stockton@prizmvision.com</a>
+            </div>
+
+            {/* Product */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">Product</p>
+              <ul className="space-y-2.5">
+                {[
+                  { label: 'How it works', href: '#how-it-works' },
+                  { label: 'Eligibility', href: '#eligibility' },
+                  { label: 'Pricing', href: '#pricing' },
+                  { label: 'Blog', href: '/blog' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">Company</p>
+              <ul className="space-y-2.5">
+                {[
+                  { label: 'Founding Offer', href: '/founding' },
+                  { label: 'Contact', href: 'mailto:stockton@prizmvision.com' },
+                  { label: 'Demo', href: '#' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">Legal &amp; Security</p>
+              <ul className="space-y-2.5">
+                {[
+                  { label: 'Privacy Policy', href: '/privacy' },
+                  { label: 'Terms of Service', href: '/terms' },
+                  { label: 'HIPAA Compliance', href: '/privacy' },
+                  { label: 'BAA Available', href: 'mailto:stockton@prizmvision.com' },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">{l.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-700">© 2026 Prizm Vision, LLC · Highland, UT · All rights reserved.</p>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1">
+                <Lock className="h-3 w-3 text-emerald-400" />
+                <span className="text-xs font-medium text-emerald-400">HIPAA Compliant</span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1">
+                <ShieldCheck className="h-3 w-3 text-teal-400" />
+                <span className="text-xs font-medium text-teal-400">BAA Available</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </footer>
 
     </div>
