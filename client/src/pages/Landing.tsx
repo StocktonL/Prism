@@ -309,10 +309,10 @@ export default function Landing() {
               <span className="text-xs font-semibold text-teal-300">Vision benefit reminder software for independent optometry</span>
             </div>
 
-            <h1 className="mx-auto max-w-4xl text-3xl sm:text-5xl md:text-6xl font-black leading-[1.08] tracking-tight">
+            <h1 className="mx-auto max-w-4xl text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] tracking-[-0.03em]">
               $2.4 billion in vision benefits
               <br />
-              <span className="text-teal-400">expire unused every year.</span>
+              <span className="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">expire unused every year.</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
@@ -380,10 +380,11 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-7xl px-6 py-24">
+      <section id="how-it-works" className="bg-slate-900/40 py-24">
+        <div className="mx-auto max-w-7xl px-6">
         <div className="text-center mb-16">
           <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">How Prizm works</p>
-          <h2 className="text-4xl font-black">Up and running this afternoon</h2>
+          <h2 className="text-4xl font-black tracking-[-0.02em]">Up and running this afternoon</h2>
           <p className="mt-3 text-slate-400 max-w-lg mx-auto">No EHR integration. No IT department. Works with every practice management system via CSV export.</p>
         </div>
 
@@ -421,15 +422,16 @@ export default function Landing() {
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* Eligibility */}
-      <section id="verification" className="border-t border-white/5 bg-white/[0.02] py-24">
+      <section id="verification" className="border-t border-white/5 py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">Real-time eligibility</p>
-              <h2 className="text-4xl font-black leading-tight">
+              <h2 className="text-4xl font-black leading-tight tracking-[-0.02em]">
                 Know exactly what every patient has left — before they walk in
               </h2>
               <p className="mt-4 text-slate-400 leading-relaxed">
@@ -519,7 +521,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-14">
             <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">Everything included</p>
-            <h2 className="text-4xl font-black">Not a blast. A revenue engine.</h2>
+            <h2 className="text-4xl font-black tracking-[-0.02em]">Not a blast. A revenue engine.</h2>
             <p className="mt-3 text-slate-400 max-w-lg mx-auto">Generic benefit reminders get ignored. Personalized messages with exact dollar amounts get appointments.</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -577,7 +579,7 @@ export default function Landing() {
       <section id="pricing" className="mx-auto max-w-7xl px-6 py-24">
         <div className="text-center mb-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-teal-400 mb-3">Pricing</p>
-          <h2 className="text-4xl font-black">Simple. Everything included.</h2>
+          <h2 className="text-4xl font-black tracking-[-0.02em]">Simple. Everything included.</h2>
           <p className="mt-3 text-slate-400">No hidden fees. No contracts. Cancel anytime.</p>
         </div>
         <div className="mx-auto max-w-lg">
@@ -623,7 +625,7 @@ export default function Landing() {
       {/* Final CTA */}
       <section className="border-t border-white/5 bg-white/[0.02] py-24">
         <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black leading-tight tracking-[-0.02em]">
             Your patients have money waiting.<br />
             <span className="text-teal-400">Are you going to tell them?</span>
           </h2>
