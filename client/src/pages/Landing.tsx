@@ -252,24 +252,24 @@ export default function Landing() {
       {showContactModal && <DemoModal onClose={() => setShowContactModal(false)} onSubmit={() => setShowContactModal(false)} variant="contact" />}
 
       {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/90 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/50">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 shadow-sm">
               <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
               </svg>
             </div>
-            <span className="text-lg font-bold tracking-tight text-white">Prizm</span>
+            <span className="text-lg font-extrabold tracking-tight text-slate-900">Prizm</span>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-slate-400">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
-            <a href="#verification" className="hover:text-white transition-colors">Eligibility</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="/blog" className="hover:text-white transition-colors">Blog</a>
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+            <a href="#how-it-works" className="hover:text-slate-900 transition-colors">How it works</a>
+            <a href="#verification" className="hover:text-slate-900 transition-colors">Eligibility</a>
+            <a href="#pricing" className="hover:text-slate-900 transition-colors">Pricing</a>
+            <a href="/blog" className="hover:text-slate-900 transition-colors">Blog</a>
             <a
               href="/founding"
-              className="font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+              className="font-semibold text-amber-600 hover:text-amber-700 transition-colors"
             >
               Founding Offer
             </a>
@@ -277,19 +277,19 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/login')}
-              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               Sign In
             </button>
             <button
               onClick={() => navigate('/signup')}
-              className="rounded-lg border border-teal-500/50 px-4 py-2 text-sm font-semibold text-teal-400 hover:bg-teal-500/10 transition-colors"
+              className="rounded-lg border border-teal-600/40 px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50 transition-colors"
             >
               Sign Up
             </button>
             <button
               onClick={openDemo}
-              className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-400 transition-colors shadow-lg shadow-teal-900/40"
+              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition-colors shadow-sm"
             >
               Try Demo
             </button>
@@ -297,71 +297,90 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-teal-950/30 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+      {/* Hero — light / clinical */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-teal-50 via-white to-[#FAFBFF]">
+        <div className="relative mx-auto max-w-7xl px-6 pt-16 pb-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left — copy */}
+            <div>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-teal-600" />
+                <span className="text-xs font-semibold text-teal-700">Vision benefit reminder software for independent optometry</span>
+              </div>
 
-        <div className="relative mx-auto max-w-7xl px-6 pt-20 pb-16">
-          <div className="text-center mb-14">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-teal-400" />
-              <span className="text-xs font-semibold text-teal-300">Vision benefit reminder software for independent optometry</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-[-0.03em] text-slate-900">
+                Your patients are sitting on{' '}
+                <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">unspent vision benefits.</span>
+              </h1>
+
+              <p className="mt-6 max-w-xl text-lg text-slate-600 leading-relaxed">
+                Independent practices recover $15–50K in optical revenue every year by reaching patients before their benefits expire. Prizm finds the money and runs the campaigns automatically — personalized with each patient's exact dollar amounts.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={openDemo}
+                  className="flex items-center gap-2 rounded-xl bg-teal-600 px-7 py-3.5 text-sm font-bold text-white hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20"
+                >
+                  <Zap className="h-4 w-4" /> See your practice's numbers
+                </button>
+                <button
+                  onClick={openContact}
+                  className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-7 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Talk to us <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> No credit card</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> HIPAA compliant</span>
+                <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Up and running today</span>
+              </div>
             </div>
 
-            <h1 className="mx-auto max-w-4xl text-4xl sm:text-5xl md:text-7xl font-black leading-[1.05] tracking-[-0.03em]">
-              $2.4 billion in vision benefits
-              <br />
-              <span className="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">expire unused every year.</span>
-            </h1>
-
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-400 leading-relaxed">
-              Independent optometry practices recover $15–50K in optical revenue every year by reaching patients before their benefits expire. Prizm runs those campaigns automatically — personalized with each patient's exact dollar amounts.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={openDemo}
-                className="flex items-center gap-2 rounded-xl bg-teal-500 px-7 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors shadow-xl shadow-teal-900/40"
-              >
-                <Zap className="h-4 w-4" /> See your practice's numbers
-              </button>
-              <button
-                onClick={openContact}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-7 py-3.5 text-sm font-bold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-              >
-                Talk to us <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-            <p className="mt-4 text-xs text-slate-600">No credit card required · HIPAA compliant · Up and running today</p>
-          </div>
-
-          {/* Message bubbles */}
-          <div className="mx-auto max-w-5xl">
-            <div className="grid sm:grid-cols-3 gap-4">
-              <MessageBubble
-                initials="SM"
-                name="Sarah Mitchell"
-                tag="Benefits"
-                tagColor="text-emerald-600 bg-emerald-50"
-                message="Hi Sarah, did you know your VSP plan covers $150 toward new glasses? It's been a while since your last pair — we'd love to help you use it. Reply YES to book. — Valley Eye Care"
-              />
-              <MessageBubble
-                initials="MW"
-                name="Marcus Webb"
-                tag="Expiring"
-                tagColor="text-rose-600 bg-rose-50"
-                message="Hi Marcus, wanted to give you a heads up — our records show you have $150 in frame benefits and $200 in contact lens benefits expiring Dec 31. Most patients don't realize these don't carry over to next year. Reply YES to book. — Valley Eye Care"
-                time="8m ago"
-              />
-              <MessageBubble
-                initials="KP"
-                name="Kevin Park"
-                tag="Brand Match"
-                tagColor="text-amber-600 bg-amber-50"
-                message="Hi Kevin, did you know your VSP plan still has $150 in frame benefits you haven't used? We're hosting a Maui Jim trunk show Nov 14–16 and thought you'd want to know — those benefits apply to any pair in the collection. Want us to hold a spot? — Valley Eye Care"
-                time="11m ago"
-              />
+            {/* Right — product dashboard preview */}
+            <div className="relative">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 overflow-hidden">
+                <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-4 py-3">
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+                  <span className="ml-3 text-xs text-slate-400">app.prizmvision.com/dashboard</span>
+                </div>
+                <div className="p-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Recoverable revenue in your patient base</p>
+                  <p className="mt-2 text-5xl font-extrabold tracking-tight text-slate-900">$127,050</p>
+                  <div className="mt-5 grid grid-cols-3 gap-3">
+                    <div className="rounded-xl bg-teal-50 border border-teal-100 p-3">
+                      <p className="text-xs text-slate-500">Frame benefits</p>
+                      <p className="text-lg font-bold text-teal-700">$82,700</p>
+                    </div>
+                    <div className="rounded-xl bg-cyan-50 border border-cyan-100 p-3">
+                      <p className="text-xs text-slate-500">Contact lens</p>
+                      <p className="text-lg font-bold text-cyan-700">$44,350</p>
+                    </div>
+                    <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+                      <p className="text-xs text-slate-500">Expiring soon</p>
+                      <p className="text-lg font-bold text-amber-700">312 pts</p>
+                    </div>
+                  </div>
+                  <div className="mt-5 space-y-2">
+                    {[
+                      { nm: 'Sarah Mitchell', ins: 'VSP', amt: '$150 frames' },
+                      { nm: 'James Okafor', ins: 'EyeMed', amt: '$200 contacts' },
+                      { nm: 'Maria Chen', ins: 'VSP', amt: '$150 frames' },
+                    ].map((r) => (
+                      <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-4 py-2.5">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{r.nm}</p>
+                          <p className="text-xs text-slate-400">{r.ins}</p>
+                        </div>
+                        <span className="text-sm font-bold text-teal-700">{r.amt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
