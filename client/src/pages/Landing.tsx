@@ -338,46 +338,77 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right — product dashboard preview */}
+            {/* Right — full dashboard preview */}
             <div className="relative">
               <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 overflow-hidden">
+                {/* Browser chrome */}
                 <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-4 py-3">
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
                   <span className="ml-3 text-xs text-slate-400">app.prizmvision.com/dashboard</span>
                 </div>
-                <div className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Recoverable revenue in your patient base</p>
-                  <p className="mt-2 text-5xl font-extrabold tracking-tight text-slate-900">$127,050</p>
-                  <div className="mt-5 grid grid-cols-3 gap-3">
-                    <div className="rounded-xl bg-teal-50 border border-teal-100 p-3">
-                      <p className="text-xs text-slate-500">Frame benefits</p>
-                      <p className="text-lg font-bold text-teal-700">$82,700</p>
+                {/* App shell: sidebar + main */}
+                <div className="flex">
+                  {/* Sidebar */}
+                  <div className="hidden sm:flex w-36 flex-shrink-0 flex-col gap-1 border-r border-slate-100 bg-slate-50 p-3">
+                    <div className="flex items-center gap-1.5 px-2 pb-3">
+                      <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-teal-500 to-cyan-600">
+                        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-white"><path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" /></svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-900">Prizm</span>
                     </div>
-                    <div className="rounded-xl bg-cyan-50 border border-cyan-100 p-3">
-                      <p className="text-xs text-slate-500">Contact lens</p>
-                      <p className="text-lg font-bold text-cyan-700">$44,350</p>
-                    </div>
-                    <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
-                      <p className="text-xs text-slate-500">Expiring soon</p>
-                      <p className="text-lg font-bold text-amber-700">312 pts</p>
-                    </div>
-                  </div>
-                  <div className="mt-5 space-y-2">
                     {[
-                      { nm: 'Sarah Mitchell', ins: 'VSP', amt: '$150 frames' },
-                      { nm: 'James Okafor', ins: 'EyeMed', amt: '$200 contacts' },
-                      { nm: 'Maria Chen', ins: 'VSP', amt: '$150 frames' },
-                    ].map((r) => (
-                      <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-4 py-2.5">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800">{r.nm}</p>
-                          <p className="text-xs text-slate-400">{r.ins}</p>
-                        </div>
-                        <span className="text-sm font-bold text-teal-700">{r.amt}</span>
+                      { label: 'Dashboard', active: true },
+                      { label: 'Eligibility', active: false },
+                      { label: 'Patients', active: false },
+                      { label: 'Campaigns', active: false },
+                    ].map((item) => (
+                      <div key={item.label} className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${item.active ? 'bg-teal-50 text-teal-700' : 'text-slate-500'}`}>
+                        {item.label}
                       </div>
                     ))}
+                  </div>
+                  {/* Main panel */}
+                  <div className="flex-1 p-4">
+                    <p className="text-xs font-semibold text-slate-500">Good afternoon 👋</p>
+                    {/* Aha banner */}
+                    <div className="mt-2 rounded-xl bg-gradient-to-br from-teal-600 to-cyan-700 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-100">Recoverable optical revenue</p>
+                      <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-white">$127,050</p>
+                      <p className="mt-1 text-[11px] text-teal-50">467 patients have unused benefits — frames, contacts &amp; exams waiting</p>
+                    </div>
+                    {/* Stat row */}
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                        <p className="text-[10px] text-slate-500">Frame benefits</p>
+                        <p className="text-sm font-bold text-teal-700">$82,700</p>
+                      </div>
+                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                        <p className="text-[10px] text-slate-500">Contact lens</p>
+                        <p className="text-sm font-bold text-cyan-700">$44,350</p>
+                      </div>
+                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                        <p className="text-[10px] text-slate-500">Expiring soon</p>
+                        <p className="text-sm font-bold text-amber-700">312 pts</p>
+                      </div>
+                    </div>
+                    {/* Patient rows */}
+                    <div className="mt-3 space-y-1.5">
+                      {[
+                        { nm: 'Sarah Mitchell', ins: 'VSP', amt: '$150 frames' },
+                        { nm: 'James Okafor', ins: 'EyeMed', amt: '$200 contacts' },
+                        { nm: 'Maria Chen', ins: 'VSP', amt: '$150 frames' },
+                      ].map((r) => (
+                        <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+                          <div>
+                            <p className="text-xs font-semibold text-slate-800">{r.nm}</p>
+                            <p className="text-[10px] text-slate-400">{r.ins}</p>
+                          </div>
+                          <span className="text-xs font-bold text-teal-700">{r.amt}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
