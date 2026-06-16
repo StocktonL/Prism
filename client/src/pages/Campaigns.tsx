@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Megaphone,
@@ -265,6 +265,140 @@ function previewMessage(msg: string) {
     .replace(/{{sunglasses_brand}}/g, 'Maui Jim')
 }
 
+// ---- Token Editor ----
+
+// Constant so Tailwind includes these classes in the CSS bundle
+const PILL_CLASSES =
+  'inline-flex items-center rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700 mx-0.5 select-none cursor-default align-middle'
+
+function buildPillHtml(raw: string): string {
+  return raw.replace(/\{\{(\w+)\}\}/g, (match) => {
+    const tag = MERGE_TAGS.find((t) => t.tag === match)
+    const label = tag?.label ?? match
+    // Use a data attribute to store the token; span content is display only
+    return `<span contenteditable="false" data-token="${match}" class="${PILL_CLASSES}">${label}</span>`
+  })
+}
+
+function extractRaw(el: HTMLElement): string {
+  // [^<]* (not .*?) ensures we never cross tag boundaries when matching span content
+  return el.innerHTML
+    .replace(/<span[^>]*data-token="([^"]*)"[^>]*>[^<]*<\/span>/g, '$1')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+}
+
+interface TokenEditorHandle {
+  insertAtCursor: (tag: string) => void
+}
+
+const TokenEditor = forwardRef<TokenEditorHandle, {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}>(function TokenEditor({ value, onChange, placeholder }, ref) {
+  const divRef = useRef<HTMLDivElement>(null)
+
+  useImperativeHandle(ref, () => ({ insertAtCursor: doInsert }))
+
+  // useLayoutEffect (not useEffect) runs synchronously after DOM commit, before
+  // the browser paints — this prevents any flash of raw {{token}} text.
+  useLayoutEffect(() => {
+    const el = divRef.current
+    if (!el) return
+    // Guard: skip if the DOM already reflects this value (user is typing)
+    if (extractRaw(el) === value) return
+    el.innerHTML = buildPillHtml(value)
+  }, [value])
+
+  function doInsert(tag: string) {
+    const el = divRef.current
+    if (!el) return
+    const label = MERGE_TAGS.find((t) => t.tag === tag)?.label ?? tag
+    const span = document.createElement('span')
+    span.setAttribute('contenteditable', 'false')
+    span.setAttribute('data-token', tag)
+    span.className = PILL_CLASSES
+    span.textContent = label
+
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0 && el.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+      const range = sel.getRangeAt(0)
+      range.deleteContents()
+      range.insertNode(span)
+      range.setStartAfter(span)
+      range.collapse(true)
+      sel.removeAllRanges()
+      sel.addRange(range)
+    } else {
+      el.appendChild(span)
+      const range = document.createRange()
+      range.setStartAfter(span)
+      range.collapse(true)
+      if (sel) { sel.removeAllRanges(); sel.addRange(range) }
+    }
+
+    onChange(extractRaw(el))
+  }
+
+  function handleInput() {
+    const el = divRef.current
+    if (el) onChange(extractRaw(el))
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    const tag = e.dataTransfer.getData('text/plain')
+    if (!MERGE_TAGS.find((t) => t.tag === tag)) return
+
+    let range: Range | null = null
+    if (document.caretRangeFromPoint) {
+      range = document.caretRangeFromPoint(e.clientX, e.clientY)
+    } else if ('caretPositionFromPoint' in document) {
+      const pos = (document as unknown as {
+        caretPositionFromPoint: (x: number, y: number) => { offsetNode: Node; offset: number } | null
+      }).caretPositionFromPoint(e.clientX, e.clientY)
+      if (pos) {
+        range = document.createRange()
+        range.setStart(pos.offsetNode, pos.offset)
+        range.collapse(true)
+      }
+    }
+    if (range) {
+      const sel = window.getSelection()
+      if (sel) { sel.removeAllRanges(); sel.addRange(range) }
+    }
+    doInsert(tag)
+  }
+
+  return (
+    <div className="relative">
+      <div
+        ref={divRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={handleInput}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className="min-h-[96px] w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 transition focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 leading-relaxed"
+      />
+      {!value && placeholder && (
+        <div className="pointer-events-none absolute left-0 top-0 px-3.5 py-3 text-sm text-slate-400 select-none">
+          {placeholder}
+        </div>
+      )}
+    </div>
+  )
+})
+
 const CRITERIA_OPTIONS: { key: CriteriaKey; label: string; reach: number; group?: string }[] = [
   // ── Benefit status ──────────────────────────────────────────────────────────
   { key: 'all',           label: 'All patients',                          reach: PATIENTS.length,                                                          group: 'General' },
@@ -362,6 +496,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
   const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [minBenefit, setMinBenefit] = useState(0)
   const MAX_CHARS = 320
+  const tokenEditorRef = useRef<TokenEditorHandle>(null)
 
   // Patients who purchased this brand — shown in brand targeting banner
   const brandPatients = preselectedBrand
@@ -565,32 +700,36 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                 </div>
 
                 <div className="p-4 space-y-3">
-                  {/* Merge tag pills */}
+                  {/* Merge tag pills — draggable */}
                   <div>
-                    <p className="mb-2 text-xs text-slate-400">Insert patient data:</p>
+                    <p className="mb-2 text-xs text-slate-400">
+                      Drag or click to insert patient data:
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {MERGE_TAGS.map((t) => (
                         <button
                           key={t.tag}
                           type="button"
-                          onClick={() => setMessage((m) => m + t.tag)}
-                          className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 hover:border-teal-300 transition-all"
+                          draggable
+                          onDragStart={(e) => e.dataTransfer.setData('text/plain', t.tag)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => tokenEditorRef.current?.insertAtCursor(t.tag)}
+                          className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm hover:bg-teal-100 hover:border-teal-300 active:scale-95 transition-all cursor-grab active:cursor-grabbing"
                           title={`Preview: ${t.preview}`}
                         >
-                          <span className="text-teal-400 leading-none">+</span>
+                          <span className="text-teal-400 leading-none">⠿</span>
                           {t.label}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Textarea */}
-                  <textarea
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 resize-none transition focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 leading-relaxed"
-                    rows={4}
+                  {/* Token editor — contenteditable with pill rendering */}
+                  <TokenEditor
+                    ref={tokenEditorRef}
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Write your message here, or click the buttons above to insert patient data like first name and benefit amounts…"
+                    onChange={setMessage}
+                    placeholder="Write your message here, or drag and drop the tokens above to insert patient data like first name and benefit amounts…"
                   />
 
                   {/* Segment indicator */}

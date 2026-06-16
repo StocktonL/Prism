@@ -60,6 +60,18 @@ export default function Signup() {
         })
         if (authError) throw authError
 
+        // Notify Stockton of new signup — fire and forget, never block the user
+        fetch('https://formspree.io/f/mykveaoq', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: '🎉 New Signup',
+            practice: form.practiceName,
+            email: form.email,
+            phone: form.phone || '—',
+          }),
+        }).catch(() => {})
+
         setStep(2)
       } catch (err: unknown) {
         console.error('Signup error full object:', err)
