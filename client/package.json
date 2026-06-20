@@ -8,7 +8,8 @@
     "build": "vite build && node scripts/prerender-blog.mjs",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "calibrate": "npx -y tsx scripts/stedi-calibrate.ts"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.2.5",
