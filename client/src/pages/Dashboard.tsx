@@ -33,8 +33,93 @@ import {
   Flower2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth'
 
 const HAS_PATIENTS = true
+
+// Demo fallback figures — shown when a practice has no verified benefits yet
+// (the sales demo account, or before a real CSV upload + verification run).
+// The moment real Stedi verifications land in eligibility_checks, the aha banner
+// switches to the practice's own numbers.
+const DEMO_AHA = {
+  recoverable: 127050,
+  benefitPatients: 847,
+  frameTotal: 82350,
+  framePatients: 548,
+  clTotal: 44700,
+  clPatients: 299,
+}
+
+// Reads the practice's real verified benefits from eligibility_checks and totals
+// them up. Uses the most recent check per patient (matches the Patients page).
+// Returns hasData=false until at least one verification with a real benefit lands,
+// so the dashboard falls back to the demo figures and never shows a bare $0.
+function useLiveBenefits() {
+  const { user } = useAuth()
+  const [state, setState] = useState({
+    loading: true,
+    hasData: false,
+    recoverable: 0,
+    benefitPatients: 0,
+    frameTotal: 0,
+    framePatients: 0,
+    clTotal: 0,
+    clPatients: 0,
+  })
+
+  useEffect(() => {
+    async function load() {
+      if (!user) { setState(s => ({ ...s, loading: false })); return }
+      try {
+        const { data: userData } = await supabase
+          .from('users').select('practice_id').eq('id', user.id).single()
+        if (!userData?.practice_id) { setState(s => ({ ...s, loading: false })); return }
+
+        const { data: patients } = await supabase
+          .from('patients').select('id').eq('practice_id', userData.practice_id)
+        if (!patients?.length) { setState(s => ({ ...s, loading: false })); return }
+
+        const { data: checks } = await supabase
+          .from('eligibility_checks')
+          .select('patient_id, frame_allowance, cl_allowance, checked_at')
+          .in('patient_id', patients.map(p => p.id))
+          .order('checked_at', { ascending: false })
+
+        // Keep only the most recent check per patient.
+        const latest = new Map<string, { frame: number; cl: number }>()
+        for (const c of (checks ?? [])) {
+          if (!latest.has(c.patient_id)) {
+            latest.set(c.patient_id, {
+              frame: Number(c.frame_allowance) || 0,
+              cl: Number(c.cl_allowance) || 0,
+            })
+          }
+        }
+
+        let frameTotal = 0, framePatients = 0, clTotal = 0, clPatients = 0, benefitPatients = 0
+        for (const v of latest.values()) {
+          if (v.frame > 0) { frameTotal += v.frame; framePatients++ }
+          if (v.cl > 0) { clTotal += v.cl; clPatients++ }
+          if (v.frame > 0 || v.cl > 0) benefitPatients++
+        }
+
+        const recoverable = frameTotal + clTotal
+        setState({
+          loading: false,
+          hasData: recoverable > 0,
+          recoverable, benefitPatients,
+          frameTotal, framePatients, clTotal, clPatients,
+        })
+      } catch {
+        setState(s => ({ ...s, loading: false }))
+      }
+    }
+    load()
+  }, [user])
+
+  return state
+}
 
 // ─── Campaign Suggestions Engine ─────────────────────────────────────────────
 
@@ -650,6 +735,20 @@ function EmptyState({ onUpload }: { onUpload: () => void }) {
 export default function Dashboard() {
   const navigate = useNavigate()
   const [previewIndex, setPreviewIndex] = useState(0)
+  const live = useLiveBenefits()
+
+  // Real verified totals when we have them, polished demo figures otherwise.
+  const aha = live.hasData
+    ? {
+        recoverable: live.recoverable,
+        benefitPatients: live.benefitPatients,
+        frameTotal: live.frameTotal,
+        framePatients: live.framePatients,
+        clTotal: live.clTotal,
+        clPatients: live.clPatients,
+      }
+    : DEMO_AHA
+  const ahaRecovery = Math.round(aha.recoverable * 0.2)
 
   const cyclingPreviews = [
     { name: 'Sarah Mitchell',  carrier: 'VSP',          frame: '$150', cl: '$130', msg: "Hi Sarah, just a heads up — our records show you have $150 in frame benefits and $130 in contact lens benefits you haven't used. Did you know these expire Dec 31 and don't carry over? Reply YES to schedule. — Valley Eye Care" },
@@ -693,23 +792,30 @@ export default function Dashboard() {
       {/* Aha moment */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-cyan-700 p-6 shadow-md">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-teal-200 mb-1">Recoverable optical revenue in your patient list</p>
-          <p className="text-3xl sm:text-5xl font-black text-white tracking-tight">$127,050</p>
-          <p className="mt-2 text-teal-100 text-sm">847 patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-medium text-teal-200">Recoverable optical revenue in your patient list</p>
+            {live.hasData && (
+              <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" /> Live from your verifications
+              </span>
+            )}
+          </div>
+          <p className="text-3xl sm:text-5xl font-black text-white tracking-tight">${aha.recoverable.toLocaleString()}</p>
+          <p className="mt-2 text-teal-100 text-sm">{aha.benefitPatients.toLocaleString()} patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.</p>
           <div className="mt-4 flex flex-wrap gap-4">
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">Frame allowances</p>
-              <p className="text-lg font-bold text-white">$82,350</p>
-              <p className="text-xs text-teal-300">548 patients</p>
+              <p className="text-lg font-bold text-white">${aha.frameTotal.toLocaleString()}</p>
+              <p className="text-xs text-teal-300">{aha.framePatients.toLocaleString()} patients</p>
             </div>
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">Contact lens benefits</p>
-              <p className="text-lg font-bold text-white">$44,700</p>
-              <p className="text-xs text-teal-300">299 patients</p>
+              <p className="text-lg font-bold text-white">${aha.clTotal.toLocaleString()}</p>
+              <p className="text-xs text-teal-300">{aha.clPatients.toLocaleString()} patients</p>
             </div>
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">At 20% response rate</p>
-              <p className="text-lg font-bold text-white">~$25,410</p>
+              <p className="text-lg font-bold text-white">~${ahaRecovery.toLocaleString()}</p>
               <p className="text-xs text-teal-300">estimated recovery</p>
             </div>
           </div>
