@@ -209,6 +209,46 @@ function VerificationCard() {
   )
 }
 
+// ─── Example SMS bubble (shows the actual personalized message a patient gets) ─
+interface BubbleProps {
+  initials: string
+  name: string
+  tag: string
+  message: string
+  time?: string
+}
+
+// Bold any $-amount inside the message so the dollar figure — the whole point — pops.
+function highlightAmounts(text: string) {
+  return text.split(/(\$\d[\d,]*)/g).map((part, i) =>
+    /^\$\d/.test(part)
+      ? <span key={i} className="font-semibold text-teal-800">{part}</span>
+      : <span key={i}>{part}</span>
+  )
+}
+
+function MessageBubble({ initials, name, tag, message, time = 'Just now' }: BubbleProps) {
+  return (
+    <div className={`${CARD} p-4`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="h-9 w-9 rounded-full bg-teal-700 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900 truncate">{name}</p>
+          <p className="text-xs text-slate-400">SMS · {time}</p>
+        </div>
+        <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-teal-50 text-teal-800 border border-teal-100">{tag}</span>
+      </div>
+      {/* Phone-style message bubble */}
+      <div className="rounded-2xl rounded-tl-sm bg-slate-100 px-3.5 py-2.5">
+        <p className="text-sm text-slate-700 leading-relaxed">{highlightAmounts(message)}</p>
+      </div>
+      <p className="mt-2 text-[11px] text-slate-400">Auto-personalized by Prizm · Reply STOP to opt out</p>
+    </div>
+  )
+}
+
 // ─── Section header (left-aligned — respects left-side bias / F-pattern) ───────
 function SectionHeader({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
   return (
@@ -445,6 +485,56 @@ export default function Landing() {
                 <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What your patients receive — example SMS bubbles */}
+      <section className="border-t border-slate-200 bg-slate-50 py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-12 items-center">
+            <div className="max-w-md">
+              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">What your patients receive</p>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
+                Real messages. Real dollar amounts.
+              </h2>
+              <p className="mt-3 text-slate-600 leading-relaxed">
+                Every text is written for one patient — their name, their carrier, and the exact benefit
+                they have sitting unused. That specificity is what turns a reminder into a booked appointment.
+              </p>
+              <p className="mt-4 text-sm text-slate-500 leading-relaxed">
+                You approve every message before it sends. Patients can reply right back to your practice.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <MessageBubble
+                initials="SM"
+                name="Sarah Mitchell"
+                tag="Benefit reminder"
+                message="Hi Sarah — you have $150 in frame benefits at Mountain View Eye Care that expire Dec 31. Want us to hold an appointment this month? Reply YES."
+              />
+              <MessageBubble
+                initials="JO"
+                name="James Okafor"
+                tag="CL reorder"
+                time="2 min ago"
+                message="Hi James, your $130 contact lens benefit is still available this year. Reorder in about 2 minutes — reply and we'll get them shipped."
+              />
+              <MessageBubble
+                initials="MC"
+                name="Maria Chen"
+                tag="Trunk show"
+                time="1 hr ago"
+                message="Hi Maria — we're hosting a Maui Jim trunk show this Saturday, and you've got $150 in frame benefits to put toward a new pair. Want us to save you a spot?"
+              />
+              <MessageBubble
+                initials="DT"
+                name="David Tran"
+                tag="Mid-year"
+                time="Yesterday"
+                message="Hi David, a quick heads up — you still have $200 in unused vision benefits for 2026. No need to wait until December. Reply and we'll find you a time."
+              />
+            </div>
           </div>
         </div>
       </section>
