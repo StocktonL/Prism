@@ -17,7 +17,6 @@ export default function SiteNav() {
         <div className="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
           <a href="/#how-it-works" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">How it works</a>
           <a href="/#verification" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Eligibility</a>
-          <a href="/#pricing" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Pricing</a>
           <a href="/blog" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Blog</a>
           <a
             href="/founding"

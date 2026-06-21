@@ -295,7 +295,6 @@ export default function Landing() {
           <div className="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
             <a href="#how-it-works" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">How it works</a>
             <a href="#verification" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Eligibility</a>
-            <a href="#pricing" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Pricing</a>
             <a href="/blog" className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-colors">Blog</a>
             <a
               href="/founding"
@@ -356,10 +355,67 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right — product preview, focused on the aha moment */}
+            {/* Right — the actual text a patient receives (the aha moment) */}
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-[2rem] bg-teal-100/40 blur-2xl" aria-hidden="true" />
+              <div className="relative">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-teal-700">What lands on your patient's phone</p>
+                <div className="space-y-4">
+                  <MessageBubble
+                    initials="SM"
+                    name="Sarah Mitchell"
+                    tag="Benefit reminder"
+                    message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
+                  />
+                  <MessageBubble
+                    initials="JO"
+                    name="James Okafor"
+                    tag="CL reorder"
+                    time="2 min ago"
+                    message="Hi James — you have $130 in contact lens benefits still available. Reply and we'll get your reorder started."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recoverable revenue dashboard — what the practice sees */}
+      <section className="border-t border-slate-200 bg-white py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid lg:grid-cols-[1fr_1.25fr] gap-12 items-center">
+            <div className="max-w-md">
+              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">Your dashboard</p>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
+                And here's the revenue waiting in your patient list
+              </h2>
+              <p className="mt-3 text-slate-600 leading-relaxed">
+                Upload your patients and within 60 seconds Prizm shows you the total optical revenue
+                you can recover — broken down by frames, contacts, and which patients are about to
+                lose their benefits.
+              </p>
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Frame allowances', value: '$82,350' },
+                  { label: 'Contact lens', value: '$44,700' },
+                  { label: 'Est. recovery', value: '~$25,410' },
+                ].map((s) => (
+                  <div key={s.label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-lg font-bold text-teal-800 tabular">{s.value}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 leading-snug">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              <button onClick={openDemo} className={`${PRIMARY_BTN} mt-7`}>
+                <Zap className="h-4 w-4" /> See your practice's numbers
+              </button>
+            </div>
+
+            {/* Dashboard mock */}
             <div className="relative">
               <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 overflow-hidden">
-                {/* Clean top bar (no skeuomorphic traffic lights) */}
+                {/* Clean top bar */}
                 <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2.5">
                   <span className="text-xs font-medium text-slate-400">app.prizmvision.com/dashboard</span>
                   <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
@@ -414,14 +470,11 @@ export default function Landing() {
                     {/* Patient rows */}
                     <div className="mt-3 space-y-1.5">
                       {[
-                        { nm: 'Sarah Mitchell', ins: 'VSP', amt: '$150 frames' },
-                        { nm: 'James Okafor', ins: 'EyeMed', amt: '$200 contacts' },
+                        { nm: 'Sarah Mitchell', amt: '$150 frames' },
+                        { nm: 'James Okafor', amt: '$200 contacts' },
                       ].map((r) => (
                         <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
-                          <div>
-                            <p className="text-xs font-semibold text-slate-800">{r.nm}</p>
-                            <p className="text-[10px] text-slate-400">{r.ins}</p>
-                          </div>
+                          <p className="text-xs font-semibold text-slate-800">{r.nm}</p>
                           <span className="text-xs font-bold text-teal-800 tabular">{r.amt}</span>
                         </div>
                       ))}
@@ -437,11 +490,10 @@ export default function Landing() {
       {/* Industry stats */}
       <section className="border-y border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-200">
+          <div className="grid grid-cols-3 gap-px bg-slate-200">
             <Stat value="15+" label="campaign types — benefit reminders, trunk shows, back to school, and more" />
             <Stat value="$2.4B" label="in vision benefits expire unused every year — your patients' money" />
-            <Stat value="90-day" label="benefit cache — verify once, run multiple campaigns for free" />
-            <Stat value="$449/mo" label="flat — no per-message fees, no per-verification charges" />
+            <Stat value="$15–50K" label="in optical revenue independent practices recover per year" />
           </div>
         </div>
       </section>
@@ -603,36 +655,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Aha moment — the single richest visual moment on the page */}
-      <section className="border-t border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <div className="rounded-3xl bg-gradient-to-br from-teal-700 to-teal-600 p-6 sm:p-10 shadow-2xl shadow-teal-900/20 text-center">
-            <p className="text-sm font-semibold text-teal-100 mb-2">What you see 60 seconds after uploading your patient list</p>
-            <p className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold text-white tracking-tight mt-2 tabular">$127,050</p>
-            <p className="mt-3 text-teal-50 text-xl">in recoverable optical revenue sitting in your patient list right now</p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3 max-w-2xl mx-auto">
-              {[
-                { label: 'Frame allowances', value: '$82,350', sub: '548 patients with unused frames' },
-                { label: 'Contact lens benefits', value: '$44,700', sub: '299 patients overdue for CL reorder' },
-                { label: 'At 20% response rate', value: '~$25,410', sub: 'conservative estimated recovery' },
-              ].map((s) => (
-                <div key={s.label} className="rounded-xl bg-white/15 border border-white/20 px-4 py-4 text-center backdrop-blur-sm">
-                  <p className="text-xs text-teal-50 mb-1">{s.label}</p>
-                  <p className="text-2xl font-bold text-white tabular">{s.value}</p>
-                  <p className="text-xs text-teal-100/80 mt-1">{s.sub}</p>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={openDemo}
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-teal-800 hover:bg-teal-50 transition-colors shadow-xl"
-            >
-              <Zap className="h-4 w-4" /> See your practice's numbers
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="border-t border-slate-200 bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-6">
@@ -686,30 +708,15 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="border-t border-slate-200 bg-white py-24">
+      {/* Founding offer — discount framing, no pricing */}
+      <section id="founding-offer" className="border-t border-slate-200 bg-white py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">Pricing</p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">Simple. Everything included.</h2>
-              <p className="mt-3 text-slate-600 leading-relaxed">No hidden fees. No contracts. No per-message or per-verification charges. One flat price, cancel anytime.</p>
-              <a
-                href="/founding"
-                className="mt-6 block rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 hover:bg-amber-100 transition-colors"
-              >
-                <p className="text-xs text-amber-800 font-semibold">Founding customer offer</p>
-                <p className="text-sm text-amber-900 mt-0.5">$199/month locked for life — first 10 customers only →</p>
-              </a>
-            </div>
-            <div className={`${CARD} border-teal-200 p-8`}>
-              <div className="flex items-end gap-2 mb-1">
-                <span className="font-display text-6xl font-semibold text-slate-900 tabular">$449</span>
-                <span className="text-slate-500 mb-2">/month</span>
-              </div>
-              <p className="text-sm text-slate-600 mb-1">Includes 1,500 verifications · $0.15/check after that.</p>
-              <p className="text-xs text-slate-500 mb-6">Most practices never exceed the included amount.</p>
-              <div className="space-y-3 mb-8">
+              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">Everything included</p>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">One plan. Everything in it.</h2>
+              <p className="mt-3 text-slate-600 leading-relaxed">No add-ons, no per-message fees, no per-verification charges. Every practice gets the full platform — verification, campaigns, AI messaging, and delivery — from day one.</p>
+              <div className="mt-6 space-y-3">
                 {[
                   'Real-time insurance eligibility verification',
                   'All campaign templates',
@@ -724,9 +731,25 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <button onClick={openDemo} className={`${PRIMARY_BTN} w-full`}>
-                Try the Live Demo
-              </button>
+            </div>
+            {/* Founding offer card */}
+            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 shadow-[0_2px_16px_rgba(180,83,9,0.08)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 mb-5">
+                <Sparkles className="h-3.5 w-3.5 text-amber-700" />
+                <span className="text-xs font-bold text-amber-800">Founding offer · first 10 practices</span>
+              </div>
+              <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
+                Lock in our lowest rate — for life.
+              </h3>
+              <p className="mt-3 text-sm text-slate-700 leading-relaxed">
+                The first 10 practices to come on board lock in a permanent founding discount, for as long
+                as they stay with us. In return: a 12-month commitment, your feedback, and a case study if
+                the results are strong. A few spots are already taken.
+              </p>
+              <a href="/founding" className={`${PRIMARY_BTN} mt-6 w-full bg-amber-700 hover:bg-amber-800 shadow-amber-900/15`}>
+                See the founding offer <ArrowRight className="h-4 w-4" />
+              </a>
+              <p className="mt-3 text-center text-xs text-slate-500">No credit card to start · HIPAA BAA included</p>
             </div>
           </div>
         </div>
@@ -751,9 +774,9 @@ export default function Landing() {
             </button>
           </div>
           <p className="mt-6 text-sm text-slate-500">
-            Looking for the founding customer rate?{' '}
+            Want in on the founding offer?{' '}
             <a href="/founding" className="text-amber-700 hover:text-amber-800 font-semibold transition-colors">
-              Apply for $199/month →
+              Apply to be a founding practice →
             </a>
           </p>
         </div>
@@ -765,18 +788,17 @@ export default function Landing() {
           <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10">Works with every major practice management system</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {[
-              { name: 'RevolutionEHR', share: '~35% of practices' },
-              { name: 'Eyefinity', share: '~25% of practices' },
-              { name: 'Crystal PM', share: '~15% of practices' },
-              { name: 'Compulink', share: '~10% of practices' },
-              { name: 'My Vision Express', share: '~8% of practices' },
-            ].map((ehr) => (
-              <div key={ehr.name} className={`${CARD} flex flex-col items-center gap-2 px-4 py-5 text-center hover:border-slate-300 transition-colors`}>
+              'RevolutionEHR',
+              'Eyefinity',
+              'Crystal PM',
+              'Compulink',
+              'My Vision Express',
+            ].map((name) => (
+              <div key={name} className={`${CARD} flex flex-col items-center gap-2 px-4 py-5 text-center hover:border-slate-300 transition-colors`}>
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 border border-teal-100">
                   <FileCheck className="h-4 w-4 text-teal-700" />
                 </div>
-                <span className="text-sm font-semibold text-slate-900">{ehr.name}</span>
-                <span className="text-xs text-slate-500">{ehr.share}</span>
+                <span className="text-sm font-semibold text-slate-900">{name}</span>
               </div>
             ))}
           </div>
@@ -832,7 +854,7 @@ export default function Landing() {
                 {[
                   { label: 'How it works', href: '#how-it-works' },
                   { label: 'Eligibility', href: '#verification' },
-                  { label: 'Pricing', href: '#pricing' },
+                  { label: 'Founding offer', href: '/founding' },
                   { label: 'Blog', href: '/blog' },
                 ].map((l) => (
                   <li key={l.label}>

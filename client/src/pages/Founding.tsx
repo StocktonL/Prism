@@ -52,13 +52,13 @@ function FoundingForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
           </div>
           <h2 className="font-display text-2xl font-semibold text-slate-900">Apply for Founding Access</h2>
           <p className="mt-1.5 text-sm text-slate-600">
-            $199/month locked in for life — we'll reach out within 24 hours to confirm your spot and schedule onboarding.
+            Lock in our founding rate for life — we'll reach out within 24 hours to confirm your spot and schedule onboarding.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input type="hidden" name="type" value="Founding Customer Application" />
-          <input type="hidden" name="offer" value="$199/month founding rate" />
+          <input type="hidden" name="offer" value="Founding rate (locked for life)" />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -149,7 +149,7 @@ function SuccessScreen({ onDismiss }: { onDismiss: () => void }) {
           Your founding spot is reserved. We'll reach out within 24 hours with your agreement and onboarding date.
         </p>
         <p className="text-sm text-amber-800 font-semibold mb-6">
-          $199/month · locked in for life · {TOTAL_SPOTS - SPOTS_TAKEN - 1} spots left after you.
+          Founding rate · locked in for life · {TOTAL_SPOTS - SPOTS_TAKEN - 1} spots left after you.
         </p>
         <button onClick={onDismiss} className="w-full rounded-xl bg-teal-700 py-3 text-sm font-semibold text-white hover:bg-teal-800 transition-colors">
           Got it
@@ -164,8 +164,8 @@ function SuccessScreen({ onDismiss }: { onDismiss: () => void }) {
 const foundingPerks = [
   {
     icon: <DollarSign className="h-5 w-5 text-amber-700" />,
-    title: '$199/month. Forever.',
-    description: 'Launch price is $449/month. You pay $199 for as long as you stay a customer — that\'s $3,000/year saved permanently.',
+    title: 'Our lowest rate. For life.',
+    description: 'Founding members lock in a permanent discount off the standard rate — for as long as you stay a customer. The rate never goes up on you.',
   },
   {
     icon: <Users className="h-5 w-5 text-amber-700" />,
@@ -197,7 +197,7 @@ const foundingPerks = [
 // ─── What founding customers are committing to ────────────────────────────────
 
 const commitments = [
-  '12-month annual commitment at $199/month',
+  '12-month annual commitment at the founding rate',
   'Provide feedback after your first campaign',
   'Participate in a 15-minute check-in call at month 3',
   'Share a case study if results are strong (your approval required)',
@@ -232,7 +232,7 @@ export default function Founding() {
   const spotsLeft = TOTAL_SPOTS - SPOTS_TAKEN
 
   useLayoutEffect(() => {
-    document.title = 'Founding Customer Offer — $199/month | Prizm'
+    document.title = 'Founding Customer Offer | Prizm'
     return () => { document.title = 'Prizm — Vision Benefit Campaign Automation for Optometry Practices' }
   }, [])
 
@@ -274,12 +274,12 @@ export default function Founding() {
           <h1 className="font-display text-4xl sm:text-6xl font-semibold tracking-tight leading-tight mb-6 text-slate-900">
             Founding Customer
             <br />
-            <span className="text-amber-700">$199/month. Forever.</span>
+            <span className="text-amber-700">Lowest rate. Locked for life.</span>
           </h1>
           <p className="text-sm text-teal-700 font-medium mt-2">Only 10 founding spots available</p>
 
           <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-4 mt-4">
-            Prizm launches at $449/month. The first 10 practices to commit get lifetime access at $199 — that's a $3,000/year discount locked in permanently.
+            The first 10 practices to come on board lock in our founding discount permanently — for as long as you stay with us. It's the best rate Prizm will ever offer, and it never goes up.
           </p>
           <p className="text-base text-slate-500 max-w-xl mx-auto mb-10">
             In exchange: 12-month annual commitment, feedback after your first campaign, and a case study if results are strong.
@@ -329,10 +329,9 @@ export default function Founding() {
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-center">
             <p className="text-sm text-slate-700">
-              At $199/month ($2,388/year), you need{' '}
-              <span className="font-bold text-slate-900">6.3 additional optical sales</span>{' '}
-              to break even.{' '}
-              <span className="text-emerald-600 font-bold">Most practices see this in week one.</span>
+              A small handful of additional optical sales a month{' '}
+              <span className="font-bold text-slate-900">more than covers your subscription.</span>{' '}
+              <span className="text-emerald-600 font-bold">Most practices get there in their first week.</span>
             </p>
           </div>
         </div>
@@ -340,7 +339,7 @@ export default function Founding() {
         {/* What you get */}
         <div className="mb-16">
           <h2 className="font-display text-2xl sm:text-3xl font-semibold mb-2 text-slate-900">What founding customers get</h2>
-          <p className="text-sm text-slate-500 mb-10">Beyond the price — this is what makes the first 10 different from every customer after.</p>
+          <p className="text-sm text-slate-500 mb-10">Beyond the rate — this is what makes the first 10 different from every customer after.</p>
           <div className="grid sm:grid-cols-2 gap-4">
             {foundingPerks.map((perk) => (
               <div key={perk.title} className={`${CARD} flex gap-4 p-5`}>
@@ -399,7 +398,7 @@ export default function Founding() {
               },
               {
                 q: 'What does "annual commit" mean exactly?',
-                a: '12 months at $199/month, billed monthly. Not a lump sum upfront. Just a 12-month agreement so we can offer the founding price. After year one, you stay at $199/month.',
+                a: 'A 12-month agreement, billed monthly — not a lump sum upfront. The commitment is what lets us offer the founding rate. After year one, you keep that same founding rate for as long as you stay.',
               },
               {
                 q: 'What carriers does Prizm support?',
@@ -429,10 +428,10 @@ export default function Founding() {
             <span className="text-xs font-bold text-white">{spotsLeft} spots left</span>
           </div>
           <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3 text-white">
-            $199/month. Locked in forever.
+            The founding rate. Locked in forever.
           </h2>
           <p className="text-amber-50 mb-8 max-w-lg mx-auto text-sm">
-            When these {TOTAL_SPOTS} spots are gone, they're gone. The next practice that signs up pays $449.
+            When these {TOTAL_SPOTS} spots are gone, they're gone — and so is the founding rate. Every practice after pays the standard price.
           </p>
           <button
             onClick={() => setShowForm(true)}
