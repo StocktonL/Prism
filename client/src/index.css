@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 html, body, #root {
-  background-color: rgb(2 6 23); /* slate-950 */
+  background-color: #F8FAFC; /* slate-50 — matches the marketing page surface, no dark flash */
 }
+
+/* Tabular figures so dollar amounts align in columns */
+.tabular { font-variant-numeric: tabular-nums; }
 
 @layer base {
   :root {
@@ -17,7 +20,7 @@ html, body, #root {
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
 
-    --primary: 174 72% 38%;
+    --primary: 175 77% 26%; /* teal-700 #0F766E — AA contrast on white */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
@@ -32,7 +35,7 @@ html, body, #root {
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --ring: 174 72% 38%;
+    --ring: 175 77% 26%;
 
     --radius: 0.5rem;
   }
@@ -73,6 +76,22 @@ html, body, #root {
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Visible keyboard focus on every interactive element */
+  :focus-visible {
+    outline: 2px solid #0F766E;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

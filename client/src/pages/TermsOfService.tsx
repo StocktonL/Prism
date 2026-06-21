@@ -7,17 +7,17 @@ export default function TermsOfService() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <SiteNav />
 
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-black text-white mb-2">Terms of Service</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-2">Terms of Service</h1>
         <p className="text-xs text-slate-500 mb-12">Last updated: May 2026</p>
 
-        <div className="space-y-8 text-sm text-slate-400 leading-relaxed">
+        <div className="space-y-8 text-sm text-slate-600 leading-relaxed">
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Agreement to Terms</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Agreement to Terms</h2>
             <p>
               By signing up for or using Prizm ("Service"), you ("Practice" or "Customer") agree to
               these Terms of Service. Prizm is operated by Prizm Health, LLC. These Terms govern your
@@ -26,7 +26,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Subscription and Billing</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Subscription and Billing</h2>
             <p className="mb-3">
               Prizm is offered as a monthly subscription service. The standard subscription rate is
               $449 per month. Founding customers who signed up under the founding offer are billed at
@@ -46,7 +46,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">HIPAA Compliance Obligations</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">HIPAA Compliance Obligations</h2>
             <p className="mb-3">
               A signed Business Associate Agreement (BAA) is required before any protected health
               information (PHI) may be uploaded to or processed by Prizm. You agree not to upload
@@ -61,7 +61,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Data Handling</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Data Handling</h2>
             <p className="mb-3">
               Prizm processes patient data solely on your behalf and in accordance with your
               instructions and the executed BAA. We do not sell, rent, or share your patient data
@@ -76,7 +76,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Acceptable Use</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Acceptable Use</h2>
             <p className="mb-3">
               You agree to use Prizm only for lawful patient outreach on behalf of your optometry
               practice. You may not use the Service to send unsolicited messages, circumvent opt-out
@@ -86,7 +86,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Limitation of Liability</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Limitation of Liability</h2>
             <p>
               Prizm is provided "as is." To the fullest extent permitted by law, Prizm's total
               liability to you for any claim arising out of or related to these Terms or the Service
@@ -97,7 +97,7 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Changes to Terms</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Changes to Terms</h2>
             <p>
               We may update these Terms from time to time. Material changes will be communicated by
               email at least 30 days before they take effect. Continued use of the Service after
@@ -106,12 +106,12 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Contact</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Contact</h2>
             <p>
               Questions about these Terms should be directed to{' '}
               <a
                 href="mailto:stockton@prizmvision.com"
-                className="text-teal-400 hover:text-teal-300 transition-colors"
+                className="text-teal-700 hover:text-teal-800 underline underline-offset-2 transition-colors"
               >
                 stockton@prizmvision.com
               </a>
@@ -122,8 +122,8 @@ export default function TermsOfService() {
         </div>
       </div>
 
-      <footer className="border-t border-white/5 px-6 py-8 text-center">
-        <p className="text-xs text-slate-600">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a></p>
+      <footer className="border-t border-slate-200 px-6 py-8 text-center">
+        <p className="text-xs text-slate-500">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-700 transition-colors">stockton@prizmvision.com</a></p>
       </footer>
     </div>
   )

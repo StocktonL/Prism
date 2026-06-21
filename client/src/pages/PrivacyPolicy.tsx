@@ -7,17 +7,17 @@ export default function PrivacyPolicy() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <SiteNav />
 
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-black text-white mb-2">Privacy Policy</h1>
+        <h1 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-2">Privacy Policy</h1>
         <p className="text-xs text-slate-500 mb-12">Last updated: May 2026</p>
 
-        <div className="space-y-8 text-sm text-slate-400 leading-relaxed">
+        <div className="space-y-8 text-sm text-slate-600 leading-relaxed">
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Overview</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Overview</h2>
             <p>
               Prizm ("we," "us," or "our") is a HIPAA-compliant software platform built exclusively
               for independent optometry practices. We take the privacy and security of patient health
@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">HIPAA Compliance</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">HIPAA Compliance</h2>
             <p className="mb-3">
               Prizm is designed and operated in accordance with the Health Insurance Portability and
               Accountability Act (HIPAA). We function as a Business Associate to the optometry
@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Data Encryption</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Data Encryption</h2>
             <p>
               All patient data stored in Prizm is encrypted at rest using AES-256 encryption. All
               data transmitted between your browser, our servers, and third-party integrations is
@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">How We Use Patient Data</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">How We Use Patient Data</h2>
             <p className="mb-3">
               Patient information uploaded to Prizm is used solely to facilitate benefit verification
               and outreach campaigns on behalf of the optometry practice that owns the patient
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Data Retention</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Data Retention</h2>
             <p>
               Patient data is retained for as long as a practice maintains an active subscription with
               Prizm, plus any period required by applicable law. Upon cancellation, practices may
@@ -82,7 +82,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Your Rights</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Your Rights</h2>
             <p>
               Patients whose information has been uploaded to Prizm by an optometry practice may
               contact that practice directly regarding their rights under HIPAA, including the right
@@ -92,13 +92,13 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-white mb-3">Contact Us</h2>
+            <h2 className="font-display text-lg font-semibold text-slate-900 mb-3">Contact Us</h2>
             <p>
               For questions about this Privacy Policy or how your information is handled, please contact
               us at{' '}
               <a
                 href="mailto:stockton@prizmvision.com"
-                className="text-teal-400 hover:text-teal-300 transition-colors"
+                className="text-teal-700 hover:text-teal-800 underline underline-offset-2 transition-colors"
               >
                 stockton@prizmvision.com
               </a>
@@ -109,8 +109,8 @@ export default function PrivacyPolicy() {
         </div>
       </div>
 
-      <footer className="border-t border-white/5 px-6 py-8 text-center">
-        <p className="text-xs text-slate-600">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a></p>
+      <footer className="border-t border-slate-200 px-6 py-8 text-center">
+        <p className="text-xs text-slate-500">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-700 transition-colors">stockton@prizmvision.com</a></p>
       </footer>
     </div>
   )

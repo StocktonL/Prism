@@ -805,21 +805,21 @@ export default function Blog() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <SiteNav />
 
       <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-black text-white mb-2">Vision Benefit Reminders & Optical Marketing</h1>
-        <p className="text-slate-400 mb-12">How independent optometry practices recover $15–50K in optical revenue using automated vision benefit reminders.</p>
+        <h1 className="font-display text-3xl sm:text-4xl font-semibold text-slate-900 tracking-tight mb-2">Vision Benefit Reminders &amp; Optical Marketing</h1>
+        <p className="text-slate-600 mb-12">How independent optometry practices recover $15–50K in optical revenue using automated vision benefit reminders.</p>
 
         <div className="space-y-5">
           {POSTS.map(post => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="block group">
-              <article className="border border-white/8 rounded-2xl p-6 bg-white/3 hover:border-teal-500/40 hover:bg-white/5 transition-all">
-                <h2 className="text-base font-bold text-white group-hover:text-teal-400 transition-colors mb-2 leading-snug">
+              <article className="border border-slate-200 rounded-2xl p-6 bg-white shadow-[0_2px_16px_rgba(15,118,110,0.05)] hover:border-teal-300 transition-colors">
+                <h2 className="font-display text-lg font-semibold text-slate-900 group-hover:text-teal-700 transition-colors mb-2 leading-snug">
                   {post.title}
                 </h2>
-                <p className="text-sm text-slate-400 mb-4 leading-relaxed">{post.description}</p>
+                <p className="text-sm text-slate-600 mb-4 leading-relaxed">{post.description}</p>
                 <div className="flex items-center gap-4 text-xs text-slate-500">
                   <span className="flex items-center gap-1"><User className="h-3 w-3" /> Stockton Lundell</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {post.readTime}</span>
@@ -831,8 +831,8 @@ export default function Blog() {
         </div>
       </div>
 
-      <footer className="border-t border-white/5 px-6 py-8 text-center">
-        <p className="text-xs text-slate-600">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-400 transition-colors">stockton@prizmvision.com</a></p>
+      <footer className="border-t border-slate-200 px-6 py-8 text-center">
+        <p className="text-xs text-slate-500">© 2026 Prizm · <a href="mailto:stockton@prizmvision.com" className="hover:text-slate-700 transition-colors">stockton@prizmvision.com</a></p>
       </footer>
     </div>
   )
