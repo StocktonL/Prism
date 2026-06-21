@@ -368,11 +368,11 @@ export default function Landing() {
                     message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
                   />
                   <MessageBubble
-                    initials="JO"
-                    name="James Okafor"
-                    tag="CL reorder"
+                    initials="LP"
+                    name="Lisa Park"
+                    tag="Trunk show"
                     time="2 min ago"
-                    message="Hi James — you have $130 in contact lens benefits still available. Reply and we'll get your reorder started."
+                    message="Hi Lisa — you have $150 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
                   />
                 </div>
               </div>
@@ -567,11 +567,11 @@ export default function Landing() {
                 message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
               />
               <MessageBubble
-                initials="JO"
-                name="James Okafor"
-                tag="CL reorder"
+                initials="LP"
+                name="Lisa Park"
+                tag="Trunk show"
                 time="2 min ago"
-                message="Hi James — you have $130 in contact lens benefits still available. Reply and we'll get your reorder started."
+                message="Hi Lisa — you have $150 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
               />
               <MessageBubble
                 initials="MC"
