@@ -13,15 +13,19 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
   throw new Error('Max retries exceeded')
 }
 
-// Stedi/Change Healthcare payer IDs for vision carriers
+// Stedi payer IDs for vision carriers.
+// VERIFY every ID against the Stedi Payer Network before trusting it — the
+// originals here were guesses and several were wrong (e.g. 39026 resolved to
+// UMR, a medical TPA, not VSP). Stedi accepts either the primary payer ID or
+// the alphanumeric "Stedi Payer ID" in tradingPartnerServiceId.
 export const PAYER_IDS: Record<string, string> = {
-  'VSP':          '39026',
-  'EyeMed':       '68068',
-  'Davis Vision': '48714',
-  'Spectera':     '98798',
-  'Anthem':       '00601',
-  'UHC Vision':   '87726',
-  'Humana':       '61101',
+  'VSP':          '94163',   // ✅ verified in Stedi Payer Network (Stedi ID: GWRCD)
+  'EyeMed':       '68068',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Davis Vision': '48714',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Spectera':     '98798',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Anthem':       '00601',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'UHC Vision':   '87726',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Humana':       '61101',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
 }
 
 interface EligibilityRequestBody {
