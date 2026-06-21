@@ -499,8 +499,9 @@ export default function Landing() {
                 Real messages. Real dollar amounts.
               </h2>
               <p className="mt-3 text-slate-600 leading-relaxed">
-                Every text is written for one patient — their name, their carrier, and the exact benefit
-                they have sitting unused. That specificity is what turns a reminder into a booked appointment.
+                Every text is written for one patient — their name and the exact benefit they have sitting
+                unused. Simple and clear, with the real dollar amount front and center. That specificity is
+                what turns a reminder into a booked appointment.
               </p>
               <p className="mt-4 text-sm text-slate-500 leading-relaxed">
                 You approve every message before it sends. Patients can reply right back to your practice.
@@ -511,28 +512,28 @@ export default function Landing() {
                 initials="SM"
                 name="Sarah Mitchell"
                 tag="Benefit reminder"
-                message="Hi Sarah — you have $150 in frame benefits at Mountain View Eye Care that expire Dec 31. Want us to hold an appointment this month? Reply YES."
+                message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
               />
               <MessageBubble
                 initials="JO"
                 name="James Okafor"
                 tag="CL reorder"
                 time="2 min ago"
-                message="Hi James, your $130 contact lens benefit is still available this year. Reorder in about 2 minutes — reply and we'll get them shipped."
+                message="Hi James — you have $130 in contact lens benefits still available. Reply and we'll get your reorder started."
               />
               <MessageBubble
                 initials="MC"
                 name="Maria Chen"
-                tag="Trunk show"
+                tag="New frames"
                 time="1 hr ago"
-                message="Hi Maria — we're hosting a Maui Jim trunk show this Saturday, and you've got $150 in frame benefits to put toward a new pair. Want us to save you a spot?"
+                message="Hi Maria — you have $150 in frame benefits ready to use on a new pair. Want us to save you a time to come in?"
               />
               <MessageBubble
                 initials="DT"
                 name="David Tran"
                 tag="Mid-year"
                 time="Yesterday"
-                message="Hi David, a quick heads up — you still have $200 in unused vision benefits for 2026. No need to wait until December. Reply and we'll find you a time."
+                message="Hi David — you still have $200 in unused vision benefits this year. Reply and we'll find you a time."
               />
             </div>
           </div>
