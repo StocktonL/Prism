@@ -372,7 +372,7 @@ export default function Landing() {
                     name="Lisa Park"
                     tag="Trunk show"
                     time="2 min ago"
-                    message="Hi Lisa — you have $150 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
+                    message="Hi Lisa — you have $200 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
                   />
                 </div>
               </div>
@@ -571,7 +571,7 @@ export default function Landing() {
                 name="Lisa Park"
                 tag="Trunk show"
                 time="2 min ago"
-                message="Hi Lisa — you have $150 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
+                message="Hi Lisa — you have $200 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
               />
               <MessageBubble
                 initials="MC"
