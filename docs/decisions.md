@@ -45,3 +45,32 @@ good developer ecosystem
 DATE: May 2026
 
 ## Add New Decisions Below With Same Format
+
+## Go-To-Market: Channels Tried and Outcomes
+DATE: June 2026
+
+### Apollo Cold Email
+STATUS: Set up and running — has active issues (TBD to document specifics)
+DO NOT recommend "set up Apollo" — already done.
+
+### Facebook Groups (ODs on Facebook, Independent Strong, Optometric Office Managers)
+STATUS: DEAD CHANNEL for Prism
+REASON: Heavily oversaturated with foreign country members.
+Zero real engagement from target buyers (US independent practice managers).
+DO NOT recommend Facebook groups as a channel.
+
+### Go-Forward Channels Being Explored (as of June 22, 2026)
+- LinkedIn outreach to practice managers specifically (different from ODs)
+- Paid search (Google Ads targeting optometry software keywords)
+- Podcast appearances (20/20 Money, Defocus Media)
+- Trade publication sponsorships/articles
+- Direct cold calling (evenings/weekends only due to Weave employment)
+- Optometry buying groups vendor programs
+- babygrowthlove — to be evaluated (Stockton flagged this)
+
+## Founder Employment Status
+DATE: June 2026
+Stockton is approaching departure from Weave — lost motivation.
+Non-compete (12 months post-departure) and non-solicitation still apply.
+DO NOT recommend using Weave customer lists under any circumstances.
+Recommend Utah employment lawyer consultation BEFORE departure.
