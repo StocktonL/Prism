@@ -576,9 +576,9 @@ export default function Landing() {
               <MessageBubble
                 initials="MC"
                 name="Maria Chen"
-                tag="New frames"
+                tag="Back to school"
                 time="1 hr ago"
-                message="Hi Maria — you have $150 in frame benefits ready to use on a new pair. Want us to save you a time to come in?"
+                message="Hi Maria — you have $150 in frame benefits before the end of the year. Great time to get the kids in before the back-to-school rush. Want us to grab a time? Reply YES."
               />
               <MessageBubble
                 initials="DT"
