@@ -355,26 +355,43 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right — the actual text a patient receives (the aha moment) */}
+            {/* Right — the actual texts a patient receives (the aha moment) */}
             <div className="relative">
               <div className="absolute -inset-4 rounded-[2rem] bg-teal-100/40 blur-2xl" aria-hidden="true" />
               <div className="relative">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-teal-700">What lands on your patient's phone</p>
-                <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-3">
                   <MessageBubble
                     initials="SM"
                     name="Sarah Mitchell"
                     tag="Benefit reminder"
-                    message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
+                    message="Hi Sarah — your $150 frame benefit expires Dec 31. Want us to hold a time before it's gone? Reply YES."
                   />
                   <MessageBubble
                     initials="LP"
                     name="Lisa Park"
                     tag="Trunk show"
                     time="2 min ago"
-                    message="Hi Lisa — you have $200 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
+                    message="Hi Lisa — we're hosting a trunk show Friday, and you've got $200 in frame benefits to spend. Save you a spot? Reply YES."
+                  />
+                  <MessageBubble
+                    initials="MC"
+                    name="Maria Chen"
+                    tag="Back to school"
+                    time="1 hr ago"
+                    message="Hi Maria — back-to-school season is here and the family has $150 in frame benefits before year-end. Want a time? Reply YES."
+                  />
+                  <MessageBubble
+                    initials="DT"
+                    name="David Tran"
+                    tag="Mid-year"
+                    time="Yesterday"
+                    message="Hi David — quick heads up: you still have $200 in unused vision benefits this year. Reply and we'll find you a time."
                   />
                 </div>
+                <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+                  Every message is personalized with the patient's exact benefit — and you approve them all before they send.
+                </p>
               </div>
             </div>
           </div>
@@ -537,57 +554,6 @@ export default function Landing() {
                 <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* What your patients receive — example SMS bubbles */}
-      <section className="border-t border-slate-200 bg-slate-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid lg:grid-cols-[1fr_1.4fr] gap-12 items-center">
-            <div className="max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">What your patients receive</p>
-              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
-                Real messages. Real dollar amounts.
-              </h2>
-              <p className="mt-3 text-slate-600 leading-relaxed">
-                Every text is written for one patient — their name and the exact benefit they have sitting
-                unused. Simple and clear, with the real dollar amount front and center. That specificity is
-                what turns a reminder into a booked appointment.
-              </p>
-              <p className="mt-4 text-sm text-slate-500 leading-relaxed">
-                You approve every message before it sends. Patients can reply right back to your practice.
-              </p>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <MessageBubble
-                initials="SM"
-                name="Sarah Mitchell"
-                tag="Benefit reminder"
-                message="Hi Sarah — you have $150 in frame benefits to use before they expire. Want us to hold an appointment? Reply YES."
-              />
-              <MessageBubble
-                initials="LP"
-                name="Lisa Park"
-                tag="Trunk show"
-                time="2 min ago"
-                message="Hi Lisa — you have $200 in frame benefits and we're hosting a trunk show this Friday. Want us to save you a spot? Reply YES."
-              />
-              <MessageBubble
-                initials="MC"
-                name="Maria Chen"
-                tag="Back to school"
-                time="1 hr ago"
-                message="Hi Maria — you have $150 in frame benefits before the end of the year. Great time to get the kids in before the back-to-school rush. Want us to grab a time? Reply YES."
-              />
-              <MessageBubble
-                initials="DT"
-                name="David Tran"
-                tag="Mid-year"
-                time="Yesterday"
-                message="Hi David — you still have $200 in unused vision benefits this year. Reply and we'll find you a time."
-              />
-            </div>
           </div>
         </div>
       </section>
