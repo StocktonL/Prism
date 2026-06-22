@@ -54,7 +54,7 @@ export default function AppLayout() {
         <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-700/60">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/30">
             <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+              <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
             </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-white">Prizm</span>

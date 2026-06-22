@@ -9,7 +9,7 @@ export default function SiteNav() {
         <a href="/" className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700">
             <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+              <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
             </svg>
           </div>
           <span className="font-display text-xl font-semibold tracking-tight text-slate-900">Prizm</span>

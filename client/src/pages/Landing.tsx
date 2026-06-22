@@ -421,7 +421,7 @@ export default function Landing() {
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700">
               <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+                <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
               </svg>
             </div>
             <span className="font-display text-xl font-semibold tracking-tight text-slate-900">Prizm</span>
@@ -600,7 +600,7 @@ export default function Landing() {
                     <div className="hidden sm:flex w-36 flex-shrink-0 flex-col gap-1 border-r border-slate-100 bg-slate-50 p-3">
                       <div className="flex items-center gap-1.5 px-2 pb-3">
                         <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-700">
-                          <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-white"><path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" /></svg>
+                          <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-white"><path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" /></svg>
                         </div>
                         <span className="font-display text-xs font-semibold text-slate-900">Prizm</span>
                       </div>
@@ -986,7 +986,7 @@ export default function Landing() {
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600">
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-white" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+                    <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
                   </svg>
                 </div>
                 <span className="font-display text-base font-semibold text-white">Prizm</span>
