@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap,
@@ -27,6 +27,104 @@ const PRIMARY_BTN =
 const SECONDARY_BTN =
   'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-7 py-3.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors'
 const CARD = 'rounded-2xl border border-slate-200 bg-white shadow-[0_2px_16px_rgba(15,118,110,0.05)]'
+
+// ─── Scroll-reveal hook ───────────────────────────────────────────────────────
+// Uses IntersectionObserver to trigger a visibility flag once the element
+// scrolls into view. Fully respects prefers-reduced-motion.
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  // Check reduced motion preference once on mount
+  const prefersReduced =
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+
+  useEffect(() => {
+    // If user prefers reduced motion, skip the animation entirely — start visible.
+    if (prefersReduced) {
+      setVisible(true)
+      return
+    }
+
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect() // animate once, never hide again
+        }
+      },
+      { threshold: 0.15 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [prefersReduced])
+
+  return { ref, visible }
+}
+
+// ─── RevealBlock wrapper ──────────────────────────────────────────────────────
+// Wraps any block that should fade+slide up into view on scroll.
+// Pass a tailwind delay class like "delay-[100ms]" via the `delay` prop.
+interface RevealBlockProps {
+  children: React.ReactNode
+  delay?: string
+  className?: string
+}
+
+function RevealBlock({ children, delay = '', className = '' }: RevealBlockProps) {
+  const { ref, visible } = useReveal()
+
+  return (
+    <div
+      ref={ref}
+      className={[
+        'transition-all duration-500 ease-out',
+        delay,
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ─── Watermark triangle ───────────────────────────────────────────────────────
+// Oversized brand triangle placed as a decorative background element inside
+// sections. pointer-events-none + aria-hidden so it never affects usability.
+interface WatermarkProps {
+  side?: 'left' | 'right'
+}
+
+function Watermark({ side = 'right' }: WatermarkProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={[
+        'pointer-events-none absolute top-1/2 -translate-y-1/2',
+        side === 'right' ? '-right-[8vw]' : '-left-[8vw]',
+      ].join(' ')}
+      style={{
+        width: '40vw',
+        height: '40vw',
+        fill: '#0F766E',
+        opacity: 0.06,
+        transform: `translateY(-50%) rotate(15deg)`,
+      }}
+    >
+      <path d="M12 2L2 19h20L12 2z" />
+    </svg>
+  )
+}
 
 type ModalVariant = 'demo' | 'contact'
 
@@ -266,6 +364,25 @@ export default function Landing() {
   const [showModal, setShowModal] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
 
+  // Scroll progress bar (0–100) and nav condensing state
+  const [scrollPct, setScrollPct] = useState(0)
+  const [scrolled, setScrolled] = useState(false)
+
+  // One shared scroll listener drives both the progress bar and the nav state.
+  const handleScroll = useCallback(() => {
+    const el = document.documentElement
+    const scrollTop = window.scrollY
+    const maxScroll = el.scrollHeight - window.innerHeight
+    const pct = maxScroll > 0 ? Math.min(100, (scrollTop / maxScroll) * 100) : 0
+    setScrollPct(pct)
+    setScrolled(scrollTop > 80)
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
+
   function openDemo() { setShowModal(true) }
   function openContact() { setShowContactModal(true) }
 
@@ -278,12 +395,29 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
 
+      {/* ── Scroll progress bar ───────────────────────────────────────────────
+          Fixed to the very top of the viewport, above the nav (z-60).
+          Width is dynamic so we use inline style, not a Tailwind class.     */}
+      <div
+        aria-hidden="true"
+        className="fixed top-0 left-0 z-60 h-[2px] bg-gradient-to-r from-teal-700 to-teal-500"
+        style={{ width: `${scrollPct}%`, transition: 'width 0.1s linear' }}
+      />
+
       {showModal && <DemoModal onClose={() => setShowModal(false)} onSubmit={enterDemo} variant="demo" />}
       {showContactModal && <DemoModal onClose={() => setShowContactModal(false)} onSubmit={() => setShowContactModal(false)} variant="contact" />}
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      {/* ── Nav — condenses on scroll ─────────────────────────────────────────
+          `scrolled` adds shadow-md and shrinks height from h-16 to h-14.
+          transition-all duration-300 makes the height change smooth.        */}
+      <nav className={[
+        'sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur-md transition-all duration-300',
+        scrolled ? 'shadow-md' : '',
+      ].join(' ')}>
+        <div className={[
+          'mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300',
+          scrolled ? 'h-14' : 'h-16',
+        ].join(' ')}>
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-700">
               <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
@@ -320,8 +454,22 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero — light / clinical */}
+      {/* ── Hero — light / clinical ───────────────────────────────────────────
+          Dot-grid texture sits behind everything at 5% opacity.
+          A soft radial glow sits behind the right column bubbles.           */}
       <section className="relative overflow-hidden bg-gradient-to-b from-teal-50/60 via-white to-slate-50">
+
+        {/* Dot-grid background texture */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #0F766E 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+            opacity: 0.05,
+          }}
+        />
+
         <div className="relative mx-auto max-w-7xl px-6 pt-16 pb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left — copy */}
@@ -357,6 +505,12 @@ export default function Landing() {
 
             {/* Right — the actual texts a patient receives (the aha moment) */}
             <div className="relative">
+              {/* Soft teal radial glow behind the bubble grid */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-400/10 blur-3xl"
+                style={{ width: 400, height: 400 }}
+              />
               <div className="absolute -inset-4 rounded-[2rem] bg-teal-100/40 blur-2xl" aria-hidden="true" />
               <div className="relative">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-teal-700">What lands on your patient's phone</p>
@@ -398,7 +552,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Recoverable revenue dashboard — what the practice sees */}
+      {/* ── Recoverable revenue dashboard — what the practice sees ───────────── */}
       <section className="border-t border-slate-200 bg-white py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid lg:grid-cols-[1fr_1.25fr] gap-12 items-center">
@@ -429,77 +583,79 @@ export default function Landing() {
               </button>
             </div>
 
-            {/* Dashboard mock */}
-            <div className="relative">
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 overflow-hidden">
-                {/* Clean top bar */}
-                <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2.5">
-                  <span className="text-xs font-medium text-slate-400">app.prizmvision.com/dashboard</span>
-                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live
-                  </span>
-                </div>
-                {/* App shell: sidebar + main */}
-                <div className="flex">
-                  {/* Sidebar */}
-                  <div className="hidden sm:flex w-36 flex-shrink-0 flex-col gap-1 border-r border-slate-100 bg-slate-50 p-3">
-                    <div className="flex items-center gap-1.5 px-2 pb-3">
-                      <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-700">
-                        <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-white"><path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" /></svg>
-                      </div>
-                      <span className="font-display text-xs font-semibold text-slate-900">Prizm</span>
-                    </div>
-                    {[
-                      { label: 'Dashboard', active: true },
-                      { label: 'Eligibility', active: false },
-                      { label: 'Patients', active: false },
-                      { label: 'Campaigns', active: false },
-                    ].map((item) => (
-                      <div key={item.label} className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${item.active ? 'bg-teal-50 text-teal-800' : 'text-slate-500'}`}>
-                        {item.label}
-                      </div>
-                    ))}
+            {/* Dashboard mock — fades in on scroll */}
+            <RevealBlock>
+              <div className="relative">
+                <div className="rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/40 overflow-hidden">
+                  {/* Clean top bar */}
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-2.5">
+                    <span className="text-xs font-medium text-slate-400">app.prizmvision.com/dashboard</span>
+                    <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live
+                    </span>
                   </div>
-                  {/* Main panel */}
-                  <div className="flex-1 p-4">
-                    <p className="text-xs font-semibold text-slate-500">Good afternoon 👋</p>
-                    {/* Aha banner — the one place the brand gradient earns its keep */}
-                    <div className="mt-2 rounded-xl bg-gradient-to-br from-teal-700 to-teal-600 p-5">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-100">Recoverable optical revenue</p>
-                      <p className="mt-1 text-4xl font-bold tracking-tight text-white tabular">$127,050</p>
-                      <p className="mt-1.5 text-[11px] text-teal-50">467 patients have unused benefits — frames, contacts &amp; exams waiting</p>
-                    </div>
-                    {/* Stat row */}
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
-                        <p className="text-[10px] text-slate-500">Frame benefits</p>
-                        <p className="text-sm font-bold text-teal-800 tabular">$82,700</p>
+                  {/* App shell: sidebar + main */}
+                  <div className="flex">
+                    {/* Sidebar */}
+                    <div className="hidden sm:flex w-36 flex-shrink-0 flex-col gap-1 border-r border-slate-100 bg-slate-50 p-3">
+                      <div className="flex items-center gap-1.5 px-2 pb-3">
+                        <div className="flex h-5 w-5 items-center justify-center rounded bg-teal-700">
+                          <svg viewBox="0 0 24 24" className="h-2.5 w-2.5 fill-white"><path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" /></svg>
+                        </div>
+                        <span className="font-display text-xs font-semibold text-slate-900">Prizm</span>
                       </div>
-                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
-                        <p className="text-[10px] text-slate-500">Contact lens</p>
-                        <p className="text-sm font-bold text-teal-800 tabular">$44,350</p>
-                      </div>
-                      <div className="rounded-lg border border-slate-100 bg-white p-2.5">
-                        <p className="text-[10px] text-slate-500">Expiring soon</p>
-                        <p className="text-sm font-bold text-amber-600 tabular">312 pts</p>
-                      </div>
-                    </div>
-                    {/* Patient rows */}
-                    <div className="mt-3 space-y-1.5">
                       {[
-                        { nm: 'Sarah Mitchell', amt: '$150 frames' },
-                        { nm: 'James Okafor', amt: '$200 contacts' },
-                      ].map((r) => (
-                        <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
-                          <p className="text-xs font-semibold text-slate-800">{r.nm}</p>
-                          <span className="text-xs font-bold text-teal-800 tabular">{r.amt}</span>
+                        { label: 'Dashboard', active: true },
+                        { label: 'Eligibility', active: false },
+                        { label: 'Patients', active: false },
+                        { label: 'Campaigns', active: false },
+                      ].map((item) => (
+                        <div key={item.label} className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${item.active ? 'bg-teal-50 text-teal-800' : 'text-slate-500'}`}>
+                          {item.label}
                         </div>
                       ))}
+                    </div>
+                    {/* Main panel */}
+                    <div className="flex-1 p-4">
+                      <p className="text-xs font-semibold text-slate-500">Good afternoon 👋</p>
+                      {/* Aha banner — the one place the brand gradient earns its keep */}
+                      <div className="mt-2 rounded-xl bg-gradient-to-br from-teal-700 to-teal-600 p-5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-100">Recoverable optical revenue</p>
+                        <p className="mt-1 text-4xl font-bold tracking-tight text-white tabular">$127,050</p>
+                        <p className="mt-1.5 text-[11px] text-teal-50">467 patients have unused benefits — frames, contacts &amp; exams waiting</p>
+                      </div>
+                      {/* Stat row */}
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                          <p className="text-[10px] text-slate-500">Frame benefits</p>
+                          <p className="text-sm font-bold text-teal-800 tabular">$82,700</p>
+                        </div>
+                        <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                          <p className="text-[10px] text-slate-500">Contact lens</p>
+                          <p className="text-sm font-bold text-teal-800 tabular">$44,350</p>
+                        </div>
+                        <div className="rounded-lg border border-slate-100 bg-white p-2.5">
+                          <p className="text-[10px] text-slate-500">Expiring soon</p>
+                          <p className="text-sm font-bold text-amber-600 tabular">312 pts</p>
+                        </div>
+                      </div>
+                      {/* Patient rows */}
+                      <div className="mt-3 space-y-1.5">
+                        {[
+                          { nm: 'Sarah Mitchell', amt: '$150 frames' },
+                          { nm: 'James Okafor', amt: '$200 contacts' },
+                        ].map((r) => (
+                          <div key={r.nm} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+                            <p className="text-xs font-semibold text-slate-800">{r.nm}</p>
+                            <span className="text-xs font-bold text-teal-800 tabular">{r.amt}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </RevealBlock>
           </div>
         </div>
       </section>
@@ -515,7 +671,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* ── How it works ─────────────────────────────────────────────────────── */}
       <section id="how-it-works" className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-6">
           <SectionHeader
@@ -531,36 +687,44 @@ export default function Landing() {
                 icon: <Users className="h-6 w-6 text-teal-700" />,
                 title: 'Upload your patient list',
                 body: 'Export a CSV from RevolutionEHR, Eyefinity, Crystal PM, or any EHR. Prizm maps your columns and cleans the data automatically.',
+                delay: 'delay-[0ms]',
               },
               {
                 n: '02',
                 icon: <ShieldCheck className="h-6 w-6 text-teal-700" />,
                 title: 'Prizm verifies every benefit in real time',
                 body: 'We check frame allowance, contact lens benefits, exam coverage, and expiration date for every patient — direct from the insurance carrier.',
+                delay: 'delay-[100ms]',
               },
               {
                 n: '03',
                 icon: <MessageSquare className="h-6 w-6 text-teal-700" />,
                 title: 'Personalized campaigns go out automatically',
                 body: "Every patient gets a message with their exact dollar amounts. You approve once. Prizm sends year-round — staggered so your front desk isn't flooded.",
+                delay: 'delay-[200ms]',
               },
             ].map((step) => (
-              <div key={step.n} className={`${CARD} relative p-7 hover:border-slate-300 transition-colors`}>
-                <span className="font-display absolute top-5 right-6 text-5xl font-semibold text-slate-100">{step.n}</span>
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
-                  {step.icon}
+              <RevealBlock key={step.n} delay={step.delay}>
+                <div className={`${CARD} relative p-7 hover:border-slate-300 transition-colors`}>
+                  <span className="font-display absolute top-5 right-6 text-5xl font-semibold text-slate-100">{step.n}</span>
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
+                    {step.icon}
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">{step.title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
                 </div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">{step.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{step.body}</p>
-              </div>
+              </RevealBlock>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Eligibility */}
-      <section id="verification" className="border-t border-slate-200 bg-slate-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
+      {/* ── Eligibility ── overflow-hidden + relative needed for the watermark ── */}
+      <section id="verification" className="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-24">
+        {/* Teal watermark — anchored right */}
+        <Watermark side="right" />
+
+        <div className="relative mx-auto max-w-7xl px-6">
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">Real-time eligibility</p>
@@ -587,41 +751,46 @@ export default function Landing() {
               </div>
             </div>
 
+            {/* Eligibility cards — each fades in with stagger */}
             <div className="space-y-4">
-              <div className={`${CARD} p-5`}>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Benefits Verified Today</p>
-                <div className="space-y-2">
-                  {[
-                    { patient: 'Sarah Mitchell', carrier: 'VSP',          frame: '$150', cl: '$130', status: 'Active',   color: 'text-emerald-600' },
-                    { patient: 'James Okafor',   carrier: 'EyeMed',       frame: '$200', cl: '$0',   status: 'Active',   color: 'text-emerald-600' },
-                    { patient: 'Linda Chen',     carrier: 'Davis Vision', frame: '$150', cl: '$100', status: 'Active',   color: 'text-emerald-600' },
-                    { patient: 'Marcus Webb',    carrier: 'Spectera',     frame: '$0',   cl: '$0',   status: 'Inactive', color: 'text-slate-400'   },
-                  ].map((p) => (
-                    <div key={p.patient} className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">{p.patient}</p>
-                        <p className="text-xs text-slate-500">{p.carrier}</p>
+              <RevealBlock delay="delay-[0ms]">
+                <div className={`${CARD} p-5`}>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Benefits Verified Today</p>
+                  <div className="space-y-2">
+                    {[
+                      { patient: 'Sarah Mitchell', carrier: 'VSP',          frame: '$150', cl: '$130', status: 'Active',   color: 'text-emerald-600' },
+                      { patient: 'James Okafor',   carrier: 'EyeMed',       frame: '$200', cl: '$0',   status: 'Active',   color: 'text-emerald-600' },
+                      { patient: 'Linda Chen',     carrier: 'Davis Vision', frame: '$150', cl: '$100', status: 'Active',   color: 'text-emerald-600' },
+                      { patient: 'Marcus Webb',    carrier: 'Spectera',     frame: '$0',   cl: '$0',   status: 'Inactive', color: 'text-slate-400'   },
+                    ].map((p) => (
+                      <div key={p.patient} className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{p.patient}</p>
+                          <p className="text-xs text-slate-500">{p.carrier}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-slate-900 tabular">{p.frame !== '$0' ? `${p.frame} frames` : p.cl !== '$0' ? `${p.cl} CL` : '—'}</p>
+                          <p className={`text-xs font-medium ${p.color}`}>{p.status}</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-slate-900 tabular">{p.frame !== '$0' ? `${p.frame} frames` : p.cl !== '$0' ? `${p.cl} CL` : '—'}</p>
-                        <p className={`text-xs font-medium ${p.color}`}>{p.status}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="mt-4 rounded-xl bg-teal-50 border border-teal-100 px-3 py-2 flex items-center justify-between">
+                    <span className="text-xs text-teal-800">38 verified today</span>
+                    <span className="text-sm font-bold text-teal-800 tabular">$4,820 in benefits found</span>
+                  </div>
                 </div>
-                <div className="mt-4 rounded-xl bg-teal-50 border border-teal-100 px-3 py-2 flex items-center justify-between">
-                  <span className="text-xs text-teal-800">38 verified today</span>
-                  <span className="text-sm font-bold text-teal-800 tabular">$4,820 in benefits found</span>
-                </div>
-              </div>
+              </RevealBlock>
 
-              <VerificationCard />
+              <RevealBlock delay="delay-[150ms]">
+                <VerificationCard />
+              </RevealBlock>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* ── Features ──────────────────────────────────────────────────────────── */}
       <section className="border-t border-slate-200 bg-slate-50 py-24">
         <div className="mx-auto max-w-7xl px-6">
           <SectionHeader
@@ -635,46 +804,54 @@ export default function Landing() {
                 icon: <DollarSign className="h-5 w-5 text-teal-700" />,
                 title: 'Exact dollar amounts',
                 body: '"You have $150 in frame benefits expiring Dec 31" — not a generic reminder. Prizm pulls the real number for every patient.',
+                delay: 'delay-[0ms]',
               },
               {
                 icon: <ShieldCheck className="h-5 w-5 text-teal-700" />,
                 title: 'Real-time insurance verification',
                 body: 'Direct connections to VSP, EyeMed, Davis Vision, Spectera, and all major vision carriers. Checks happen automatically.',
+                delay: 'delay-[50ms]',
               },
               {
                 icon: <FileCheck className="h-5 w-5 text-teal-700" />,
                 title: 'Automatic campaign scheduling',
                 body: 'Set it once and Prizm sends the right message at the right time — 30-day expiry alerts, mid-year reminders, CL reorder windows. No manual work.',
+                delay: 'delay-[100ms]',
               },
               {
                 icon: <Zap className="h-5 w-5 text-teal-700" />,
                 title: 'Year-round, always-on',
                 body: "Prizm sends campaigns automatically all year — not just a Q4 blast. Staggered delivery keeps your front desk from being overwhelmed.",
+                delay: 'delay-[150ms]',
               },
               {
                 icon: <BarChart3 className="h-5 w-5 text-teal-700" />,
                 title: 'Revenue attribution',
                 body: 'Track exactly how much optical revenue each campaign recovered — reply rate, appointments booked, dollars attributed.',
+                delay: 'delay-[200ms]',
               },
               {
                 icon: <Lock className="h-5 w-5 text-teal-700" />,
                 title: 'HIPAA compliant by design',
                 body: 'BAA included. Row-level security on all patient data. MFA required. Audit logs on every read and write. Not an afterthought.',
+                delay: 'delay-[250ms]',
               },
             ].map((f) => (
-              <div key={f.title} className={`${CARD} p-6 hover:border-slate-300 transition-colors`}>
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
-                  {f.icon}
+              <RevealBlock key={f.title} delay={f.delay}>
+                <div className={`${CARD} p-6 hover:border-slate-300 transition-colors`}>
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 border border-teal-100">
+                    {f.icon}
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-2">{f.title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{f.body}</p>
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{f.body}</p>
-              </div>
+              </RevealBlock>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Founding offer — discount framing, no pricing */}
+      {/* ── Founding offer ────────────────────────────────────────────────────── */}
       <section id="founding-offer" className="border-t border-slate-200 bg-white py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -698,32 +875,38 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            {/* Founding offer card */}
-            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 shadow-[0_2px_16px_rgba(180,83,9,0.08)]">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 mb-5">
-                <Sparkles className="h-3.5 w-3.5 text-amber-700" />
-                <span className="text-xs font-bold text-amber-800">Founding offer · first 10 practices</span>
+
+            {/* Founding offer card — fades in on scroll */}
+            <RevealBlock>
+              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 shadow-[0_2px_16px_rgba(180,83,9,0.08)]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 mb-5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-700" />
+                  <span className="text-xs font-bold text-amber-800">Founding offer · first 10 practices</span>
+                </div>
+                <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
+                  Lock in our lowest rate — for life.
+                </h3>
+                <p className="mt-3 text-sm text-slate-700 leading-relaxed">
+                  The first 10 practices to come on board lock in a permanent founding discount, for as long
+                  as they stay with us. In return: a 12-month commitment, your feedback, and a case study if
+                  the results are strong. A few spots are already taken.
+                </p>
+                <a href="/founding" className={`${PRIMARY_BTN} mt-6 w-full bg-amber-700 hover:bg-amber-800 shadow-amber-900/15`}>
+                  See the founding offer <ArrowRight className="h-4 w-4" />
+                </a>
+                <p className="mt-3 text-center text-xs text-slate-500">No credit card to start · HIPAA BAA included</p>
               </div>
-              <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
-                Lock in our lowest rate — for life.
-              </h3>
-              <p className="mt-3 text-sm text-slate-700 leading-relaxed">
-                The first 10 practices to come on board lock in a permanent founding discount, for as long
-                as they stay with us. In return: a 12-month commitment, your feedback, and a case study if
-                the results are strong. A few spots are already taken.
-              </p>
-              <a href="/founding" className={`${PRIMARY_BTN} mt-6 w-full bg-amber-700 hover:bg-amber-800 shadow-amber-900/15`}>
-                See the founding offer <ArrowRight className="h-4 w-4" />
-              </a>
-              <p className="mt-3 text-center text-xs text-slate-500">No credit card to start · HIPAA BAA included</p>
-            </div>
+            </RevealBlock>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="border-t border-slate-200 bg-slate-50 py-24">
-        <div className="mx-auto max-w-3xl px-6 text-center">
+      {/* ── Final CTA ── overflow-hidden + relative needed for the watermark ──── */}
+      <section className="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-24">
+        {/* Teal watermark — anchored left this time for visual variety */}
+        <Watermark side="left" />
+
+        <div className="relative mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight tracking-[-0.02em] text-slate-900">
             Your patients have money waiting.<br />
             <span className="text-teal-700">Are you going to tell them?</span>
