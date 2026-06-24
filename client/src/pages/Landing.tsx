@@ -186,8 +186,7 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
           {/* Hidden field tells you whether this was a demo signup or contact request */}
           <input type="hidden" name="type" value={isContact ? 'Contact Request' : 'Demo Signup'} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+          <div>
               <label className="text-xs font-medium text-slate-600 mb-1 block">Your name</label>
               <input
                 required
@@ -196,16 +195,6 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
                 className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 transition-colors"
               />
             </div>
-            <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Practice name</label>
-              <input
-                required
-                name="practice"
-                placeholder="Valley Eye Care"
-                className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 transition-colors"
-              />
-            </div>
-          </div>
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">Work email</label>
             <input
@@ -218,41 +207,38 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
             <ValidationError field="email" errors={state.errors} className="text-xs text-red-500 mt-1" />
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Phone number</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Phone <span className="text-slate-400">(optional)</span></label>
             <input
-              required
               type="tel"
               name="phone"
               placeholder="(801) 555-1234"
               className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 transition-colors"
             />
           </div>
-          <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">
-              {isContact ? 'What\'s on your mind?' : 'Anything you\'d like us to know? (optional)'}
-            </label>
-            <textarea
-              required={isContact}
-              name="message"
-              placeholder={isContact
-                ? 'How many patients do you have? Which EHR do you use? Any questions about Prizm?'
-                : 'e.g. "We have about 2,000 patients on VSP and EyeMed..."'}
-              rows={3}
-              className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 transition-colors resize-none"
-            />
-            <ValidationError field="message" errors={state.errors} className="text-xs text-red-500 mt-1" />
-          </div>
+          {isContact && (
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">What's on your mind?</label>
+              <textarea
+                required
+                name="message"
+                placeholder="How many patients do you have? Which EHR do you use? Any questions about Prizm?"
+                rows={3}
+                className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-teal-700 focus:ring-2 focus:ring-teal-700/20 transition-colors resize-none"
+              />
+              <ValidationError field="message" errors={state.errors} className="text-xs text-red-500 mt-1" />
+            </div>
+          )}
           <button
             type="submit"
             disabled={state.submitting}
             className={`${PRIMARY_BTN} w-full mt-2 disabled:opacity-60`}
           >
             {state.submitting
-              ? (isContact ? 'Sending...' : 'Opening demo...')
-              : (isContact ? 'Send — I\'ll hear from you soon →' : 'Show me the demo →')}
+              ? (isContact ? 'Sending...' : 'Booking...')
+              : (isContact ? 'Send — I\'ll hear from you soon →' : 'Book my free walkthrough →')}
           </button>
         </form>
-        <p className="mt-3 text-center text-xs text-slate-500">No credit card · HIPAA compliant · We'll follow up within 24 hours</p>
+        <p className="mt-3 text-center text-xs text-slate-500">Free · No commitment · Stockton will call you within 24 hours</p>
       </div>
     </div>
   )
@@ -490,13 +476,19 @@ export default function Landing() {
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <button onClick={openDemo} className={PRIMARY_BTN}>
-                  <Zap className="h-4 w-4" /> See your practice's numbers
+                  <Zap className="h-4 w-4" /> Book a free walkthrough
                 </button>
                 <button onClick={openContact} className={SECONDARY_BTN}>
                   Talk to us <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
-              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-slate-500">
+                Founding rate: $199/month locked for life —{' '}
+                <a href="/founding" className="font-semibold text-amber-600 hover:text-amber-700 transition-colors">
+                  7 of 10 spots remaining →
+                </a>
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> No credit card</span>
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> HIPAA compliant</span>
                 <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Up and running today</span>
