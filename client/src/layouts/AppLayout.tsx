@@ -33,15 +33,9 @@ export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const isDemoMode = localStorage.getItem('prizm_demo') === 'true'
   const pageTitle = pageTitles[location.pathname] ?? 'Prizm'
 
   async function handleSignOut() {
-    if (isDemoMode) {
-      localStorage.removeItem('prizm_demo')
-      window.location.href = '/'
-      return
-    }
     await signOut()
     navigate('/')
   }
@@ -87,15 +81,7 @@ export default function AppLayout() {
         </nav>
 
         {/* Sidebar footer */}
-        <div className="border-t border-slate-700/60 p-4 space-y-2">
-          {isDemoMode && (
-            <div className="rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-2">
-              <p className="text-xs font-semibold text-amber-400">Demo Mode</p>
-              <button onClick={handleSignOut} className="text-xs text-amber-500 hover:text-amber-300 transition-colors mt-0.5">
-                Exit demo
-              </button>
-            </div>
-          )}
+        <div className="border-t border-slate-700/60 p-4">
           <p className="text-xs text-slate-600">Prizm v0.1.0</p>
         </div>
       </aside>
@@ -106,9 +92,6 @@ export default function AppLayout() {
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
           <h1 className="text-base font-semibold text-slate-800">{pageTitle}</h1>
           <div className="flex items-center gap-3">
-            {isDemoMode && (
-              <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-700">Demo</span>
-            )}
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
                 {user?.email?.[0]?.toUpperCase() ?? 'P'}

@@ -19,7 +19,14 @@ export default function Login() {
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) throw signInError
-      navigate('/app/dashboard')
+
+      // Check if MFA verification is needed
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+        navigate('/mfa-verify', { replace: true })
+      } else {
+        navigate('/app/dashboard', { replace: true })
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Sign in failed. Check your email and password.'
       setError(msg)

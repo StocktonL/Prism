@@ -156,6 +156,11 @@ export function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const origin = process.env.NODE_ENV === 'production' ? 'https://prizmvision.com' : 'http://localhost:5173'
+  res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }

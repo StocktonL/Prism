@@ -2,8 +2,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
 import { PAYER_IDS, parseBenefits } from './eligibility'
 
-const SUPABASE_URL = 'https://jkqnqdmejclartbrknyj.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImprcW5xZG1lamNsYXJ0YnJrbnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTk5MTgsImV4cCI6MjA5NDYzNTkxOH0.9UZ5Nkw101Za38oyqatwY2fsgaKeOllmJKNbNTxWwXM'
+const SUPABASE_URL = process.env.SUPABASE_URL ?? 'https://jkqnqdmejclartbrknyj.supabase.co'
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? ''
 
 async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -19,6 +19,11 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const origin = process.env.NODE_ENV === 'production' ? 'https://prizmvision.com' : 'http://localhost:5173'
+  res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   const authHeader = req.headers.authorization
