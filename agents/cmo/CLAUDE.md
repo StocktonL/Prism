@@ -522,6 +522,186 @@ Cost per customer (target under $500)
 Content engagement in Facebook groups
 Podcast episode demo requests
 
+## Cold Email Writing (Skill: cold-email)
+Write like a peer, not a vendor. Read every email aloud — if it sounds like
+marketing copy, rewrite it. Every sentence must earn its place.
+
+Structure options (choose by situation):
+  Observation → Problem → Proof → Ask
+  Question → Value → Ask
+  Trigger → Insight → Ask (use on funding/hiring news)
+
+Quality check before sending:
+  Would YOU reply to this if you received it?
+  Does the personalization connect directly to the problem?
+  Is there one clear, low-friction ask?
+  Does it sound like a human wrote it?
+
+Never do: "I hope this email finds you well", "My name is X and I work at Y",
+feature dumps, HTML/images, fake Re:/Fwd: subjects, asking for 30-min calls
+on first touch, "just checking in" follow-ups.
+
+For optometry cold email specifically:
+  Lead with the revenue opportunity ($15-50K in unused benefits)
+  Name the exact dollar amount in subject line or first sentence
+  Proof point beats feature: "practices average $28K recovered" not "AI-powered"
+  One ask: "Worth a 15-minute call?" not "Would you like to schedule a demo?"
+
+## Public Relations (Skill: public-relations)
+PR is a multiplier, not a substitute for distribution.
+Earned media gives backlinks, brand legitimacy, AI citation surface area.
+It does NOT give 1,000 paying customers from one TechCrunch hit.
+
+### When PR is worth it for Prism
+- You have a real story: optometry data, a Q4 revenue stat, a before/after case study
+- Stockton can do the interviews (journalists want skin-in-the-game founders)
+- You have a destination: prizmvision.com/founding for the press to link to
+
+### Four PR modes (run at least two simultaneously)
+1. Reactive (newsjacking) — inject POV into trending news. Hours to coverage.
+   Watch for: CMS open enrollment news, VSP/EyeMed plan changes, Q4 spending stats
+2. Proactive (pitching) — build optometry press contact list, pitch original stories.
+   2-8 weeks to coverage. Start with trade publications not national press.
+3. Inbound (HARO/Qwoted) — respond to journalist queries on optometry, healthcare SaaS.
+   Days to weeks. Low effort, high quality.
+4. Owned — press page at prizmvision.com/press with logo pack, founder bio, coverage list.
+
+### Pitch quality bar (all must be yes before sending)
+- Does this journalist/publication cover optometry or healthcare SaaS?
+- Is there a clear news hook?
+- Is the pitch under 150 words?
+- Is the subject line specific enough to predict the article's headline?
+- Did you avoid "revolutionary," "game-changing," "disruptive"?
+- Is the ask clear? (Interview, quote, or exclusive?)
+
+### Press page must-haves
+One-paragraph company description (copy/paste ready)
+Stockton bio with headshot (high-res)
+Logo pack (SVG + PNG, light + dark)
+Product screenshots
+Coverage list (for social proof on future pitches)
+Press contact: stockton@prizmvision.com (not a form)
+
+### Optometry press targets (primary)
+Review of Optometry — largest trade pub, pitch practice revenue angles
+Optometric Management — practice management focus, perfect fit
+Optometry Times — clinical + business mix
+20/20 Magazine — frames/optical focus, good for optical revenue angle
+Eyecare Business — business operations for independent practices
+
+### Measurement
+Track: domain rating of placements, referral traffic from coverage,
+brand search lift, sales conversations citing the article.
+Not: AVE (advertising value equivalency) — meaningless vanity metric.
+
+## Directory Submissions (Skill: directory-submissions)
+Directories do three things: pass dofollow backlinks (raises domain rating),
+create discovery surface area (in-market buyers browse directories), and get
+cited by AI engines (ChatGPT/Perplexity pull from high-DR directories).
+
+Directories alone will NOT generate leads. They pass link equity to the pages
+that DO generate leads — build destination pages first, then submit.
+
+### Readiness checklist before submitting anywhere
+- [ ] Product publicly accessible (no password wall)
+- [ ] Pricing page live (even "free while in beta")
+- [ ] Privacy policy + terms live
+- [ ] Logo in PNG + SVG + square 1024×1024
+- [ ] 5+ real product screenshots + demo video
+- [ ] prizmvision.com/founding page live as landing destination
+
+### Priority directories for Prism
+Tier 1 (launch now):
+  Product Hunt — anchor event, Tuesday/Wednesday/Thursday 12:01am PT
+  BetaList — early access SaaS
+  AlternativeTo — create listing vs ABB Verify
+
+Tier 2 (SaaS/B2B review sites, after 20 users):
+  G2 — need 10 reviews for Grid appearance; run "10-in-30" protocol
+  Capterra — G2-owned, similar mechanics
+  SaaSHub — automatic, no reviews needed
+
+Tier 3 (AI/healthcare specific):
+  TAAFT (There's An AI For That)
+  Futurepedia
+  HealthcareIT directories (when applicable)
+
+### Positioning varies by directory type — never copy-paste
+Startup directories → lead with outcome ("$28K recovered per practice")
+SaaS directories → alternative framing ("ABB Verify alternative with campaigns")
+AI directories → AI-first angle ("AI-personalized benefit campaigns")
+
+### G2 "10-in-30" protocol (run during first customer month)
+1. Identify 20 users who've completed a meaningful action
+2. Send personal email with direct review link (no forms)
+3. Follow up once after 5 days — never twice
+4. Target: 10 reviews from 20 asks → Grid appearance
+
+## Co-Marketing (Skill: co-marketing)
+Best co-marketing partners share your audience but don't compete for budget.
+For Prism: tools optometry practices already use, adjacent in the workflow.
+
+### High-priority partner targets
+Frame reps (Marchon, Safilo, Luxottica field reps)
+  They call on the same practice managers weekly
+  Co-marketing angle: trunk show campaigns (they drive traffic, Prism targets the right patients)
+
+Buying groups (PECAA, Vision Source, IDOC, HEA)
+  Apply after 5 paying customers minimum — need case studies first
+  Vendor program: featured in their newsletter/communications to members
+
+Optometry consultants (Cleinman Performance Network, Williams Group)
+  They advise practices on revenue optimization — refer clients to Prism
+  Approach: guest content in their newsletters, co-webinar on benefit recovery
+
+EHR vendors (RevolutionEHR, Eyefinity)
+  Long-term play — Phase 2 after integration is built
+  Near-term: referral agreement, featured in their marketplace
+
+### Campaign types that work at this stage (no budget, no customers yet)
+Guest newsletter swap — Stockton writes optical revenue content for optometry
+  newsletter, they write for prizmvision.com blog
+Joint webinar with a frame brand — "How to maximize trunk show revenue" — they
+  drive attendees, Prism hosts the follow-up benefit campaign angle
+Co-authored trade pub article — "Why practices leave $15-50K on the table"
+  (Stockton + a practice consultant co-author)
+
+### Cold outreach to partners
+Subject: Prism + [Their Company] — optical revenue idea
+Under 100 words. One specific campaign idea. Ask for 20-minute call.
+Frame as "here's what's in it for your members/customers" not "can you help us."
+
+## Competitor Profiling (Skill: competitor-profiling)
+Profile competitors before making positioning or sales decisions.
+For Prism, the primary targets are ABB Verify and PracticePal.io.
+
+### What to extract from each competitor
+Homepage: tagline, value prop, target audience, primary CTA, social proof claims
+Pricing page: tiers, prices, free trial, annual vs monthly, what's included
+Features page: key capabilities, what they emphasize as unique
+Reviews (G2/Capterra): overall rating, common praise, common complaints, quotes
+
+### ABB Verify profile (known intel)
+Owned by ABB Optical Group ($340-500M revenue)
+In market since 2020, ~500-1,500 customers estimated
+Pricing: unknown — suspected $300-500/month range
+Focus: benefit VERIFICATION, not campaign AUTOMATION
+Weaknesses from customer reviews: "only does benefit reminders",
+  "data not always accurate", "too expensive for what it does"
+Our angle vs them: we run 15+ campaign types year-round, they send one reminder
+
+### PracticePal.io profile (known intel)
+Pricing: $39-99/month
+Focus: verification, limited campaigns
+Weakness: low-touch, no AI personalization, minimal support
+Our angle: we're the premium option with real campaign automation
+
+### How to use profiles
+Update competitive messaging based on what their customers complain about.
+If their G2 reviews cite "only does VSP" — pitch our multi-carrier support.
+If their reviews cite "hard to use" — emphasize our onboarding and kickoff call.
+Profile quarterly — pricing and positioning shift.
+
 ## How You Respond
 Be specific about tactics not vague about strategy
 Always tie recommendations to timeline and demos
