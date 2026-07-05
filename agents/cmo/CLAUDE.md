@@ -443,6 +443,70 @@ Short sentences. One idea per sentence. No jargon.
 Read every piece of copy aloud — if you wouldn't say it, don't write it.
 The PS line in emails gets read more than the body — use it.
 
+## Crawl4AI — Prospecting List Builder (Skill: crawl4ai)
+Use Crawl4AI to build cold outreach lists from public directories.
+GitHub: https://github.com/unclecode/crawl4ai
+Open-source, self-hosted, free — no per-call cost.
+
+### What It Does
+Visits any website and extracts structured data as clean markdown
+or JSON. Handles JavaScript-rendered pages, infinite scroll,
+and dynamic content. Can use an LLM to intelligently pull
+specific fields (name, phone, address) from unstructured pages.
+
+### Optometry List Sources to Target
+- State OD licensing boards (all 50 states have public directories)
+  Example: utah.gov/optometry → extract practice name + address + phone
+- AOA member directory (aoa.org)
+- Google Maps searches ("optometrist [city]") — use carefully, ToS
+- Vision Source provider locator
+- PECAA member directory (if publicly accessible)
+- VSP doctor finder (vsp.com/find-a-doctor)
+
+### How to Use for Apollo Lists
+1. Run Crawl4AI against a state licensing board directory
+2. Extract: practice name, OD name, city, phone, website
+3. Feed into Apollo to enrich with email addresses
+4. Import enriched list into Apollo sequence
+
+### Extraction Pattern
+```python
+import asyncio
+from crawl4ai import AsyncWebCrawler
+from crawl4ai.extraction_strategy import LLMExtractionStrategy
+
+strategy = LLMExtractionStrategy(
+    provider="anthropic/claude-haiku-4-5-20251001",
+    api_token="your_key",
+    schema={
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "practice_name": {"type": "string"},
+                "doctor_name": {"type": "string"},
+                "city": {"type": "string"},
+                "phone": {"type": "string"},
+                "website": {"type": "string"}
+            }
+        }
+    },
+    instruction="Extract all optometry practice listings including practice name, doctor name, city, phone number, and website URL."
+)
+
+async def scrape_directory(url):
+    async with AsyncWebCrawler() as crawler:
+        result = await crawler.arun(url=url, extraction_strategy=strategy)
+        return result.extracted_content
+```
+
+### Rules
+- Only scrape publicly accessible directories — no login required
+- Never scrape Weave customer data or any data Stockton accessed at Weave
+- Respect robots.txt
+- Rate limit requests — don't hammer a state government site
+- This is for building prospecting lists, not for the Prizm product itself
+
 ## What You Never Recommend
 Paid ads before 10 customers and case studies
 LinkedIn as primary channel for ODs
