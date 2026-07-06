@@ -623,6 +623,101 @@ Once you have that data, the campaign is straightforward: personalized messages 
     `,
   },
   {
+    slug: 'abb-verify-alternative',
+    title: 'ABB Verify Alternative: What Independent Optometry Practices Should Know Before Renewing',
+    shortTitle: 'ABB Verify Alternative for Independent Optometry | Prizm',
+    description: "ABB Verify dominates benefit verification for optometry, but verification is only half the revenue equation. Here's what independent practices comparing their options should consider.",
+    dateISO: '2026-07-06',
+    dateDisplay: 'July 6, 2026',
+    content: `
+## Why Practices Start Looking for an ABB Verify Alternative
+
+ABB Verify has been around since 2020 and has built a solid reputation for benefit verification in independent optometry. If your practice is using it, you already know what it does: it verifies patient insurance eligibility and sends benefit reminder messages before benefits expire.
+
+That's genuinely useful. But the practices that start searching for alternatives tend to share a few common frustrations:
+
+"It only does benefit reminders." ABB Verify's Engage product sends end-of-year benefit notifications. That's one campaign type. Most practices have patients with mid-year plan resets, contact lens benefits, back-to-school families, and trunk shows that need targeted outreach — none of which ABB Verify was built to handle.
+
+"The data isn't always accurate." Benefit verification depends on clean data pipelines with insurance networks. Independent practices report inconsistencies in ABB Verify's benefit amounts, particularly for EyeMed and Davis Vision plans.
+
+"It's expensive for what it does." ABB Verify is distributed through ABB Optical Group's contact lens rep network, which means pricing varies by relationship and negotiation. Practices often don't know they're paying more than comparable tools.
+
+"We're locked into ABB's ecosystem." ABB Optical Group sells contact lenses. ABB Verify is part of a broader relationship that can feel difficult to exit without affecting your lens supply.
+
+This guide is for practice managers who are evaluating their options — either at renewal time or mid-year when they're planning Q4 campaigns.
+
+---
+
+## What ABB Verify Actually Does
+
+ABB Verify has two main components:
+
+Validate — real-time benefit verification that checks a patient's VSP, EyeMed, or other vision plan eligibility before or at the time of a visit.
+
+Engage — automated patient outreach that sends benefit reminder messages (email and text) to patients with unused benefits. The primary use case is Q4 benefit expiration reminders. ABB Verify reports that approximately 5% of contacted patients schedule an appointment after receiving an Engage message.
+
+---
+
+## The Gap ABB Verify Doesn't Fill
+
+ABB Verify was built around one insight: patients with unused benefits need a reminder. But the campaigns it generates are limited to end-of-year benefit expiration reminders and post-verification follow-ups.
+
+What it doesn't do:
+
+No mid-year campaigns. A meaningful portion of patients have benefits that reset on July 1, not January 1. ABB Verify doesn't run mid-year expiration campaigns.
+
+No contact lens benefit tracking. VSP and EyeMed both provide contact lens allowances separately from frame allowances. ABB Verify doesn't segment or campaign on CL benefits specifically.
+
+No trunk show or event campaigns. The practices that max out trunk show revenue identify which patients own that brand, have available benefits, and are due for new frames — and contact them specifically. ABB Verify doesn't do this.
+
+No year-round campaign calendar. January new-year reminders. April mid-year check-ins. June contact lens reorders. August back-to-school families. October-November Q4 push. ABB Verify is built for one.
+
+---
+
+## The Revenue Difference
+
+Practice profile: 2,000 active patients. 35% VSP, 25% EyeMed. 30% contact lens wearers.
+
+ABB Verify approach (Q4 only, end-of-year reminders):
+- 800 patients contacted, ABB Verify's reported 5% conversion = 40 appointments
+- Average optical sale: $375
+- Revenue recovered: $15,000
+
+Campaign-first approach (5-6 campaigns per year):
+
+- Q4 end-of-year: 80 appointments x $375 = $30,000
+- January new benefit year: 24 x $375 = $9,000
+- Mid-year EyeMed/July-reset VSP: 18 x $375 = $6,750
+- Contact lens reorder (twice): 240 CL patients x 8% x $200 x 2 = $7,680
+- Back-to-school families: 15 x $350 = $5,250
+- Total recovered: $58,680 — nearly 4x the single-campaign approach.
+
+---
+
+## Questions to Ask Before You Renew
+
+How many campaign types does the software support? If the answer is "end-of-year benefit reminders," that's one campaign type. Ask specifically about mid-year resets, CL campaigns, and event-based campaigns.
+
+Does the software include the patient's exact benefit amount in every message? "You have benefits available" is not a benefit reminder. If the software can't tell you whether each patient message contains a specific dollar amount, the conversion rates will reflect that.
+
+Is there a per-message charge on top of the monthly fee? Some tools charge per SMS sent. At scale, this adds up. Flat-rate models are more predictable.
+
+Is the software connected to ABB Optical Group's contact lens distribution business? This isn't necessarily disqualifying, but it's worth understanding the relationship.
+
+---
+
+## What Prizm Does Differently
+
+Prizm is built specifically for independent optometry practices that want a full year-round campaign calendar — not a single annual reminder.
+
+You upload your patient list from your EHR once. Prizm verifies eligibility for every patient across VSP, EyeMed, Davis Vision, and Spectera, then identifies which patients have unused frame benefits, contact lens benefits, or mid-year plan resets. Every campaign message includes the patient's exact dollar amount.
+
+The campaign library covers 15+ campaign types. Pricing is flat at $449/month with no per-message charges.
+
+[See the founding customer offer at Prizm](https://prizmvision.com/founding) — the first 10 practices get lifetime access at $199/month instead of $449/month.
+    `,
+  },
+  {
     slug: 'vision-benefit-reminder-software-guide',
     title: 'Vision Benefit Reminder Software: The Complete Guide for Optometry Practices',
     shortTitle: 'Vision Benefit Reminder Software Guide | Prizm',

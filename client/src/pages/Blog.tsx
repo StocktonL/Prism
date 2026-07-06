@@ -676,6 +676,165 @@ Once you have that data, the campaign is straightforward: personalized messages 
     `,
   },
   {
+    slug: 'abb-verify-alternative',
+    title: 'ABB Verify Alternative: What Independent Optometry Practices Should Know Before Renewing',
+    description: 'ABB Verify dominates benefit verification for optometry, but verification is only half the revenue equation. Here\'s what independent practices comparing their options should consider.',
+    date: 'July 6, 2026',
+    readTime: '7 min read',
+    content: `
+## Why Practices Start Looking for an ABB Verify Alternative
+
+ABB Verify has been around since 2020 and has built a solid reputation for benefit verification in independent optometry. If your practice is using it, you already know what it does: it verifies patient insurance eligibility and sends benefit reminder messages before benefits expire.
+
+That's genuinely useful. But the practices that start searching for alternatives tend to share a few common frustrations:
+
+- **"It only does benefit reminders."** ABB Verify's Engage product sends end-of-year benefit notifications. That's one campaign type. Most practices have patients with mid-year plan resets, contact lens benefits, back-to-school families, and trunk shows that need targeted outreach — none of which ABB Verify was built to handle.
+- **"The data isn't always accurate."** Benefit verification depends on clean data pipelines with insurance networks. Independent practices report inconsistencies in ABB Verify's benefit amounts, particularly for EyeMed and Davis Vision plans.
+- **"It's expensive for what it does."** ABB Verify is distributed through ABB Optical Group's contact lens rep network, which means pricing varies by relationship and negotiation. Practices often don't know they're paying more than comparable tools.
+- **"We're locked into ABB's ecosystem."** ABB Optical Group sells contact lenses. ABB Verify is part of a broader relationship that can feel difficult to exit without affecting your lens supply.
+
+This guide is for practice managers who are evaluating their options — either at renewal time or mid-year when they're planning Q4 campaigns.
+
+---
+
+## What ABB Verify Actually Does
+
+ABB Verify has two main components:
+
+**Validate** — real-time benefit verification that checks a patient's VSP, EyeMed, or other vision plan eligibility before or at the time of a visit. This integrates with popular EHR systems and reduces front-desk time spent on manual portal lookups.
+
+**Engage** — automated patient outreach that sends benefit reminder messages (email and text) to patients with unused benefits. The primary use case is Q4 benefit expiration reminders. ABB Verify reports that approximately 5% of contacted patients schedule an appointment after receiving an Engage message.
+
+This is the complete product. If you need eligibility verification at the point of service plus an annual benefit reminder campaign, ABB Verify handles both reasonably well.
+
+---
+
+## The Gap ABB Verify Doesn't Fill
+
+The limitation is scope. ABB Verify was built around one insight: patients with unused benefits need a reminder. That insight is correct, but the campaigns it generates are limited to:
+
+1. End-of-year benefit expiration reminders
+2. Post-verification follow-ups
+
+What it doesn't do:
+
+**No mid-year campaigns.** A meaningful portion of patients — especially those on EyeMed plans and employer-sponsored VSP plans — have benefits that reset on July 1, not January 1. These patients' deadlines are in June, not December. ABB Verify doesn't run mid-year expiration campaigns.
+
+**No contact lens benefit tracking.** VSP and EyeMed both provide contact lens allowances separately from frame allowances. A patient who hasn't used their \$150 CL benefit is a different outreach target than one who hasn't used their frame allowance. ABB Verify doesn't segment or campaign on CL benefits specifically.
+
+**No carrier-specific segmentation.** Not all your patients have the same benefit amounts. A VSP patient with \$130 in unused frames deserves a different message than an EyeMed patient with \$200. ABB Verify sends benefit reminders, but practices report limited ability to customize messaging by carrier or benefit amount.
+
+**No trunk show or event campaigns.** A trunk show from Maui Jim or Oakley is the highest-revenue event in an independent practice's calendar. The practices that max out trunk show revenue are the ones that identify which patients own that brand already, have available benefits, and are due for new frames — and contact them specifically. ABB Verify doesn't do this.
+
+**No year-round campaign calendar.** January new-year reminders. April mid-year check-ins. June contact lens reorders. August back-to-school families. October-November Q4 push. The practices recovering the most optical revenue from existing patients run 5-6 campaign types across the calendar year. ABB Verify is built for one.
+
+---
+
+## The Verify-Only vs. Campaign-First Distinction
+
+This is the core difference to understand when evaluating alternatives.
+
+**Verify-only tools** (ABB Verify's primary positioning) treat insurance checking as the product. Campaigns are a feature layered on top of verification.
+
+**Campaign-first tools** treat the revenue campaign as the product. Verification is the underlying infrastructure that makes campaigns accurate.
+
+That distinction changes what the software looks like:
+
+| Capability | Verify-Only | Campaign-First |
+|---|---|---|
+| Point-of-service eligibility check | ✓ | ✓ |
+| End-of-year benefit reminders | ✓ | ✓ |
+| Mid-year benefit campaigns | ✗ | ✓ |
+| Contact lens benefit campaigns | ✗ | ✓ |
+| Trunk show / event campaigns | ✗ | ✓ |
+| Back-to-school family campaigns | ✗ | ✓ |
+| Per-patient dollar amounts in every message | Sometimes | Always |
+| Carrier-specific message segmentation | Limited | Full |
+| Year-round campaign calendar | ✗ | ✓ |
+
+If you're running a single Q4 benefit reminder and that's your complete outreach strategy, ABB Verify covers what you need.
+
+If you're trying to recover optical revenue from existing patients systematically — year-round, across multiple campaign types, with accurate dollar amounts in every message — you need a campaign-first tool.
+
+---
+
+## What the Revenue Difference Looks Like
+
+Let's use a real-world example.
+
+**Practice profile:** 2,000 active patients. 35% VSP (~700 patients), 25% EyeMed (~500 patients). Contact lens wearers: 30% of panel.
+
+**ABB Verify approach (Q4 only, end-of-year reminders):**
+- ~800 patients contacted with benefit reminders
+- ABB Verify's reported 5% conversion = 40 appointments
+- Average optical sale: \$375
+- Revenue recovered: **\$15,000**
+
+**Campaign-first approach (5-6 campaigns per year):**
+
+*Q4 end-of-year (October–November):* 800 patients, 10% conversion = 80 appointments × \$375 = \$30,000
+
+*January new benefit year:* 300 patients, 8% conversion = 24 × \$375 = \$9,000
+
+*Mid-year EyeMed and July-reset VSP (April–May):* 180 patients, 10% = 18 × \$375 = \$6,750
+
+*Contact lens reorder (twice per year):* 240 CL patients × 8% × \$200 CL average × 2 = \$7,680
+
+*Back-to-school families (July–August):* 150 patients, 10% = 15 × \$350 = \$5,250
+
+*Total recovered: **\$58,680** — nearly 4× the single-campaign approach.*
+
+The Q4 conversion rate in this example is also higher (10% vs. 5%) because personalized messages with exact dollar amounts consistently outperform generic benefit reminders. When a patient receives a message that says "you have \$175 in unused EyeMed frame benefits" instead of "you have vision benefits available," they act on it more often.
+
+---
+
+## Questions to Ask Before You Renew
+
+If you're evaluating ABB Verify at renewal time, these are the questions worth asking:
+
+**1. How many campaign types does the software support?**
+If the answer is "end-of-year benefit reminders," that's one campaign type. Ask specifically about mid-year resets, CL campaigns, and event-based campaigns.
+
+**2. Does the software include the patient's exact benefit amount in every message?**
+"You have benefits available" is not a benefit reminder. If the software can't tell you whether each patient message contains a specific dollar amount, the conversion rates will reflect that.
+
+**3. Is there a per-message charge on top of the monthly fee?**
+Some tools charge per SMS sent. At scale, this adds up. Flat-rate models are more predictable.
+
+**4. Is the software connected to ABB Optical Group's contact lens distribution business?**
+This isn't necessarily disqualifying, but it's worth understanding the relationship. Some practices feel pressure to maintain the ABB Verify relationship because their lens rep manages it.
+
+**5. What does the support model look like?**
+ABB Verify is distributed through field reps, not a software support team. If something breaks or you need help building a campaign, who do you call?
+
+---
+
+## What Prizm Does Differently
+
+Prizm is built specifically for independent optometry practices that want a full year-round campaign calendar — not a single annual reminder.
+
+You upload your patient list from your EHR once. Prizm verifies eligibility for every patient across VSP, EyeMed, Davis Vision, and Spectera, then identifies which patients have unused frame benefits, contact lens benefits, or mid-year plan resets. Every campaign message includes the patient's exact dollar amount.
+
+The campaign library covers 15+ campaign types: end-of-year benefits, new benefit year, mid-year resets, CL reorder, back-to-school families, trunk show invitations, second-pair promotions, and more. You select the campaign, review the patient segment and messages, and send — or schedule it to go automatically.
+
+Pricing is flat at \$449/month. No per-message charges, no per-verification fees, no upsells.
+
+The founding customer rate — for the first 10 independent practices — is \$199/month, locked in for life.
+
+[See the founding customer offer at Prizm](https://prizmvision.com/founding)
+
+---
+
+## The Short Version
+
+ABB Verify is a solid verification tool with a benefit reminder layer on top. If your entire outreach strategy is one Q4 email blast, it does the job.
+
+If you're trying to run a systematic campaign program that recovers optical revenue from existing patients throughout the year — with exact dollar amounts, multiple campaign types, and year-round scheduling — you'll outgrow ABB Verify quickly.
+
+The best time to evaluate alternatives is before Q4 planning season starts, when you still have time to run a summer campaign and build toward October. That window is right now.
+    `,
+  },
+  {
     slug: 'vision-benefit-reminder-software-guide',
     title: 'Vision Benefit Reminder Software: The Complete Guide for Optometry Practices',
     description: 'Everything independent optometry practices need to know about vision benefit reminder software — what it is, how it works, what results to expect, and how to choose the right tool.',
