@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Zap,
   ShieldCheck,
   DollarSign,
   ChevronRight,
@@ -13,7 +12,6 @@ import {
   Bell,
   FileCheck,
   Users,
-  Sparkles,
   X,
   MessageSquare,
 } from 'lucide-react'
@@ -97,34 +95,6 @@ function RevealBlock({ children, delay = '', className = '' }: RevealBlockProps)
   )
 }
 
-// ─── Watermark triangle ───────────────────────────────────────────────────────
-// Oversized brand triangle placed as a decorative background element inside
-// sections. pointer-events-none + aria-hidden so it never affects usability.
-interface WatermarkProps {
-  side?: 'left' | 'right'
-}
-
-function Watermark({ side = 'right' }: WatermarkProps) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className={[
-        'pointer-events-none absolute top-1/2 -translate-y-1/2',
-        side === 'right' ? '-right-[8vw]' : '-left-[8vw]',
-      ].join(' ')}
-      style={{
-        width: '40vw',
-        height: '40vw',
-        fill: '#0F766E',
-        opacity: 0.06,
-        transform: `translateY(-50%) rotate(15deg)`,
-      }}
-    >
-      <path d="M12 2L2 19h20L12 2z" />
-    </svg>
-  )
-}
 
 type ModalVariant = 'demo' | 'contact'
 
@@ -170,7 +140,7 @@ function DemoModal({ onClose, onSubmit, variant = 'demo' }: { onClose: () => voi
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 border border-teal-100 mb-4">
             {isContact
               ? <MessageSquare className="h-5 w-5 text-teal-700" />
-              : <Zap className="h-5 w-5 text-teal-700" />}
+              : <ArrowRight className="h-5 w-5 text-teal-700" />}
           </div>
           <h2 className="font-display text-2xl font-semibold text-slate-900">
             {isContact ? 'Let\'s talk' : 'Get instant access to the demo'}
@@ -261,7 +231,7 @@ function VerificationCard() {
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Eligibility Check</span>
         <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           VSP · Active
         </span>
       </div>
@@ -445,26 +415,11 @@ export default function Landing() {
           A soft radial glow sits behind the right column bubbles.           */}
       <section className="relative overflow-hidden bg-gradient-to-b from-teal-50/60 via-white to-slate-50">
 
-        {/* Dot-grid background texture */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #0F766E 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-            opacity: 0.05,
-          }}
-        />
 
         <div className="relative mx-auto max-w-7xl px-6 pt-16 pb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left — copy */}
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-teal-700" />
-                <span className="text-xs font-semibold text-teal-800">Vision benefit reminder software for independent optometry</span>
-              </div>
-
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] tracking-[-0.02em] text-slate-900">
                 Your patients are sitting on{' '}
                 <span className="text-teal-700">unspent vision benefits.</span>
@@ -476,7 +431,7 @@ export default function Landing() {
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <button onClick={openDemo} className={PRIMARY_BTN}>
-                  <Zap className="h-4 w-4" /> Book a free walkthrough
+                  Book a free walkthrough
                 </button>
                 <button onClick={openContact} className={SECONDARY_BTN}>
                   Talk to us <ArrowRight className="h-4 w-4" />
@@ -497,13 +452,6 @@ export default function Landing() {
 
             {/* Right — the actual texts a patient receives (the aha moment) */}
             <div className="relative">
-              {/* Soft teal radial glow behind the bubble grid */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-400/10 blur-3xl"
-                style={{ width: 400, height: 400 }}
-              />
-              <div className="absolute -inset-4 rounded-[2rem] bg-teal-100/40 blur-2xl" aria-hidden="true" />
               <div className="relative">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-teal-700">What lands on your patient's phone</p>
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -571,7 +519,7 @@ export default function Landing() {
                 ))}
               </div>
               <button onClick={openDemo} className={`${PRIMARY_BTN} mt-7`}>
-                <Zap className="h-4 w-4" /> See your practice's numbers
+                See your practice's numbers
               </button>
             </div>
 
@@ -609,7 +557,7 @@ export default function Landing() {
                     </div>
                     {/* Main panel */}
                     <div className="flex-1 p-4">
-                      <p className="text-xs font-semibold text-slate-500">Good afternoon 👋</p>
+                      <p className="text-xs font-semibold text-slate-500">Good afternoon</p>
                       {/* Aha banner — the one place the brand gradient earns its keep */}
                       <div className="mt-2 rounded-xl bg-gradient-to-br from-teal-700 to-teal-600 p-5">
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-teal-100">Recoverable optical revenue</p>
@@ -711,12 +659,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Eligibility ── overflow-hidden + relative needed for the watermark ── */}
-      <section id="verification" className="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-24">
-        {/* Teal watermark — anchored right */}
-        <Watermark side="right" />
-
-        <div className="relative mx-auto max-w-7xl px-6">
+      {/* ── Eligibility ─────────────────────────────────────────────────────── */}
+      <section id="verification" className="border-t border-slate-200 bg-slate-50 py-24">
+        <div className="mx-auto max-w-7xl px-6">
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-3">Real-time eligibility</p>
@@ -811,7 +756,7 @@ export default function Landing() {
                 delay: 'delay-[100ms]',
               },
               {
-                icon: <Zap className="h-5 w-5 text-teal-700" />,
+                icon: <Bell className="h-5 w-5 text-teal-700" />,
                 title: 'Year-round, always-on',
                 body: "Prizm sends campaigns automatically all year — not just a Q4 blast. Staggered delivery keeps your front desk from being overwhelmed.",
                 delay: 'delay-[150ms]',
@@ -871,8 +816,7 @@ export default function Landing() {
             {/* Founding offer card — fades in on scroll */}
             <RevealBlock>
               <div className="rounded-3xl border border-amber-200 bg-amber-50 p-8 shadow-[0_2px_16px_rgba(180,83,9,0.08)]">
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white px-3 py-1 mb-5">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-700" />
+                <div className="inline-flex items-center rounded-full border border-amber-300 bg-white px-3 py-1 mb-5">
                   <span className="text-xs font-bold text-amber-800">Founding offer · first 10 practices</span>
                 </div>
                 <h3 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
@@ -893,12 +837,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Final CTA ── overflow-hidden + relative needed for the watermark ──── */}
-      <section className="relative overflow-hidden border-t border-slate-200 bg-slate-50 py-24">
-        {/* Teal watermark — anchored left this time for visual variety */}
-        <Watermark side="left" />
-
-        <div className="relative mx-auto max-w-3xl px-6 text-center">
+      {/* ── Final CTA ─────────────────────────────────────────────────────────── */}
+      <section className="border-t border-slate-200 bg-slate-50 py-24">
+        <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold leading-tight tracking-[-0.02em] text-slate-900">
             Your patients have money waiting.<br />
             <span className="text-teal-700">Are you going to tell them?</span>
