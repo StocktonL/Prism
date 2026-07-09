@@ -4,16 +4,13 @@ import { useForm, ValidationError } from '@formspree/react'
 import {
   CheckCircle2,
   X,
-  Zap,
   Lock,
   ArrowRight,
-  Star,
   Users,
   DollarSign,
   MessageSquare,
   ShieldCheck,
   ChevronRight,
-  Clock,
 } from 'lucide-react'
 
 const TOTAL_SPOTS = 10
@@ -44,7 +41,7 @@ function FoundingForm({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-200">
-              <Star className="h-5 w-5 text-amber-700" />
+              <CheckCircle2 className="h-5 w-5 text-amber-700" />
             </div>
             <span className="rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-bold text-amber-800">
               {TOTAL_SPOTS - SPOTS_TAKEN} of {TOTAL_SPOTS} spots remaining
@@ -142,7 +139,7 @@ function SuccessScreen({ onDismiss }: { onDismiss: () => void }) {
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onDismiss} />
       <div className="relative w-full max-w-md rounded-3xl bg-white border border-slate-200 p-8 shadow-2xl text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200">
-          <Star className="h-7 w-7 text-amber-700" />
+          <CheckCircle2 className="h-7 w-7 text-amber-700" />
         </div>
         <h2 className="font-display text-2xl font-semibold text-slate-900 mb-2">You're in.</h2>
         <p className="text-sm text-slate-600 mb-2">
@@ -173,12 +170,12 @@ const foundingPerks = [
     description: 'Personal cell. Not a support ticket. When something isn\'t working, you call. We fix it that day.',
   },
   {
-    icon: <Zap className="h-5 w-5 text-amber-700" />,
+    icon: <ArrowRight className="h-5 w-5 text-amber-700" />,
     title: 'First access to every new feature.',
     description: 'EHR integrations, Insurance Discovery, multi-location — founding customers get early access before general release.',
   },
   {
-    icon: <Star className="h-5 w-5 text-amber-700" />,
+    icon: <CheckCircle2 className="h-5 w-5 text-amber-700" />,
     title: 'Shape the product.',
     description: 'Your feedback directly drives the roadmap. If your practice needs it, we build it.',
   },
@@ -264,12 +261,9 @@ export default function Founding() {
 
         {/* Hero */}
         <div className="pt-12 pb-16 text-center -mx-6 px-6 rounded-b-3xl bg-gradient-to-b from-amber-50 via-white to-slate-50">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 mb-8">
-            <Clock className="h-3.5 w-3.5 text-amber-700" />
-            <span className="text-xs font-bold text-amber-800">
-              {spotsLeft} of {TOTAL_SPOTS} founding spots remaining
-            </span>
-          </div>
+          <span className="inline-block rounded-full border border-amber-300 bg-amber-50 px-4 py-2 mb-8 text-xs font-bold text-amber-800">
+            {spotsLeft} of {TOTAL_SPOTS} founding spots remaining
+          </span>
 
           <h1 className="font-display text-4xl sm:text-6xl font-semibold tracking-tight leading-tight mb-6 text-slate-900">
             Founding Customer
@@ -423,10 +417,6 @@ export default function Founding() {
 
         {/* Final CTA */}
         <div className="rounded-3xl bg-gradient-to-br from-amber-600 to-amber-700 p-10 text-center text-white">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-4 py-2 mb-6">
-            <Clock className="h-3.5 w-3.5 text-white" />
-            <span className="text-xs font-bold text-white">{spotsLeft} spots left</span>
-          </div>
           <h2 className="font-display text-3xl sm:text-4xl font-semibold mb-3 text-white">
             The founding rate. Locked in forever.
           </h2>

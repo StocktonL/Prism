@@ -849,7 +849,7 @@ export default function Landing() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button onClick={openDemo} className={`${PRIMARY_BTN} px-8 py-4 text-base`}>
-              <Zap className="h-5 w-5" /> See your numbers free
+              See your numbers free
             </button>
             <button onClick={openContact} className={`${SECONDARY_BTN} px-8 py-4 text-base`}>
               Talk to a human <ChevronRight className="h-5 w-5" />
