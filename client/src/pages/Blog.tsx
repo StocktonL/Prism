@@ -948,6 +948,142 @@ Prizm runs on a flat monthly fee with no per-message charges, no setup fees, and
 
 [See the founding customer offer](https://prizmvision.com/founding) — the first 10 practices to sign up get lifetime access at \$199/month instead of \$449/month.
     `
+  },
+  {
+    slug: 'abb-verify-validate-vs-engage',
+    title: 'ABB Verify Validate vs. Engage: What the July 2026 Split Means for Your Practice',
+    description: 'ABB Verify split into two separate products on July 8, 2026: Validate for real-time eligibility checking and Engage for patient messaging. Here\'s what each does, what the bundle covers, and where the gap is.',
+    date: 'July 10, 2026',
+    readTime: '6 min read',
+    content: `
+## ABB Verify Split Its Product on July 8, 2026
+
+ABB Verify announced a product restructuring effective July 8, 2026. The platform, which was previously sold as a unified benefit verification and reminder tool, is now positioned as two distinct products:
+
+- **ABB Verify Validate** — real-time insurance eligibility verification
+- **Engage by ABB Verify** — patient benefit messaging
+
+Independent practices that use ABB Verify are now being offered each product separately or as a bundle. If your contact lens rep has brought this up recently, here's what actually changed and what it means for your outreach strategy.
+
+---
+
+## What ABB Verify Validate Does
+
+Validate is the eligibility verification side of the product. It integrates with your scheduling workflow to check patient benefit status automatically — typically running eligibility checks 7, 3, or 1 day before a scheduled appointment.
+
+What Validate surfaces per patient:
+
+- Frame allowance remaining
+- Contact lens allowance remaining
+- Exam copay
+- Deductible status
+- Secondary insurance coverage (where available)
+
+The core use case is front-desk efficiency: instead of staff manually logging into VSP Online, EyeMed Insight, or individual carrier portals before each day's appointments, Validate pulls that data automatically. It reduces pre-visit prep time and cuts down on missed benefits that happen when staff skip the manual check because the day is busy.
+
+---
+
+## What Engage by ABB Verify Does
+
+Engage is the patient messaging side. It identifies patients with unused vision benefits and sends them reminder messages.
+
+What ABB Verify reports about Engage:
+
+- Sends **one email and one text message** per patient per month
+- Approximately 5% of patients who receive an Engage message book an appointment within 30 days
+- Opt-out rate under 1%
+
+The primary use case is end-of-year benefit expiration reminders — the tool identifies patients with unused frame or contact lens allowances and sends them a message before December 31.
+
+---
+
+## The Important Detail About Engage's Messaging Limits
+
+One message per channel per month is not a campaign automation platform. It's a contact cadence.
+
+If you have 2,000 active patients with VSP or EyeMed coverage, Engage sends each of them one email and one text per month. That's the full outreach capability — there's no campaign builder, no segment-specific messaging, and no ability to send a mid-year contact lens reminder to a different patient segment than your end-of-year frame reminder.
+
+At ABB Verify's reported 5% conversion rate, one message per month across 800 benefit-eligible patients produces roughly 40 appointments. For a practice with a \$375 average optical sale, that's about \$15,000 in recovered revenue.
+
+That's not nothing. But it's one campaign type, once a month, with no variation by patient segment.
+
+---
+
+## What the Bundle Gives You
+
+The ABB Verify bundle — Validate plus Engage — gives you:
+
+- Automated eligibility checks before scheduled appointments
+- One benefit reminder per patient per month
+- A 5% appointment conversion rate on messaged patients
+
+For a practice that currently does zero outreach and zero systematic eligibility checking, the bundle is a meaningful step forward. If your front desk is manually logging into carrier portals every morning and you're sending no proactive patient messages at all, ABB Verify addresses both problems.
+
+---
+
+## What the Bundle Doesn't Cover
+
+The gap is the campaign calendar.
+
+Practices that recover the most revenue from existing patients don't run one type of message once a month. They run different campaigns to different patient segments at different times of year:
+
+**January–February:** New benefit year messages to patients whose VSP or EyeMed coverage just reset. This is a standalone campaign — not part of a monthly drip.
+
+**April–May:** Mid-year reminders for patients on EyeMed plans and employer-sponsored VSP plans that reset July 1. These patients have a benefit expiration deadline in June, not December. Timing matters.
+
+**May–June:** Contact lens reorder campaigns targeting CL wearers approximately 12 months out from their last supply order. The message for a contact lens patient should lead with their CL allowance amount, not a general benefit reminder.
+
+**July–August:** Back-to-school campaigns to families with children on their vision plan. This needs to go out before school schedules fill — not as part of a generic monthly outreach cadence.
+
+**October–November:** End-of-year benefit expiration push. This is what Engage was built for, and it handles this well.
+
+Practices recovering \$40,000–\$60,000 annually from existing patients aren't sending more messages — they're sending the right messages to the right patient segments at the right time. That requires a campaign calendar, not a monthly drip.
+
+---
+
+## Who ABB Verify Is the Right Tool For
+
+ABB Verify makes sense for a practice that:
+
+- Is currently doing no systematic eligibility checking before appointments
+- Sends no proactive patient outreach at all
+- Has an EHR that ABB Verify integrates with directly
+- Buys contact lenses through ABB Optical Group and values that consolidated relationship
+
+For that practice, the bundle reduces front-desk work and gets benefit messages out the door.
+
+---
+
+## Questions to Ask If You're Evaluating the New Pricing
+
+Now that ABB Verify is priced as two separate products, the negotiation looks different. A few things worth asking:
+
+**What is the price for Validate only vs. the bundle?** The split may affect whether bundling makes sense at your volume.
+
+**How many campaign types does Engage support?** If the answer is "end-of-year benefit reminders," that's one campaign type. Ask specifically about mid-year resets, contact lens campaigns, and back-to-school messaging.
+
+**Does the message include the patient's exact benefit amount?** "You have \$175 in unused EyeMed frame benefits" converts at a significantly higher rate than "you have unused benefits available." Confirm whether actual dollar amounts appear in every message.
+
+---
+
+## How Prizm Approaches This Differently
+
+Prizm is built around the campaign calendar problem, not the monthly-message problem.
+
+You upload your patient list from your EHR once. Prizm verifies eligibility across VSP, EyeMed, Davis Vision, and Spectera — frame allowance, contact lens benefit, expiration date, and whether the plan resets mid-year or December 31. From there, you choose the campaign type: end-of-year push, new benefit year, mid-year reset, CL reorder, back-to-school, trunk show. Prizm generates a personalized message for each patient with their exact dollar amount. You review and approve before anything sends.
+
+Flat monthly rate: \$449 with no per-message charges. Founding customers — the first 10 practices — get lifetime access at \$199/month.
+
+[See the founding customer offer at Prizm](https://prizmvision.com/founding)
+
+---
+
+## The Short Version
+
+The July 2026 ABB Verify restructuring clarifies positioning but doesn't change what the tool is built for: eligibility checking at the point of service and one benefit reminder message per patient per month.
+
+If you want a campaign calendar that recovers optical revenue across the full year — segment-specific messaging, exact dollar amounts, multiple campaign types — that's a different kind of product.
+    `
   }
 ]
 
