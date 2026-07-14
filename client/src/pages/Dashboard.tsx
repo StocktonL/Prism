@@ -35,6 +35,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth'
+import { logRead } from '@/lib/audit'
 
 const HAS_PATIENTS = true
 
@@ -110,6 +111,15 @@ function useLiveBenefits() {
           hasData: recoverable > 0,
           recoverable, benefitPatients,
           frameTotal, framePatients, clTotal, clPatients,
+        })
+
+        // HIPAA audit: log that this user read eligibility benefit data for
+        // this practice. Fire-and-forget — never blocks the UI.
+        logRead({
+          action: 'READ_ELIGIBILITY',
+          resource_type: 'eligibility_checks',
+          user_id: user.id,
+          practice_id: userData.practice_id,
         })
       } catch {
         setState(s => ({ ...s, loading: false }))

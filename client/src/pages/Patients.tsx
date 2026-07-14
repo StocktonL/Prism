@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth'
+import { logRead } from '@/lib/audit'
 import {
   Search,
   UserPlus,
@@ -588,6 +589,15 @@ export default function Patients() {
         }
 
         setPatients(patientData.map(p => ({ ...p, latestCheck: checkMap.get(p.id) ?? null })))
+
+        // HIPAA audit: log that this user read the patient list for this practice.
+        // Fire-and-forget — never blocks the UI.
+        logRead({
+          action: 'READ_PATIENT_LIST',
+          resource_type: 'patients',
+          user_id: user.id,
+          practice_id: pid,
+        })
       } finally {
         setLoading(false)
       }
