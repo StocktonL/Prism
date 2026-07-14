@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, forwardRef, useImperativeHandle, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Megaphone,
@@ -24,15 +24,8 @@ import {
   GraduationCap,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import {
-  PATIENTS,
-  getPatientFullName,
-  isLuxuryBuyer,
-  isSunglassesBuyer,
-  isCLReorderDue,
-  isSecondPairCandidate,
-  isFamilyDependent,
-} from '@/data/mockPatients'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth'
 
 type CampaignType =
   | 'Trunk Show'
@@ -68,7 +61,7 @@ type CriteriaKey =
   | 'back_to_school'
 
 interface Campaign {
-  id: number
+  id: string
   name: string
   type: CampaignType
   status: CampaignStatus
@@ -84,7 +77,6 @@ interface Campaign {
 }
 
 // Industry benchmark rates used for estimated ROI funnel
-// Actual results vary — no EHR integration to confirm real sales
 const BOOKING_RATE = 0.80
 const AVG_TRANSACTION = 400
 
@@ -93,10 +85,107 @@ function calcRevenue(replied: number) {
 }
 
 // Estimated ROI funnel — based on industry benchmarks
-const EST_DELIVERY_RATE = 0.97   // 97% of sent messages delivered
-const EST_ENGAGEMENT_RATE = 0.11 // 11% of delivered click/respond
-const EST_BOOKING_RATE = 0.10    // 10% of delivered book an appointment
-const EST_AVG_TRANSACTION = 375  // average optical transaction
+const EST_DELIVERY_RATE = 0.97
+const EST_ENGAGEMENT_RATE = 0.11
+const EST_BOOKING_RATE = 0.10
+const EST_AVG_TRANSACTION = 375
+
+// ---- DB types ----
+
+interface DbPatient {
+  id: string
+  first_name: string
+  last_name: string
+  insurance_carrier: string | null
+  last_visit_date: string | null
+  contact_lens_wearer: boolean
+  last_frame_purchase: string | null
+  last_cl_order: string | null
+  last_frame_brand: string | null
+  last_frame_model: string | null
+}
+
+interface DbEligRecord {
+  frame: number
+  cl: number
+  expires: string | null
+}
+
+type DbEligMap = Map<string, DbEligRecord>
+
+const LUXURY_BRANDS = ['Maui Jim', 'Silhouette', 'Costa', 'Lindberg', 'Oliver Peoples']
+
+function isDbLuxuryBuyer(p: DbPatient): boolean {
+  if (!p.last_frame_brand) return false
+  const brand = p.last_frame_brand.toLowerCase()
+  return LUXURY_BRANDS.some(b => brand.includes(b.toLowerCase()))
+}
+
+function isDbCLReorderDue(p: DbPatient, windowDays: number): boolean {
+  if (!p.contact_lens_wearer || !p.last_cl_order) return false
+  const dueDate = new Date(p.last_cl_order)
+  dueDate.setDate(dueDate.getDate() + 90) // assume 90-day supply
+  const msUntilDue = dueDate.getTime() - Date.now()
+  const daysUntilDue = msUntilDue / (1000 * 60 * 60 * 24)
+  return daysUntilDue <= windowDays && daysUntilDue >= -30
+}
+
+function monthsSince(dateStr: string, today: Date): number {
+  const d = new Date(dateStr)
+  return (today.getFullYear() - d.getFullYear()) * 12 + (today.getMonth() - d.getMonth())
+}
+
+function matchesCriteria(p: DbPatient, key: CriteriaKey, today: Date, eligMap: DbEligMap): boolean {
+  const elig = eligMap.get(p.id)
+  const frame = elig?.frame ?? 0
+  const cl = elig?.cl ?? 0
+  switch (key) {
+    case 'all': return true
+    case 'unused_benefits': return frame > 0 || cl > 0
+    case 'expiring_30':
+    case 'expiring_60':
+    case 'expiring_90': {
+      if (!elig?.expires) return false
+      if (frame <= 0 && cl <= 0) return false
+      const days = Math.ceil((new Date(elig.expires).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+      const limit = key === 'expiring_30' ? 30 : key === 'expiring_60' ? 60 : 90
+      return days >= 0 && days <= limit
+    }
+    case 'last_visit_6':
+    case 'last_visit_12':
+    case 'last_visit_18':
+    case 'last_visit_24': {
+      if (!p.last_visit_date) return false
+      const months = monthsSince(p.last_visit_date, today)
+      const limit = key === 'last_visit_6' ? 6 : key === 'last_visit_12' ? 12 : key === 'last_visit_18' ? 18 : 24
+      return months > limit
+    }
+    case 'carrier_vsp': return p.insurance_carrier === 'VSP'
+    case 'carrier_eyemed': return p.insurance_carrier === 'EyeMed'
+    case 'carrier_davis': return p.insurance_carrier === 'Davis Vision'
+    case 'carrier_spectera': return p.insurance_carrier === 'Spectera'
+    case 'luxury_buyer': return isDbLuxuryBuyer(p)
+    case 'cl_reorder_due_30': return isDbCLReorderDue(p, 30)
+    case 'cl_reorder_due_60': return isDbCLReorderDue(p, 60)
+    case 'second_pair': return frame > 75
+    case 'sunglasses_buyer': return false
+    case 'family_dependent': return false
+    case 'back_to_school': return false
+    default: return false
+  }
+}
+
+function dbStatusToUi(status: string): CampaignStatus {
+  switch (status) {
+    case 'sent': return 'Active'
+    case 'scheduled': return 'Scheduled'
+    case 'completed': return 'Completed'
+    case 'draft': return 'Draft'
+    default: return 'Draft'
+  }
+}
+
+// ---- Funnel row ----
 
 function FunnelRow({ label, value, color, sublabel }: { label: string; value: number; color: string; sublabel?: string }) {
   return (
@@ -109,69 +198,6 @@ function FunnelRow({ label, value, color, sublabel }: { label: string; value: nu
     </div>
   )
 }
-
-const INITIAL_CAMPAIGNS: Campaign[] = [
-  {
-    id: 1,
-    name: 'End of Year Benefits Reminder',
-    type: 'End of Year Benefits',
-    status: 'Active',
-    message: 'Hi {{first_name}}, your {{carrier}} benefits expire Dec 31. You have {{frame_allowance}} for frames and {{contacts_allowance}} for contacts still available. Call (555) 800-2020 before they expire!',
-    patientsReached: 312,
-    smsDelivered: 298,
-    smsFailed: 14,
-    smsReplied: 42,
-    appointmentsBooked: 34,
-    revenueAttributed: calcRevenue(42),
-    date: '2026-05-01',
-    patients: ['Sarah Mitchell', 'Linda Kowalski', 'Marcus Rivera', 'Thomas Garrett'],
-  },
-  {
-    id: 2,
-    name: 'Trunk Show — Spring Frames',
-    type: 'Trunk Show',
-    status: 'Completed',
-    message: 'Hi {{first_name}}, join us this Saturday for our exclusive spring trunk show! You have {{frame_allowance}} in unused {{carrier}} frame benefits. Try on hundreds of new frames — RSVP: (555) 800-2020.',
-    patientsReached: 189,
-    smsDelivered: 185,
-    smsFailed: 4,
-    smsReplied: 31,
-    appointmentsBooked: 25,
-    revenueAttributed: calcRevenue(31),
-    date: '2026-03-15',
-    patients: ['James Thornton', 'Diana Patel', 'Robert Chen', 'Priya Nair'],
-  },
-  {
-    id: 3,
-    name: 'Mid-Year Check-In',
-    type: 'Mid-Year Reminder',
-    status: 'Scheduled',
-    message: "Hi {{first_name}}, you still have {{frame_allowance}} remaining on your {{carrier}} frame benefit and your exam is covered. Don't let it go to waste — call (555) 800-2020 today.",
-    patientsReached: 94,
-    smsDelivered: 0,
-    smsFailed: 0,
-    smsReplied: 0,
-    appointmentsBooked: 0,
-    revenueAttributed: 0,
-    date: '2026-06-01',
-    patients: ['Amara Osei', 'David Okafor', 'Marcus Rivera'],
-  },
-  {
-    id: 4,
-    name: 'Back to School Vision',
-    type: 'Custom Campaign',
-    status: 'Draft',
-    message: 'Hi [Name], back to school is around the corner! Make sure your child has a current eye exam. Book now and use your insurance benefits. Call (555) 800-2020.',
-    patientsReached: 0,
-    smsDelivered: 0,
-    smsFailed: 0,
-    smsReplied: 0,
-    appointmentsBooked: 0,
-    revenueAttributed: 0,
-    date: '—',
-    patients: [],
-  },
-]
 
 const CAMPAIGN_TYPES: { type: CampaignType; description: string; icon: React.ReactNode; iconBg: string; borderColor: string; defaultMessage: string }[] = [
   {
@@ -275,13 +301,11 @@ function buildPillHtml(raw: string): string {
   return raw.replace(/\{\{(\w+)\}\}/g, (match) => {
     const tag = MERGE_TAGS.find((t) => t.tag === match)
     const label = tag?.label ?? match
-    // Use a data attribute to store the token; span content is display only
     return `<span contenteditable="false" data-token="${match}" class="${PILL_CLASSES}">${label}</span>`
   })
 }
 
 function extractRaw(el: HTMLElement): string {
-  // [^<]* (not .*?) ensures we never cross tag boundaries when matching span content
   return el.innerHTML
     .replace(/<span[^>]*data-token="([^"]*)"[^>]*>[^<]*<\/span>/g, '$1')
     .replace(/<br\s*\/?>/gi, '\n')
@@ -305,12 +329,9 @@ const TokenEditor = forwardRef<TokenEditorHandle, {
 
   useImperativeHandle(ref, () => ({ insertAtCursor: doInsert }))
 
-  // useLayoutEffect (not useEffect) runs synchronously after DOM commit, before
-  // the browser paints — this prevents any flash of raw {{token}} text.
   useLayoutEffect(() => {
     const el = divRef.current
     if (!el) return
-    // Guard: skip if the DOM already reflects this value (user is typing)
     if (extractRaw(el) === value) return
     el.innerHTML = buildPillHtml(value)
   }, [value])
@@ -399,35 +420,6 @@ const TokenEditor = forwardRef<TokenEditorHandle, {
   )
 })
 
-const CRITERIA_OPTIONS: { key: CriteriaKey; label: string; reach: number; group?: string }[] = [
-  // ── Benefit status ──────────────────────────────────────────────────────────
-  { key: 'all',           label: 'All patients',                          reach: PATIENTS.length,                                                          group: 'General' },
-  { key: 'unused_benefits', label: 'Has unused benefits',                 reach: 7,                                                                        group: 'General' },
-  { key: 'expiring_30',   label: 'Benefits expiring within 30 days',     reach: 312,                                                                       group: 'General' },
-  { key: 'expiring_60',   label: 'Benefits expiring within 60 days',     reach: 489,                                                                       group: 'General' },
-  { key: 'expiring_90',   label: 'Benefits expiring within 90 days',     reach: 671,                                                                       group: 'General' },
-  // ── Recency ─────────────────────────────────────────────────────────────────
-  { key: 'last_visit_6',  label: 'Last visit more than 6 months ago',    reach: 94,                                                                        group: 'Recency' },
-  { key: 'last_visit_12', label: 'Last visit more than 12 months ago',   reach: 189,                                                                       group: 'Recency' },
-  { key: 'last_visit_18', label: 'Last visit more than 18 months ago',   reach: 243,                                                                       group: 'Recency' },
-  { key: 'last_visit_24', label: 'Last visit more than 24 months ago',   reach: 301,                                                                       group: 'Recency' },
-  // ── Carrier ──────────────────────────────────────────────────────────────────
-  { key: 'carrier_vsp',     label: 'VSP patients only',         reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'VSP').length,        group: 'Carrier' },
-  { key: 'carrier_eyemed',  label: 'EyeMed patients only',      reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'EyeMed').length,     group: 'Carrier' },
-  { key: 'carrier_davis',   label: 'Davis Vision patients only', reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'Davis Vision').length, group: 'Carrier' },
-  { key: 'carrier_spectera', label: 'Spectera patients only',   reach: PATIENTS.filter(p => p.primaryInsurance.carrier === 'Spectera').length,   group: 'Carrier' },
-  // ── Purchase behavior ────────────────────────────────────────────────────────
-  { key: 'luxury_buyer',       label: 'Luxury frame buyers (Maui Jim, Silhouette, Costa…)', reach: PATIENTS.filter(isLuxuryBuyer).length,       group: 'Behavior' },
-  { key: 'sunglasses_buyer',   label: 'Past sunglasses buyers',                             reach: PATIENTS.filter(isSunglassesBuyer).length,   group: 'Behavior' },
-  { key: 'second_pair',        label: 'Second pair opportunity (>$75 frame $ remaining)',   reach: PATIENTS.filter(isSecondPairCandidate).length, group: 'Behavior' },
-  // ── Contact lenses ───────────────────────────────────────────────────────────
-  { key: 'cl_reorder_due_30',  label: 'CL reorder due within 30 days',   reach: PATIENTS.filter(p => isCLReorderDue(p, 30)).length,             group: 'Contacts' },
-  { key: 'cl_reorder_due_60',  label: 'CL reorder due within 60 days',   reach: PATIENTS.filter(p => isCLReorderDue(p, 60)).length,             group: 'Contacts' },
-  // ── Family ───────────────────────────────────────────────────────────────────
-  { key: 'family_dependent',   label: 'Spouse and child patients',        reach: PATIENTS.filter(isFamilyDependent).length,                      group: 'Family' },
-  { key: 'back_to_school',     label: 'Children with benefits available', reach: PATIENTS.filter(p => p.primaryInsurance.relationship === 'Child' && isSecondPairCandidate(p)).length, group: 'Family' },
-]
-
 function statusBadge(status: CampaignStatus) {
   const map: Record<CampaignStatus, string> = {
     Active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
@@ -467,12 +459,13 @@ function typeBadge(type: CampaignType) {
 // ---- New Campaign Modal ----
 interface NewCampaignModalProps {
   onClose: () => void
-  onLaunch: (c: Campaign) => void
+  onLaunch: () => void
+  practiceId: string | null
   preselectedType?: CampaignType
   preselectedBrand?: string
 }
 
-function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand }: NewCampaignModalProps) {
+function NewCampaignModal({ onClose, onLaunch, practiceId, preselectedType, preselectedBrand }: NewCampaignModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(preselectedType ? 2 : 1)
   const [selectedType, setSelectedType] = useState<CampaignType | null>(preselectedType ?? null)
   const [name, setName] = useState(
@@ -495,31 +488,113 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
   const [carrierFilters, setCarrierFilters] = useState<string[]>([])
   const [typeFilters, setTypeFilters] = useState<string[]>([])
   const [minBenefit, setMinBenefit] = useState(0)
+  const [saving, setSaving] = useState(false)
   const MAX_CHARS = 320
   const tokenEditorRef = useRef<TokenEditorHandle>(null)
 
-  // Patients who purchased this brand — shown in brand targeting banner
-  const brandPatients = preselectedBrand
-    ? PATIENTS.filter((p) => p.lastFrameBrand === preselectedBrand)
-    : []
+  // DB patient data for real reach counts
+  const [dbPatients, setDbPatients] = useState<DbPatient[]>([])
+  const [dbEligMap, setDbEligMap] = useState<DbEligMap>(new Map())
+  const [loadingData, setLoadingData] = useState(false)
 
-  function computeFilteredReach(base: number): number {
-    if (base === 0) return 0
-    let count = base
+  // Stable "now" reference for the life of this modal
+  const today = useMemo(() => new Date(), [])
+
+  // Load patients + eligibility from DB when modal opens
+  useEffect(() => {
+    async function loadPatients() {
+      if (!practiceId) return
+      setLoadingData(true)
+      try {
+        const { data: patients } = await supabase
+          .from('patients')
+          .select('id, first_name, last_name, insurance_carrier, last_visit_date, contact_lens_wearer, last_frame_purchase, last_cl_order, last_frame_brand, last_frame_model')
+          .eq('practice_id', practiceId)
+
+        if (!patients?.length) { setLoadingData(false); return }
+        setDbPatients(patients)
+
+        const { data: checks } = await supabase
+          .from('eligibility_checks')
+          .select('patient_id, frame_allowance, cl_allowance, expiration_date, checked_at')
+          .in('patient_id', patients.map(p => p.id))
+          .order('checked_at', { ascending: false })
+
+        const emap = new Map<string, DbEligRecord>()
+        for (const c of (checks ?? [])) {
+          if (!emap.has(c.patient_id)) {
+            emap.set(c.patient_id, {
+              frame: Number(c.frame_allowance) || 0,
+              cl: Number(c.cl_allowance) || 0,
+              expires: c.expiration_date ?? null,
+            })
+          }
+        }
+        setDbEligMap(emap)
+      } finally {
+        setLoadingData(false)
+      }
+    }
+    loadPatients()
+  }, [practiceId])
+
+  // Patients that previously bought the preselected brand
+  const brandPatients = useMemo(() => {
+    if (!preselectedBrand) return []
+    return dbPatients.filter(p => p.last_frame_brand === preselectedBrand)
+  }, [dbPatients, preselectedBrand])
+
+  // Criteria options with real reach counts from DB
+  const criteriaOptions = useMemo(() => {
+    const count = (key: CriteriaKey) =>
+      dbPatients.filter(p => matchesCriteria(p, key, today, dbEligMap)).length
+    return [
+      { key: 'all' as CriteriaKey,           label: 'All patients',                                       reach: dbPatients.length, group: 'General' },
+      { key: 'unused_benefits' as CriteriaKey, label: 'Has unused benefits',                              reach: count('unused_benefits'), group: 'General' },
+      { key: 'expiring_30' as CriteriaKey,   label: 'Benefits expiring within 30 days',                  reach: count('expiring_30'), group: 'General' },
+      { key: 'expiring_60' as CriteriaKey,   label: 'Benefits expiring within 60 days',                  reach: count('expiring_60'), group: 'General' },
+      { key: 'expiring_90' as CriteriaKey,   label: 'Benefits expiring within 90 days',                  reach: count('expiring_90'), group: 'General' },
+      { key: 'last_visit_6' as CriteriaKey,  label: 'Last visit more than 6 months ago',                 reach: count('last_visit_6'), group: 'Recency' },
+      { key: 'last_visit_12' as CriteriaKey, label: 'Last visit more than 12 months ago',                reach: count('last_visit_12'), group: 'Recency' },
+      { key: 'last_visit_18' as CriteriaKey, label: 'Last visit more than 18 months ago',                reach: count('last_visit_18'), group: 'Recency' },
+      { key: 'last_visit_24' as CriteriaKey, label: 'Last visit more than 24 months ago',                reach: count('last_visit_24'), group: 'Recency' },
+      { key: 'carrier_vsp' as CriteriaKey,     label: 'VSP patients only',                              reach: count('carrier_vsp'), group: 'Carrier' },
+      { key: 'carrier_eyemed' as CriteriaKey,  label: 'EyeMed patients only',                           reach: count('carrier_eyemed'), group: 'Carrier' },
+      { key: 'carrier_davis' as CriteriaKey,   label: 'Davis Vision patients only',                     reach: count('carrier_davis'), group: 'Carrier' },
+      { key: 'carrier_spectera' as CriteriaKey, label: 'Spectera patients only',                        reach: count('carrier_spectera'), group: 'Carrier' },
+      { key: 'luxury_buyer' as CriteriaKey,     label: 'Luxury frame buyers (Maui Jim, Silhouette, Costa…)', reach: count('luxury_buyer'), group: 'Behavior' },
+      { key: 'sunglasses_buyer' as CriteriaKey, label: 'Past sunglasses buyers',                        reach: 0, group: 'Behavior' },
+      { key: 'second_pair' as CriteriaKey,      label: 'Second pair opportunity (>$75 frame $ remaining)', reach: count('second_pair'), group: 'Behavior' },
+      { key: 'cl_reorder_due_30' as CriteriaKey, label: 'CL reorder due within 30 days',               reach: count('cl_reorder_due_30'), group: 'Contacts' },
+      { key: 'cl_reorder_due_60' as CriteriaKey, label: 'CL reorder due within 60 days',               reach: count('cl_reorder_due_60'), group: 'Contacts' },
+      { key: 'family_dependent' as CriteriaKey,  label: 'Spouse and child patients',                    reach: 0, group: 'Family' },
+      { key: 'back_to_school' as CriteriaKey,    label: 'Children with benefits available',             reach: 0, group: 'Family' },
+    ]
+  }, [dbPatients, dbEligMap, today])
+
+  // Patients that match ALL active filters — used for DB write and reach count
+  const filteredPatients = useMemo(() => {
+    let result = dbPatients.filter(p => matchesCriteria(p, criteria, today, dbEligMap))
     if (carrierFilters.length > 0) {
-      const shares: Record<string, number> = { VSP: 0.37, EyeMed: 0.27, 'Davis Vision': 0.10, Spectera: 0.06 }
-      const share = carrierFilters.reduce((s, c) => s + (shares[c] ?? 0.10), 0)
-      count = Math.round(count * Math.min(share, 0.97))
+      result = result.filter(p => carrierFilters.includes(p.insurance_carrier ?? ''))
     }
     for (const t of typeFilters) {
-      const reduction: Record<string, number> = { cl_wearer: 0.38, luxury: 0.17, sunglasses: 0.22, second_pair: 0.32, family: 0.28 }
-      count = Math.round(count * (reduction[t] ?? 0.35))
+      if (t === 'cl_wearer') result = result.filter(p => p.contact_lens_wearer)
+      else if (t === 'luxury') result = result.filter(p => isDbLuxuryBuyer(p))
+      else if (t === 'second_pair') result = result.filter(p => (dbEligMap.get(p.id)?.frame ?? 0) > 75)
+      // 'sunglasses' and 'family' not filterable from DB — skip to avoid zeroing count
     }
-    if (minBenefit === 50) count = Math.round(count * 0.88)
-    else if (minBenefit === 100) count = Math.round(count * 0.65)
-    else if (minBenefit === 150) count = Math.round(count * 0.40)
-    return Math.max(count, 0)
-  }
+    if (minBenefit > 0) {
+      result = result.filter(p => {
+        const elig = dbEligMap.get(p.id)
+        return (elig?.frame ?? 0) >= minBenefit || (elig?.cl ?? 0) >= minBenefit
+      })
+    }
+    return result
+  }, [dbPatients, dbEligMap, criteria, carrierFilters, typeFilters, minBenefit, today])
+
+  const estimatedReach = filteredPatients.length
+  const baseReach = criteriaOptions.find(c => c.key === criteria)?.reach ?? 0
 
   function toggleCarrier(c: string) {
     setCarrierFilters(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])
@@ -527,9 +602,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
   function toggleType(t: string) {
     setTypeFilters(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
   }
-
-  const baseReach = CRITERIA_OPTIONS.find((c) => c.key === criteria)?.reach ?? 0
-  const estimatedReach = computeFilteredReach(baseReach)
 
   function handleTypeSelect(t: CampaignType) {
     setSelectedType(t)
@@ -539,26 +611,53 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
     setStep(2)
   }
 
-  function handleLaunch() {
-    const patientNames = PATIENTS.slice(0, Math.min(estimatedReach, PATIENTS.length)).map(getPatientFullName)
-    const replied = scheduleMode === 'now' ? Math.floor(estimatedReach * 0.12) : 0
-    const newCampaign: Campaign = {
-      id: Date.now(),
-      name,
-      type: selectedType!,
-      status: scheduleMode === 'now' ? 'Active' : 'Scheduled',
-      message,
-      patientsReached: estimatedReach,
-      smsDelivered: scheduleMode === 'now' ? Math.floor(estimatedReach * 0.95) : 0,
-      smsFailed: scheduleMode === 'now' ? Math.ceil(estimatedReach * 0.05) : 0,
-      smsReplied: replied,
-      appointmentsBooked: Math.round(replied * BOOKING_RATE),
-      revenueAttributed: calcRevenue(replied),
-      date: scheduleMode === 'now' ? new Date().toISOString().split('T')[0] : (scheduleDate || staggerStartDate || new Date().toISOString().split('T')[0]),
-      patients: patientNames,
+  async function handleLaunch() {
+    if (!practiceId || !selectedType) return
+    setSaving(true)
+    try {
+      const scheduledAt =
+        scheduleMode === 'scheduled' ? (scheduleDate ? `${scheduleDate}T10:00:00.000Z` : null)
+        : scheduleMode === 'staggered' ? (staggerStartDate ? `${staggerStartDate}T10:00:00.000Z` : null)
+        : null
+
+      const { data: campaignRow, error: campaignError } = await supabase
+        .from('campaigns')
+        .insert({
+          practice_id: practiceId,
+          name,
+          type: selectedType,
+          status: scheduleMode === 'now' ? 'sent' : 'scheduled',
+          scheduled_at: scheduledAt,
+          sent_at: scheduleMode === 'now' ? new Date().toISOString() : null,
+        })
+        .select('id')
+        .single()
+
+      if (campaignError || !campaignRow) throw campaignError
+
+      // Write one campaign_message row per patient in batches of 100
+      if (filteredPatients.length > 0) {
+        const messages = filteredPatients.map(p => ({
+          campaign_id: campaignRow.id,
+          patient_id: p.id,
+          practice_id: practiceId,
+          message_text: message,
+          channel: 'sms',
+          status: 'pending',
+        }))
+        for (let i = 0; i < messages.length; i += 100) {
+          const { error } = await supabase.from('campaign_messages').insert(messages.slice(i, i + 100))
+          if (error) throw error
+        }
+      }
+
+      onLaunch()
+      onClose()
+    } catch (err) {
+      console.error('Failed to save campaign:', err instanceof Error ? err.message : 'unknown')
+    } finally {
+      setSaving(false)
     }
-    onLaunch(newCampaign)
-    onClose()
   }
 
   const stepLabels = ['Choose Type', 'Campaign Details', 'Patient Criteria']
@@ -641,15 +740,15 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                     {brandPatients.map((p) => (
                       <div key={p.id} className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-white px-3 py-2">
                         <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
-                          {p.firstName[0]}{p.lastName[0]}
+                          {p.first_name[0]}{p.last_name[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="text-sm font-semibold text-slate-800">{p.firstName} {p.lastName}</span>
-                          <span className="ml-2 text-xs text-slate-500">{p.primaryInsurance.carrier}</span>
+                          <span className="text-sm font-semibold text-slate-800">{p.first_name} {p.last_name}</span>
+                          <span className="ml-2 text-xs text-slate-500">{p.insurance_carrier ?? ''}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-slate-500">{p.lastFrameBrand}</span>
-                          {p.lastFrameModel && <span className="text-xs text-slate-400">— {p.lastFrameModel}</span>}
+                          <span className="text-xs text-slate-500">{p.last_frame_brand ?? ''}</span>
+                          {p.last_frame_model && <span className="text-xs text-slate-400">— {p.last_frame_model}</span>}
                         </div>
                       </div>
                     ))}
@@ -674,7 +773,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
 
               {/* SMS Composer */}
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                {/* Composer header */}
                 <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-teal-600" />
@@ -700,11 +798,8 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                 </div>
 
                 <div className="p-4 space-y-3">
-                  {/* Merge tag pills — draggable */}
                   <div>
-                    <p className="mb-2 text-xs text-slate-400">
-                      Drag or click to insert patient data:
-                    </p>
+                    <p className="mb-2 text-xs text-slate-400">Drag or click to insert patient data:</p>
                     <div className="flex flex-wrap gap-1.5">
                       {MERGE_TAGS.map((t) => (
                         <button
@@ -724,7 +819,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                     </div>
                   </div>
 
-                  {/* Token editor — contenteditable with pill rendering */}
                   <TokenEditor
                     ref={tokenEditorRef}
                     value={message}
@@ -732,7 +826,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                     placeholder="Write your message here, or drag and drop the tokens above to insert patient data like first name and benefit amounts…"
                   />
 
-                  {/* Segment indicator */}
                   <div className="flex items-center gap-2.5">
                     <div className="flex gap-1">
                       <div className={`h-1 w-10 rounded-full transition-colors ${message.length > 0 ? 'bg-teal-500' : 'bg-slate-200'}`} />
@@ -759,9 +852,7 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-gradient-to-b from-slate-100 to-slate-50 p-5">
                     <div className="mx-auto max-w-[260px]">
-                      {/* Phone chrome */}
                       <div className="rounded-2xl bg-white shadow-lg border border-slate-200 overflow-hidden">
-                        {/* Contact bar */}
                         <div className="border-b border-slate-100 bg-white px-4 py-2.5 flex items-center gap-2.5">
                           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs font-bold text-white shadow-sm">P</div>
                           <div>
@@ -769,7 +860,6 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                             <p className="text-xs text-slate-400 leading-tight">SMS</p>
                           </div>
                         </div>
-                        {/* Message area */}
                         <div className="bg-slate-50 px-3 py-4 min-h-[100px]">
                           <div className="flex justify-end mb-1">
                             <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-teal-500 px-3 py-2 shadow-sm">
@@ -892,13 +982,15 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                 <div className="mb-4">
                   <p className="mb-2 text-xs font-medium text-slate-400">By benefit status</p>
                   <div className="space-y-1.5">
-                    {CRITERIA_OPTIONS.filter(o => o.group === 'General').map((opt) => (
+                    {criteriaOptions.filter(o => o.group === 'General').map((opt) => (
                       <label key={opt.key} className={`flex cursor-pointer items-center justify-between rounded-lg border p-2.5 transition-colors ${criteria === opt.key ? 'border-teal-400 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
                         <div className="flex items-center gap-2.5">
                           <div className={`h-3.5 w-3.5 rounded-full border-2 flex-shrink-0 transition-colors ${criteria === opt.key ? 'border-teal-600 bg-teal-600' : 'border-slate-300'}`} />
                           <span className="text-sm text-slate-700">{opt.label}</span>
                         </div>
-                        <span className={`text-xs font-semibold tabular-nums ${criteria === opt.key ? 'text-teal-700' : 'text-slate-400'}`}>{opt.reach.toLocaleString()}</span>
+                        <span className={`text-xs font-semibold tabular-nums ${criteria === opt.key ? 'text-teal-700' : 'text-slate-400'}`}>
+                          {loadingData ? '…' : opt.reach.toLocaleString()}
+                        </span>
                         <input type="radio" className="sr-only" checked={criteria === opt.key} onChange={() => setCriteria(opt.key)} />
                       </label>
                     ))}
@@ -908,12 +1000,14 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                 <div>
                   <p className="mb-2 text-xs font-medium text-slate-400">By last visit</p>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {CRITERIA_OPTIONS.filter(o => o.group === 'Recency').map((opt) => (
+                    {criteriaOptions.filter(o => o.group === 'Recency').map((opt) => (
                       <label key={opt.key} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 transition-colors ${criteria === opt.key ? 'border-teal-400 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
                         <div className={`h-3.5 w-3.5 rounded-full border-2 flex-shrink-0 transition-colors ${criteria === opt.key ? 'border-teal-600 bg-teal-600' : 'border-slate-300'}`} />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-slate-700 truncate">{opt.label.replace('Last visit more than ', '').replace(' ago', '')}</p>
-                          <p className={`text-xs font-semibold tabular-nums ${criteria === opt.key ? 'text-teal-700' : 'text-slate-400'}`}>{opt.reach.toLocaleString()} patients</p>
+                          <p className={`text-xs font-semibold tabular-nums ${criteria === opt.key ? 'text-teal-700' : 'text-slate-400'}`}>
+                            {loadingData ? '…' : opt.reach.toLocaleString()} patients
+                          </p>
                         </div>
                         <input type="radio" className="sr-only" checked={criteria === opt.key} onChange={() => setCriteria(opt.key)} />
                       </label>
@@ -1009,9 +1103,9 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
                   <Users className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-teal-800">
-                      {estimatedReach.toLocaleString()} patients will receive this campaign
+                      {loadingData ? 'Loading patient data…' : `${estimatedReach.toLocaleString()} patients will receive this campaign`}
                     </p>
-                    {(carrierFilters.length > 0 || typeFilters.length > 0 || minBenefit > 0) && (
+                    {!loadingData && (carrierFilters.length > 0 || typeFilters.length > 0 || minBenefit > 0) && (
                       <p className="text-xs text-teal-600 mt-0.5">
                         Filtered from {baseReach.toLocaleString()} based on your refinements
                       </p>
@@ -1099,10 +1193,11 @@ function NewCampaignModal({ onClose, onLaunch, preselectedType, preselectedBrand
             </button>
             <button
               onClick={handleLaunch}
-              className="flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+              disabled={saving}
+              className="flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Send className="h-4 w-4" />
-              {scheduleMode === 'now' ? 'Launch Campaign' : scheduleMode === 'staggered' ? 'Start Staggered Send' : 'Schedule Campaign'}
+              {saving ? 'Saving…' : scheduleMode === 'now' ? 'Launch Campaign' : scheduleMode === 'staggered' ? 'Start Staggered Send' : 'Schedule Campaign'}
             </button>
           </div>
         )}
@@ -1143,21 +1238,27 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
 
         <div className="flex-1 space-y-5 px-6 py-5">
           {/* Message preview */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Message Template</p>
-            <div className="rounded-lg border border-slate-100 bg-white p-3 mb-2">
-              <p className="text-xs font-mono text-slate-500 leading-relaxed">{campaign.message}</p>
-            </div>
-            <p className="mb-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Personalized example — Sarah Mitchell (VSP)</p>
-            <div className="rounded-lg border border-teal-200 bg-white p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="h-4 w-4 text-teal-600" />
-                <span className="text-xs font-medium text-teal-600">SMS from Prizm</span>
+          {campaign.message ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Message Template</p>
+              <div className="rounded-lg border border-slate-100 bg-white p-3 mb-2">
+                <p className="text-xs font-mono text-slate-500 leading-relaxed">{campaign.message}</p>
               </div>
-              <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(campaign.message)}</p>
+              <p className="mb-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Personalized example — Sarah Mitchell (VSP)</p>
+              <div className="rounded-lg border border-teal-200 bg-white p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="h-4 w-4 text-teal-600" />
+                  <span className="text-xs font-medium text-teal-600">SMS from Prizm</span>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed">{previewMessage(campaign.message)}</p>
+              </div>
+              <p className="mt-2 text-xs text-teal-600">Each patient receives their actual verified benefit amounts at send time.</p>
             </div>
-            <p className="mt-2 text-xs text-teal-600">Each patient receives their actual verified benefit amounts at send time.</p>
-          </div>
+          ) : (
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-center">
+              <p className="text-xs text-slate-400">Message template stored per patient — open a campaign from the Campaigns page to see details.</p>
+            </div>
+          )}
 
           {/* Estimated ROI Funnel */}
           {campaign.patientsReached > 0 && (
@@ -1225,12 +1326,85 @@ function CampaignDetailPanel({ campaign, onClose }: CampaignDetailProps) {
 // ---- Main Page ----
 export default function Campaigns() {
   const location = useLocation()
-  const [campaigns, setCampaigns] = useState<Campaign[]>(INITIAL_CAMPAIGNS)
+  const { user } = useAuth()
+  const [practiceId, setPracticeId] = useState<string | null>(null)
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true)
+  const [reloadKey, setReloadKey] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [preselectedType, setPreselectedType] = useState<CampaignType | undefined>(undefined)
   const [preselectedBrand, setPreselectedBrand] = useState<string | undefined>(undefined)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
 
+  // Resolve practice_id once on mount
+  useEffect(() => {
+    async function resolve() {
+      if (!user) return
+      const { data } = await supabase
+        .from('users')
+        .select('practice_id')
+        .eq('id', user.id)
+        .single()
+      if (data?.practice_id) setPracticeId(data.practice_id)
+    }
+    resolve()
+  }, [user])
+
+  // Load campaigns from Supabase
+  useEffect(() => {
+    async function loadCampaigns(pid: string) {
+      setLoadingCampaigns(true)
+      try {
+        const { data: rows } = await supabase
+          .from('campaigns')
+          .select('id, name, type, status, created_at, scheduled_at, sent_at')
+          .eq('practice_id', pid)
+          .order('created_at', { ascending: false })
+
+        if (!rows) { setLoadingCampaigns(false); return }
+
+        // Count messages per campaign for patientsReached
+        const campaignIds = rows.map(r => r.id)
+        const msgCounts: Record<string, number> = {}
+        if (campaignIds.length > 0) {
+          const { data: msgs } = await supabase
+            .from('campaign_messages')
+            .select('campaign_id')
+            .in('campaign_id', campaignIds)
+          for (const m of (msgs ?? [])) {
+            msgCounts[m.campaign_id] = (msgCounts[m.campaign_id] || 0) + 1
+          }
+        }
+
+        const mapped: Campaign[] = rows.map(row => ({
+          id: row.id,
+          name: row.name,
+          type: (row.type as CampaignType) || 'Custom Campaign',
+          status: dbStatusToUi(row.status ?? 'draft'),
+          message: '',
+          patientsReached: msgCounts[row.id] || 0,
+          smsDelivered: 0,
+          smsFailed: 0,
+          smsReplied: 0,
+          appointmentsBooked: 0,
+          revenueAttributed: 0,
+          date: row.sent_at
+            ? row.sent_at.split('T')[0]
+            : row.scheduled_at
+            ? row.scheduled_at.split('T')[0]
+            : row.created_at.split('T')[0],
+          patients: [],
+        }))
+        setCampaigns(mapped)
+      } finally {
+        setLoadingCampaigns(false)
+      }
+    }
+
+    if (practiceId) loadCampaigns(practiceId)
+  }, [practiceId, reloadKey])
+
+  // Open modal from router state (e.g. Dashboard quick-launch)
   useEffect(() => {
     const state = location.state as { openModal?: boolean; campaignType?: CampaignType; brand?: string } | null
     if (state?.openModal) {
@@ -1245,7 +1419,6 @@ export default function Campaigns() {
   const totalReplied = campaigns.reduce((sum, c) => sum + c.smsReplied, 0)
   const avgResponseRate = totalSms > 0 ? Math.round((totalReplied / totalSms) * 100) : 0
 
-  // Est. Revenue Opportunity: sum of (reach × 10% booking rate × $375) for sent/completed campaigns
   const sentCampaigns = campaigns.filter(c => c.status === 'Active' || c.status === 'Completed')
   const totalEstRevenue = sentCampaigns.reduce((sum, c) => sum + Math.round(c.patientsReached * EST_BOOKING_RATE * EST_AVG_TRANSACTION), 0)
 
@@ -1326,12 +1499,21 @@ export default function Campaigns() {
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">All Campaigns</CardTitle>
-          <CardDescription>{campaigns.length} campaigns total</CardDescription>
+          <CardDescription>
+            {loadingCampaigns ? 'Loading…' : `${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''} total`}
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-slate-100">
-            {campaigns.map((campaign) => {
-              return (
+          {loadingCampaigns ? (
+            <div className="px-6 py-8 text-center text-sm text-slate-400">Loading campaigns…</div>
+          ) : campaigns.length === 0 ? (
+            <div className="px-6 py-8 text-center">
+              <p className="text-sm text-slate-500">No campaigns yet.</p>
+              <p className="text-xs text-slate-400 mt-1">Click "New Campaign" above to create your first one.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {campaigns.map((campaign) => (
                 <div key={campaign.id}>
                   <div
                     className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors"
@@ -1372,16 +1554,17 @@ export default function Campaigns() {
                     {statusBadge(campaign.status)}
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {showModal && (
         <NewCampaignModal
+          practiceId={practiceId}
           onClose={() => { setShowModal(false); setPreselectedType(undefined); setPreselectedBrand(undefined) }}
-          onLaunch={(c) => setCampaigns((prev) => [c, ...prev])}
+          onLaunch={() => setReloadKey(k => k + 1)}
           preselectedType={preselectedType}
           preselectedBrand={preselectedBrand}
         />
