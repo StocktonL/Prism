@@ -1,14 +1,31 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-// Stedi/Change Healthcare payer IDs for vision carriers
-const PAYER_IDS: Record<string, string> = {
-  'VSP':          '39026',
-  'EyeMed':       '68068',
-  'Davis Vision': '48714',
-  'Spectera':     '98798',
-  'Anthem':       '00601',
-  'UHC Vision':   '87726',
-  'Humana':       '61101',
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt === maxRetries) throw err
+      const delay = Math.min(100 * Math.pow(2, attempt) * (1 + Math.random() * 0.1), 5000)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error('Max retries exceeded')
+}
+
+// Stedi payer IDs for vision carriers.
+// VERIFY every ID against the Stedi Payer Network before trusting it — the
+// originals here were guesses and several were wrong (e.g. 39026 resolved to
+// UMR, a medical TPA, not VSP). Stedi accepts either the primary payer ID or
+// the alphanumeric "Stedi Payer ID" in tradingPartnerServiceId.
+export const PAYER_IDS: Record<string, string> = {
+  'VSP':          '94163',   // ✅ verified in Stedi Payer Network (Stedi ID: GWRCD)
+  'EyeMed':       '68068',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Davis Vision': '48714',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Spectera':     '98798',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Anthem':       '00601',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'UHC Vision':   '87726',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
+  'Humana':       '61101',   // ⚠️ UNVERIFIED — confirm in Stedi Payer Network
 }
 
 interface EligibilityRequestBody {
@@ -51,7 +68,7 @@ function controlNumber(): string {
 // Parse the Stedi JSON 271 response into benefit amounts we actually use.
 // The 271 structure varies by payer — VSP and EyeMed return different field paths.
 // We log the raw response so parsing can be refined on real test data.
-function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
+export function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
   const result: ParsedBenefits = {
     active: false,
     planYear: { start: '', end: '' },
@@ -139,6 +156,11 @@ function parseBenefits(raw: Record<string, unknown>): ParsedBenefits {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const origin = process.env.NODE_ENV === 'production' ? 'https://prizmvision.com' : 'http://localhost:5173'
+  res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -169,6 +191,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'STEDI_API_KEY not configured in environment' })
   }
 
+  const practiceNpi = process.env.PRACTICE_NPI
+  if (!practiceNpi) {
+    return res.status(500).json({ error: 'Practice NPI not configured. Contact support.' })
+  }
+
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
 
   const stediPayload = {
@@ -176,7 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     tradingPartnerServiceId: payerId,
     provider: {
       organizationName: process.env.PRACTICE_NAME ?? 'Prizm Vision',
-      npi: process.env.PRACTICE_NPI ?? '1234567893', // replace with real NPI
+      npi: practiceNpi,
     },
     subscriber: {
       memberId,
@@ -191,23 +218,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
   }
 
+  // TODO: Check eligibility_checks table for cached result < 30 days old
+  // const cached = await checkEligibilityCache(patientId, carrier)
+  // if (cached) return res.json(cached)
+  // Requires Supabase service role connection — implement when Supabase is wired
+
   try {
-    const stediRes = await fetch(
-      'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Key ${apiKey}`,
-          'Content-Type': 'application/json',
+    const stediRes = await withRetry(() =>
+      fetch(
+        'https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Key ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(stediPayload),
         },
-        body: JSON.stringify(stediPayload),
-      },
+      )
     )
 
     if (!stediRes.ok) {
-      const errText = await stediRes.text()
-      console.error('Stedi error', stediRes.status, errText)
-      return res.status(stediRes.status).json({ error: 'Eligibility check failed', detail: errText })
+      // Log only the status code — errText may contain PHI from the upstream payer
+      console.error('Stedi eligibility check failed:', stediRes.status)
+      return res.status(502).json({ error: 'Eligibility check failed. Please try again.' })
     }
 
     const raw = await stediRes.json() as Record<string, unknown>
@@ -218,10 +252,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       memberId,
       benefits,
       checkedAt: new Date().toISOString(),
-      raw, // retained for debugging — remove once parsing is verified
     })
   } catch (err) {
-    console.error('Stedi request failed:', err)
+    console.error('Stedi request failed:', err instanceof Error ? err.message : 'unknown')
     return res.status(500).json({ error: 'Could not reach eligibility network. Try again.' })
   }
 }

@@ -1,6 +1,7 @@
 @docs/company-brief.md
 @docs/technical.md
 @docs/timeline.md
+@agents/product-marketing.md
 @agents/ceo/CLAUDE.md
 @agents/cfo/CLAUDE.md
 @agents/cmo/CLAUDE.md
@@ -9,6 +10,8 @@
 @agents/frontend/CLAUDE.md
 @agents/backend/CLAUDE.md
 @agents/domain/CLAUDE.md
+@agents/api/CLAUDE.md
+@agents/cs/CLAUDE.md
 # PRISM — Lead Engineer
 
 ## CURRENT PRIORITY (May 23, 2026) — READ THIS FIRST
@@ -21,6 +24,42 @@ Stedi and Twilio are paid but NOT yet integrated.
 
 Do NOT build Stedi or Twilio until Stockton has
 at least 3 paying customers or 10 waitlist signups.
+
+## Agent Routing — Auto-Delegate Every Request
+At the start of EVERY request, classify it and delegate to the matching
+specialist subagent via the Agent tool. For tasks that span multiple domains,
+fan out to all relevant specialists in parallel (one message, multiple Agent
+calls) and synthesize their results. Only handle trivial clarifications, quick
+file lookups, and orchestration directly.
+
+| If the request is about… | Delegate to |
+|---|---|
+| UI, pages, components, Tailwind, landing/dashboard, CSV upload flow | `frontend` (Jordan) |
+| Database, Supabase, RLS, API routes, auth wiring, audit logs, data normalization | `backend` (Riley) |
+| Third-party APIs — Twilio, Stedi/pVerify, Stripe, Postmark, Anthropic | `api` (Sage) |
+| Visual design critique, UX, accessibility, look-and-feel audit | `ui-ux-designer` |
+| Marketing, cold outreach, email/sequences, SEO, copy, landing CRO | `cmo` (Morgan) |
+| Pricing, COGS, margins, ROI, financial modeling | `cfo` |
+| Strategy, prioritization, hard trade-offs, Weave/legal sensitivity | `ceo` (Alex) |
+| HIPAA, compliance, legal setup, vendor BAAs, security audit | `coo` (Quinn) |
+| What to build / not build, MVP scope, feature requests | `pm` (Morgan) |
+| Optometry reality check — practices, carriers, buyer, seasonality | `domain` (Casey) |
+| Onboarding, activation, retention, churn, case studies | `cs` (River) |
+
+If a request clearly maps to one domain, delegate to that one specialist.
+If it is genuinely general (no specialist fits), handle it directly.
+
+## Session Memory & Continuity — Never Lose State
+This runs on Claude Code on the web: the container is ephemeral and prior chat
+history does NOT carry over between sessions. The repo is the only memory.
+1. Commit AND push anything worth keeping. Uncommitted work is lost on log-off.
+2. Record every material decision in `docs/decisions.md` (date + decision +
+   rationale). Never let a decision live only in chat.
+3. Read `docs/decisions.md` before any strategy, pricing, or scope call.
+4. A SessionStart hook (`.claude/hooks/session-start.sh`) surfaces git state and
+   the current priority at the start of every session — trust it as the baseline.
+5. When priorities or build status change, update this CLAUDE.md and the docs so
+   the next session inherits the change.
 
 ## Critical Constraints — Read Before Any Sales Advice
 - Stockton is STILL EMPLOYED at Weave (M-W in office)

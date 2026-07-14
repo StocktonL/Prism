@@ -5,7 +5,6 @@ import {
   Users,
   Megaphone,
   ShieldCheck,
-  FileText,
   LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,7 +20,6 @@ const navItems: NavItem[] = [
   { label: 'Eligibility', to: '/app/eligibility', icon: <ShieldCheck className="h-4 w-4" /> },
   { label: 'Patients',   to: '/app/patients',   icon: <Users className="h-4 w-4" /> },
   { label: 'Campaigns',  to: '/app/campaigns',  icon: <Megaphone className="h-4 w-4" /> },
-  { label: 'Claims',     to: '/app/claims',     icon: <FileText className="h-4 w-4" /> },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -29,22 +27,15 @@ const pageTitles: Record<string, string> = {
   '/app/eligibility': 'Eligibility Verification',
   '/app/patients':   'Patients',
   '/app/campaigns':  'Campaigns',
-  '/app/claims':     'Claims',
 }
 
 export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const isDemoMode = localStorage.getItem('prizm_demo') === 'true'
   const pageTitle = pageTitles[location.pathname] ?? 'Prizm'
 
   async function handleSignOut() {
-    if (isDemoMode) {
-      localStorage.removeItem('prizm_demo')
-      window.location.href = '/'
-      return
-    }
     await signOut()
     navigate('/')
   }
@@ -57,7 +48,7 @@ export default function AppLayout() {
         <div className="flex h-16 items-center gap-3 px-5 border-b border-slate-700/60">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/30">
             <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+              <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
             </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-white">Prizm</span>
@@ -90,15 +81,7 @@ export default function AppLayout() {
         </nav>
 
         {/* Sidebar footer */}
-        <div className="border-t border-slate-700/60 p-4 space-y-2">
-          {isDemoMode && (
-            <div className="rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-2">
-              <p className="text-xs font-semibold text-amber-400">Demo Mode</p>
-              <button onClick={handleSignOut} className="text-xs text-amber-500 hover:text-amber-300 transition-colors mt-0.5">
-                Exit demo
-              </button>
-            </div>
-          )}
+        <div className="border-t border-slate-700/60 p-4">
           <p className="text-xs text-slate-600">Prizm v0.1.0</p>
         </div>
       </aside>
@@ -109,9 +92,6 @@ export default function AppLayout() {
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
           <h1 className="text-base font-semibold text-slate-800">{pageTitle}</h1>
           <div className="flex items-center gap-3">
-            {isDemoMode && (
-              <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-semibold text-amber-700">Demo</span>
-            )}
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
                 {user?.email?.[0]?.toUpperCase() ?? 'P'}

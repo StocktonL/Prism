@@ -22,7 +22,6 @@ import {
   CheckSquare,
   Eye,
   RotateCcw,
-  FileCheck,
   Lock,
   Glasses,
   Sparkles,
@@ -34,8 +33,148 @@ import {
   Flower2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth'
+import { logRead } from '@/lib/audit'
 
 const HAS_PATIENTS = true
+
+// Demo fallback figures — shown when a practice has no verified benefits yet
+// (the sales demo account, or before a real CSV upload + verification run).
+// The moment real Stedi verifications land in eligibility_checks, the aha banner
+// switches to the practice's own numbers.
+const DEMO_AHA = {
+  recoverable: 127050,
+  benefitPatients: 847,
+  frameTotal: 82350,
+  framePatients: 548,
+  clTotal: 44700,
+  clPatients: 299,
+}
+
+// Reads the practice's real verified benefits from eligibility_checks and totals
+// them up. Uses the most recent check per patient (matches the Patients page).
+// Returns hasData=false until at least one verification with a real benefit lands,
+// so the dashboard falls back to the demo figures and never shows a bare $0.
+function useLiveBenefits() {
+  const { user } = useAuth()
+  const [state, setState] = useState({
+    loading: true,
+    hasData: false,
+    recoverable: 0,
+    benefitPatients: 0,
+    frameTotal: 0,
+    framePatients: 0,
+    clTotal: 0,
+    clPatients: 0,
+    verificationsCount: 0,
+    expiringSoonCount: 0,
+    expiringSoonRevenue: 0,
+    campaignsSentCount: 0,
+    draftCampaigns: [] as { id: string; name: string; type: string; scheduled_at: string | null }[],
+  })
+
+  useEffect(() => {
+    async function load() {
+      if (!user) { setState(s => ({ ...s, loading: false })); return }
+      try {
+        const { data: userData } = await supabase
+          .from('users').select('practice_id').eq('id', user.id).single()
+        if (!userData?.practice_id) { setState(s => ({ ...s, loading: false })); return }
+
+        const { data: patients } = await supabase
+          .from('patients').select('id').eq('practice_id', userData.practice_id)
+        if (!patients?.length) { setState(s => ({ ...s, loading: false })); return }
+
+        const { data: checks } = await supabase
+          .from('eligibility_checks')
+          .select('patient_id, frame_allowance, cl_allowance, expiration_date, checked_at')
+          .in('patient_id', patients.map(p => p.id))
+          .order('checked_at', { ascending: false })
+
+        // Keep only the most recent check per patient.
+        const latest = new Map<string, { frame: number; cl: number; expires: string | null }>()
+        for (const c of (checks ?? [])) {
+          if (!latest.has(c.patient_id)) {
+            latest.set(c.patient_id, {
+              frame: Number(c.frame_allowance) || 0,
+              cl: Number(c.cl_allowance) || 0,
+              expires: c.expiration_date ?? null,
+            })
+          }
+        }
+
+        let frameTotal = 0, framePatients = 0, clTotal = 0, clPatients = 0, benefitPatients = 0
+        for (const v of latest.values()) {
+          if (v.frame > 0) { frameTotal += v.frame; framePatients++ }
+          if (v.cl > 0) { clTotal += v.cl; clPatients++ }
+          if (v.frame > 0 || v.cl > 0) benefitPatients++
+        }
+
+        const recoverable = frameTotal + clTotal
+
+        // Count total verifications on record
+        const verificationsCount = (checks ?? []).length
+
+        // Compute patients with benefits expiring within the next 90 days
+        const nowDate = new Date()
+        const ninetyDaysOut = new Date(nowDate.getTime() + 90 * 24 * 60 * 60 * 1000)
+        let expiringSoonCount = 0, expiringSoonRevenue = 0
+        for (const v of latest.values()) {
+          if (v.expires) {
+            const expDate = new Date(v.expires)
+            if (expDate >= nowDate && expDate <= ninetyDaysOut) {
+              expiringSoonCount++
+              expiringSoonRevenue += v.frame + v.cl
+            }
+          }
+        }
+
+        // Count sent campaigns
+        const { count: sentCount } = await supabase
+          .from('campaigns')
+          .select('*', { count: 'exact', head: true })
+          .eq('practice_id', userData.practice_id)
+          .eq('status', 'sent')
+
+        // Draft campaigns for the approval queue (most recent 5)
+        const { data: draftRows } = await supabase
+          .from('campaigns')
+          .select('id, name, type, scheduled_at')
+          .eq('practice_id', userData.practice_id)
+          .eq('status', 'draft')
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        setState({
+          loading: false,
+          hasData: recoverable > 0,
+          recoverable, benefitPatients,
+          frameTotal, framePatients, clTotal, clPatients,
+          verificationsCount,
+          expiringSoonCount,
+          expiringSoonRevenue,
+          campaignsSentCount: sentCount ?? 0,
+          draftCampaigns: draftRows ?? [],
+        })
+
+        // HIPAA audit: log that this user read eligibility benefit data for
+        // this practice. Fire-and-forget — never blocks the UI.
+        logRead({
+          action: 'READ_ELIGIBILITY',
+          resource_type: 'eligibility_checks',
+          user_id: user.id,
+          practice_id: userData.practice_id,
+        })
+      } catch {
+        setState(s => ({ ...s, loading: false }))
+      }
+    }
+    load()
+  }, [user])
+
+  return state
+}
 
 // ─── Campaign Suggestions Engine ─────────────────────────────────────────────
 
@@ -466,49 +605,7 @@ function CampaignSuggestionsEngine({ onSetupCampaign }: { onSetupCampaign: (type
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
-
-const stats = [
-  {
-    title: 'Verifications Today',
-    value: '38',
-    sub: '31 active · 4 issues · 3 pending',
-    icon: <ShieldCheck className="h-5 w-5 text-teal-600" />,
-    bg: 'bg-teal-50',
-    trend: '+6 vs yesterday',
-    trendUp: true,
-    nav: '/app/eligibility',
-  },
-  {
-    title: 'Revenue Recovered',
-    value: '$24,180',
-    sub: '$449 subscription · 54x ROI this month',
-    icon: <DollarSign className="h-5 w-5 text-emerald-600" />,
-    bg: 'bg-emerald-50',
-    trend: '+18% vs last month',
-    trendUp: true,
-    nav: '/app/campaigns',
-  },
-  {
-    title: 'Benefits Expiring',
-    value: '$48,360',
-    sub: 'frame + contact allowances · 312 patients',
-    icon: <CalendarClock className="h-5 w-5 text-rose-600" />,
-    bg: 'bg-rose-50',
-    trend: '87 days until year-end',
-    trendUp: false,
-    nav: '/app/patients',
-  },
-  {
-    title: 'SMS Delivered',
-    value: '1,204',
-    sub: '~$20 avg optical sale per reply',
-    icon: <MessageSquare className="h-5 w-5 text-violet-600" />,
-    bg: 'bg-violet-50',
-    trend: '96.2% delivery rate',
-    trendUp: true,
-    nav: '/app/campaigns',
-  },
-]
+// (built inside Dashboard() so they can read live DB data)
 
 // ─── Top patients by benefit value ───────────────────────────────────────────
 
@@ -581,29 +678,10 @@ const verifStatusConfig: Record<VerifStatus, { label: string; icon: React.ReactN
 // ─── Revenue pipeline ─────────────────────────────────────────────────────────
 
 const pipelineStages = [
-  { label: 'Sending This Week',      patients: 47,  value: '$11,280', description: 'Benefits expire within 30 days', color: 'bg-rose-500',  textColor: 'text-rose-700',  bg: 'bg-rose-50',  border: 'border-rose-200',  pill: 'bg-rose-100 text-rose-700'   },
-  { label: 'Queued — Next 2 Weeks',  patients: 89,  value: '$21,540', description: 'Benefits expire in 31–60 days', color: 'bg-amber-400', textColor: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', pill: 'bg-amber-100 text-amber-700' },
-  { label: 'Scheduled — Next Month', patients: 156, value: '$37,920', description: 'Benefits expire in 61–90 days', color: 'bg-teal-500',  textColor: 'text-teal-700',  bg: 'bg-teal-50',  border: 'border-teal-200',  pill: 'bg-teal-100 text-teal-700'   },
+  { label: 'Est. Booked — This Week',    patients: 47,  value: '$11,280', description: 'Benefits expire within 30 days', color: 'bg-rose-500',  textColor: 'text-rose-700',  bg: 'bg-rose-50',  border: 'border-rose-200',  pill: 'bg-rose-100 text-rose-700'   },
+  { label: 'Est. Opportunity — 2 Weeks', patients: 89,  value: '$21,540', description: 'Benefits expire in 31–60 days', color: 'bg-amber-400', textColor: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', pill: 'bg-amber-100 text-amber-700' },
+  { label: 'Est. Opportunity — Month',   patients: 156, value: '$37,920', description: 'Benefits expire in 61–90 days', color: 'bg-teal-500',  textColor: 'text-teal-700',  bg: 'bg-teal-50',  border: 'border-teal-200',  pill: 'bg-teal-100 text-teal-700'   },
 ]
-
-// ─── Claims ───────────────────────────────────────────────────────────────────
-
-interface ClaimRow { patient: string; carrier: string; amount: string; service: string; status: 'approved' | 'submitted' | 'pending' | 'denied' }
-
-const todaysClaims: ClaimRow[] = [
-  { patient: 'Sarah Mitchell', carrier: 'VSP',          amount: '$287', service: 'Exam + frames',  status: 'approved'  },
-  { patient: 'James Okafor',   carrier: 'EyeMed',       amount: '$412', service: 'Exam + CL fit',  status: 'approved'  },
-  { patient: 'Linda Chen',     carrier: 'Davis Vision', amount: '$195', service: 'Frames only',    status: 'submitted' },
-  { patient: 'Marcus Webb',    carrier: 'Spectera',     amount: '$338', service: 'Exam + frames',  status: 'pending'   },
-  { patient: 'Priya Nair',     carrier: 'VSP',          amount: '$156', service: 'Contacts only',  status: 'approved'  },
-]
-
-const claimStatusConfig = {
-  approved:  { label: 'Approved',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  submitted: { label: 'Submitted', className: 'bg-blue-50 text-blue-700 border-blue-200'          },
-  pending:   { label: 'Pending',   className: 'bg-amber-50 text-amber-700 border-amber-200'        },
-  denied:    { label: 'Denied',    className: 'bg-red-50 text-red-700 border-red-200'              },
-}
 
 // ─── This week's sends ────────────────────────────────────────────────────────
 
@@ -618,14 +696,7 @@ const thisWeeksSends: ScheduledSend[] = [
 ]
 
 // ─── Approval queue ───────────────────────────────────────────────────────────
-
-interface PendingCampaign { id: number; name: string; type: string; patients: number; recoverable: string; scheduledFor: string; sampleMessage: string; carrier: string }
-
-const pendingApprovals: PendingCampaign[] = [
-  { id: 1, name: 'End of Year — VSP Patients',          type: 'End of Year Benefits', patients: 187, recoverable: '$28,050', scheduledFor: 'Today at 10:00 AM',    sampleMessage: "Hi Sarah, just a heads up — our records show you have $150 in unused frame benefits at Mountain View Eye Care expiring Dec 31. Most patients don't realize these don't carry over. Schedule before they're gone:", carrier: 'VSP'         },
-  { id: 2, name: 'End of Year — EyeMed Patients',       type: 'End of Year Benefits', patients: 94,  recoverable: '$14,100', scheduledFor: 'Tomorrow at 9:00 AM',  sampleMessage: "Hi James, wanted to give you a heads up — our records show your EyeMed plan still has $200 in frame benefits you haven't used. These expire Dec 31 and don't roll over. Book your appointment now:", carrier: 'EyeMed'       },
-  { id: 3, name: 'Contact Lens Reorder — 30-Day Window', type: 'CL Reorder',          patients: 43,  recoverable: '$6,450',  scheduledFor: 'Wed at 11:00 AM',      sampleMessage: "Hi Linda, did you know your annual contact lens supply is running low? You have $130 in contacts benefits remaining — reorder now and we'll handle the rest:", carrier: 'All carriers' },
-]
+// Draft campaigns are loaded from DB inside useLiveBenefits → live.draftCampaigns
 
 // ─── Manual campaign types ────────────────────────────────────────────────────
 
@@ -670,6 +741,63 @@ function EmptyState({ onUpload }: { onUpload: () => void }) {
 export default function Dashboard() {
   const navigate = useNavigate()
   const [previewIndex, setPreviewIndex] = useState(0)
+  const live = useLiveBenefits()
+
+  // Real verified totals when we have them, polished demo figures otherwise.
+  const aha = live.hasData
+    ? {
+        recoverable: live.recoverable,
+        benefitPatients: live.benefitPatients,
+        frameTotal: live.frameTotal,
+        framePatients: live.framePatients,
+        clTotal: live.clTotal,
+        clPatients: live.clPatients,
+      }
+    : DEMO_AHA
+  const ahaRecovery = Math.round(aha.recoverable * 0.2)
+
+  const stats = [
+    {
+      title: 'Verifications Run',
+      value: live.verificationsCount.toLocaleString(),
+      sub: 'eligibility checks on file',
+      icon: <ShieldCheck className="h-5 w-5 text-teal-600" />,
+      bg: 'bg-teal-50',
+      trend: live.verificationsCount > 0 ? `${live.verificationsCount.toLocaleString()} total` : 'Upload patients to verify',
+      trendUp: live.verificationsCount > 0,
+      nav: '/app/eligibility',
+    },
+    {
+      title: 'Revenue Opportunity',
+      value: `$${(live.hasData ? live.recoverable : DEMO_AHA.recoverable).toLocaleString()}`,
+      sub: 'total unused frame + contact lens benefits',
+      icon: <DollarSign className="h-5 w-5 text-emerald-600" />,
+      bg: 'bg-emerald-50',
+      trend: `${(live.hasData ? live.benefitPatients : DEMO_AHA.benefitPatients).toLocaleString()} patients with benefits`,
+      trendUp: true,
+      nav: '/app/campaigns',
+    },
+    {
+      title: 'Benefits Expiring',
+      value: live.expiringSoonCount.toLocaleString(),
+      sub: 'patients with benefits expiring in 90 days',
+      icon: <CalendarClock className="h-5 w-5 text-rose-600" />,
+      bg: 'bg-rose-50',
+      trend: live.expiringSoonRevenue > 0 ? `$${live.expiringSoonRevenue.toLocaleString()} at stake` : 'Upload patients to see',
+      trendUp: false,
+      nav: '/app/patients',
+    },
+    {
+      title: 'Campaigns Sent',
+      value: live.campaignsSentCount.toLocaleString(),
+      sub: 'total campaigns launched',
+      icon: <MessageSquare className="h-5 w-5 text-violet-600" />,
+      bg: 'bg-violet-50',
+      trend: live.campaignsSentCount > 0 ? 'Campaigns delivered' : 'Launch your first campaign',
+      trendUp: live.campaignsSentCount > 0,
+      nav: '/app/campaigns',
+    },
+  ]
 
   const cyclingPreviews = [
     { name: 'Sarah Mitchell',  carrier: 'VSP',          frame: '$150', cl: '$130', msg: "Hi Sarah, just a heads up — our records show you have $150 in frame benefits and $130 in contact lens benefits you haven't used. Did you know these expire Dec 31 and don't carry over? Reply YES to schedule. — Valley Eye Care" },
@@ -701,7 +829,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">{greeting()}</h2>
-          <p className="mt-1 text-sm text-slate-500">You've recovered <span className="font-semibold text-emerald-600">$24,180</span> this month. 312 patients have benefits expiring.</p>
+          <p className="mt-1 text-sm text-slate-500">Est. <span className="font-semibold text-emerald-600">${(live.expiringSoonRevenue > 0 ? live.expiringSoonRevenue : DEMO_AHA.recoverable).toLocaleString()}</span> in revenue opportunity. <span className="font-semibold text-slate-700">{live.expiringSoonCount > 0 ? live.expiringSoonCount.toLocaleString() : '312'}</span> patients have benefits expiring within 90 days.</p>
         </div>
         <div className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 self-start flex-shrink-0">
           <Lock className="h-3.5 w-3.5 text-emerald-600" />
@@ -713,23 +841,30 @@ export default function Dashboard() {
       {/* Aha moment */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-teal-700 to-cyan-700 p-6 shadow-md">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-teal-200 mb-1">Recoverable optical revenue in your patient list</p>
-          <p className="text-3xl sm:text-5xl font-black text-white tracking-tight">$127,050</p>
-          <p className="mt-2 text-teal-100 text-sm">847 patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-medium text-teal-200">Recoverable optical revenue in your patient list</p>
+            {live.hasData && (
+              <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" /> Live from your verifications
+              </span>
+            )}
+          </div>
+          <p className="text-3xl sm:text-5xl font-black text-white tracking-tight">${aha.recoverable.toLocaleString()}</p>
+          <p className="mt-2 text-teal-100 text-sm">{aha.benefitPatients.toLocaleString()} patients have unused insurance benefits — frames, contacts, and exam coverage waiting to be used.</p>
           <div className="mt-4 flex flex-wrap gap-4">
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">Frame allowances</p>
-              <p className="text-lg font-bold text-white">$82,350</p>
-              <p className="text-xs text-teal-300">548 patients</p>
+              <p className="text-lg font-bold text-white">${aha.frameTotal.toLocaleString()}</p>
+              <p className="text-xs text-teal-300">{aha.framePatients.toLocaleString()} patients</p>
             </div>
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">Contact lens benefits</p>
-              <p className="text-lg font-bold text-white">$44,700</p>
-              <p className="text-xs text-teal-300">299 patients</p>
+              <p className="text-lg font-bold text-white">${aha.clTotal.toLocaleString()}</p>
+              <p className="text-xs text-teal-300">{aha.clPatients.toLocaleString()} patients</p>
             </div>
             <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
               <p className="text-xs text-teal-200">At 20% response rate</p>
-              <p className="text-lg font-bold text-white">~$25,410</p>
+              <p className="text-lg font-bold text-white">~${ahaRecovery.toLocaleString()}</p>
               <p className="text-xs text-teal-300">estimated recovery</p>
             </div>
           </div>
@@ -767,8 +902,8 @@ export default function Dashboard() {
               <AlertCircle className="h-5 w-5 text-rose-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-rose-900">$48,360 in patient benefits expiring within 30 days</p>
-              <p className="text-xs text-rose-700">312 patients have unused frame and contact allowances. Prizm is automatically sending reminders — 47 going out this week.</p>
+              <p className="text-sm font-semibold text-rose-900">${(live.expiringSoonRevenue > 0 ? live.expiringSoonRevenue : 48360).toLocaleString()} in patient benefits expiring within 90 days</p>
+              <p className="text-xs text-rose-700">{live.expiringSoonCount > 0 ? live.expiringSoonCount.toLocaleString() : '312'} patients have unused frame and contact allowances. Send campaigns now to capture this revenue before benefits expire.</p>
             </div>
           </div>
           <button onClick={() => navigate('/app/campaigns')} className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 transition-colors shadow-sm whitespace-nowrap">
@@ -892,7 +1027,7 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
                   Awaiting Your Approval
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">{pendingApprovals.length}</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">{live.draftCampaigns.length}</span>
                 </CardTitle>
                 <CardDescription className="text-xs">Review each campaign before it sends — personalized messages with exact benefit amounts are ready</CardDescription>
               </div>
@@ -903,53 +1038,66 @@ export default function Dashboard() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-slate-100">
-            {pendingApprovals.map((c) => (
-              <div key={c.id} className="px-3 sm:px-5 py-4">
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 w-full">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="text-sm font-semibold text-slate-800">{c.name}</p>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{c.carrier}</span>
-                      <span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">{c.patients} patients · {c.recoverable} recoverable</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mb-2">Scheduled: {c.scheduledFor}</p>
-                    <div className="rounded-lg border border-teal-100 bg-slate-50 px-3 py-2">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <p className="text-xs font-medium text-slate-400">Live preview — each patient gets their own message</p>
-                        <div className="flex gap-1">
-                          {cyclingPreviews.map((_, i) => (
-                            <span key={i} className={`h-1.5 w-1.5 rounded-full transition-colors ${i === previewIndex ? 'bg-teal-500' : 'bg-slate-300'}`} />
-                          ))}
-                        </div>
+          {live.draftCampaigns.length === 0 ? (
+            <div className="px-5 py-8 text-center">
+              <p className="text-sm text-slate-400">No campaigns pending approval</p>
+              <button onClick={() => navigate('/app/campaigns')} className="mt-3 text-xs font-medium text-teal-600 hover:underline">
+                Create a campaign
+              </button>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {live.draftCampaigns.map((c) => (
+                <div key={c.id} className="px-3 sm:px-5 py-4">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1 w-full">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <p className="text-sm font-semibold text-slate-800">{c.name}</p>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{c.type}</span>
+                        <span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs font-medium">Draft</span>
                       </div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="h-5 w-5 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                          {currentPreview.name[0]}
+                      <p className="text-xs text-slate-400 mb-2">
+                        {c.scheduled_at
+                          ? `Scheduled: ${new Date(c.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+                          : 'Not yet scheduled'}
+                      </p>
+                      <div className="rounded-lg border border-teal-100 bg-slate-50 px-3 py-2">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-xs font-medium text-slate-400">Live preview — each patient gets their own message</p>
+                          <div className="flex gap-1">
+                            {cyclingPreviews.map((_, i) => (
+                              <span key={i} className={`h-1.5 w-1.5 rounded-full transition-colors ${i === previewIndex ? 'bg-teal-500' : 'bg-slate-300'}`} />
+                            ))}
+                          </div>
                         </div>
-                        <span className="text-xs font-semibold text-slate-700">{currentPreview.name}</span>
-                        <span className="text-xs text-slate-400">{currentPreview.carrier}</span>
-                        <span className="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5">{currentPreview.frame} frames</span>
-                        {currentPreview.cl !== '$0' && <span className="text-xs font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5">{currentPreview.cl} contacts</span>}
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="h-5 w-5 rounded-full bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                            {currentPreview.name[0]}
+                          </div>
+                          <span className="text-xs font-semibold text-slate-700">{currentPreview.name}</span>
+                          <span className="text-xs text-slate-400">{currentPreview.carrier}</span>
+                          <span className="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5">{currentPreview.frame} frames</span>
+                          {currentPreview.cl !== '$0' && <span className="text-xs font-semibold text-cyan-700 bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5">{currentPreview.cl} contacts</span>}
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed italic">"{currentPreview.msg}"</p>
                       </div>
-                      <p className="text-xs text-slate-600 leading-relaxed italic">"{currentPreview.msg}"</p>
                     </div>
-                  </div>
-                  <div className="flex sm:flex-col flex-row gap-1.5 flex-shrink-0 w-full sm:w-auto">
-                    <button onClick={() => navigate('/app/campaigns')} className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap">
-                      <CheckCircle2 className="h-3 w-3" /> Approve
-                    </button>
-                    <button onClick={() => navigate('/app/campaigns')} className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
-                      <Eye className="h-3 w-3" /> Review
-                    </button>
-                    <button onClick={() => navigate('/app/campaigns')} className="hidden sm:flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap">
-                      <RotateCcw className="h-3 w-3" /> Reschedule
-                    </button>
+                    <div className="flex sm:flex-col flex-row gap-1.5 flex-shrink-0 w-full sm:w-auto">
+                      <button onClick={() => navigate('/app/campaigns')} className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 transition-colors whitespace-nowrap">
+                        <CheckCircle2 className="h-3 w-3" /> Approve
+                      </button>
+                      <button onClick={() => navigate('/app/campaigns')} className="flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
+                        <Eye className="h-3 w-3" /> Review
+                      </button>
+                      <button onClick={() => navigate('/app/campaigns')} className="hidden sm:flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors whitespace-nowrap">
+                        <RotateCcw className="h-3 w-3" /> Reschedule
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -992,7 +1140,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Revenue engine */}
+      {/* Campaign Revenue Estimates */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -1002,12 +1150,13 @@ export default function Dashboard() {
               </div>
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
-                  Revenue Engine
+                  Campaign Revenue Estimates
                   <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Running
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs">Prizm automatically sends personalized benefit reminders as patient allowances near expiration</CardDescription>
+                <p className="text-xs text-slate-500 mt-1">Estimated based on industry booking rates — actual results vary</p>
               </div>
             </div>
             <button onClick={() => navigate('/app/campaigns')} className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors">
@@ -1063,8 +1212,8 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Bottom row — campaigns + claims + verification */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Bottom row — campaigns + verification */}
+      <div className="grid gap-4 lg:grid-cols-2">
 
         <Card className="border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
@@ -1082,47 +1231,6 @@ export default function Dashboard() {
                 <ArrowRight className="h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
               </button>
             ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-50">
-                  <FileCheck className="h-4 w-4 text-violet-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-base">Claims Today</CardTitle>
-                  <CardDescription className="text-xs">Submitted via Stedi clearinghouse</CardDescription>
-                </div>
-              </div>
-              <button onClick={() => navigate('/app/claims')} className="flex items-center gap-1 text-xs font-medium text-teal-600 hover:text-teal-800 transition-colors">
-                All claims <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100">
-              {todaysClaims.map((c) => {
-                const cfg = claimStatusConfig[c.status]
-                return (
-                  <div key={c.patient} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => navigate('/app/claims')}>
-                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                      {c.patient.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-slate-800">{c.patient}</p>
-                      <p className="text-xs text-slate-400">{c.carrier} · {c.service}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-xs font-bold text-slate-800">{c.amount}</span>
-                      <span className={`rounded-full border px-1.5 py-0.5 text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
           </CardContent>
         </Card>
 

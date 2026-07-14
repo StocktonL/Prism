@@ -27,3 +27,8 @@ coverage/
 # Editor
 .idea/
 .vscode/settings.json
+.claude/*
+!.claude/agents/
+!.claude/settings.json
+.claude/settings.local.json
+.claude/worktrees/

@@ -66,4 +66,40 @@ Never assume he knows what anything means.
 - Webhook handling for subscription events
 - Update practices.subscription_status on changes
 
+## Supabase Schema & RLS Patterns (Skill: supabase-schema-architect)
+Every PHI table requires RLS before any data touches it.
+Target: <50ms query / <10ms RLS policy overhead.
+Always use `current_practice_id()` helper for RLS — never inline the subquery.
+Migration pattern — always include rollback:
+```sql
+-- up
+alter table patients add column if not exists new_field text;
+-- down
+alter table patients drop column if exists new_field;
+```
+3NF normalization: no repeated groups, no partial dependencies.
+Use `uuid_generate_v4()` or `gen_random_uuid()` for all PKs.
+Indexes: create on every FK column and every column used in WHERE/ORDER BY.
+Never use `select *` in RLS policies — always specify columns.
+
+## Secrets Management (Skill: secrets-management)
+All secrets in environment variables — never hardcoded in source.
+Vercel env vars: set in dashboard → Settings → Environment Variables.
+Use separate values for Preview vs Production environments.
+Rotate compromised keys immediately — delete and recreate, never edit.
+Server-side only secrets (never expose to browser):
+  SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, TWILIO_AUTH_TOKEN,
+  STEDI_API_KEY, ANTHROPIC_API_KEY, POSTMARK_API_TOKEN
+Client-safe (can be in VITE_ prefix): SUPABASE_URL, SUPABASE_ANON_KEY
+Audit all env var usage quarterly — remove unused ones.
+
+## API Security (Skill: api-security-best-practices)
+Validate all inputs at the API boundary — never trust client data.
+Rate limit all public endpoints (use Vercel Edge middleware).
+Always verify webhook signatures before processing (Twilio, Stripe).
+Return generic error messages to clients — log specifics server-side.
+Use parameterized queries — never string interpolation in SQL.
+Check authorization on every request — don't assume session = access.
+CORS: restrict to prizmvision.com in production.
+
 ## API Routes You Build (MVP)

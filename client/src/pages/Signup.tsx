@@ -60,9 +60,21 @@ export default function Signup() {
         })
         if (authError) throw authError
 
+        // Notify Stockton of new signup — fire and forget, never block the user
+        fetch('https://formspree.io/f/mykveaoq', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: '🎉 New Signup',
+            practice: form.practiceName,
+            email: form.email,
+            phone: form.phone || '—',
+          }),
+        }).catch(() => {})
+
         setStep(2)
       } catch (err: unknown) {
-        console.error('Signup error full object:', err)
+        console.error('Signup error:', err instanceof Error ? err.message : 'unknown')
         const msg = err instanceof Error ? err.message : JSON.stringify(err) || 'Something went wrong. Please try again.'
         setError(msg)
       } finally {
@@ -108,7 +120,7 @@ export default function Signup() {
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-cyan-600 shadow-lg shadow-teal-900/50 mb-3">
             <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 19h20L12 2zm0 4l7 13H5L12 6z" />
+              <path d="M12 2L12 19L2 19Z" /><path d="M12 2L22 19L12 19Z" fill-opacity="0.55" />
             </svg>
           </div>
           <span className="text-xl font-bold text-white">Prizm</span>

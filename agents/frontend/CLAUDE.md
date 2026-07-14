@@ -153,6 +153,80 @@ Session timeout after 30 minutes of inactivity
 Show "Secured with HIPAA-compliant encryption"
 in footer of all authenticated pages
 
+## shadcn/ui Patterns (Skill: shadcn)
+Always install components via CLI, never copy-paste:
+`npx shadcn-ui@latest add <component>`
+Composition over configuration — combine primitives.
+Use `cn()` utility for conditional class merging.
+Never override shadcn styles with inline styles — use variants.
+Form pattern: shadcn Form + React Hook Form + Zod always together.
+```tsx
+// Correct form pattern
+const form = useForm<z.infer<typeof schema>>({
+  resolver: zodResolver(schema),
+  defaultValues: { ... }
+})
+```
+
+## Tailwind Design System (Skill: tailwind-design-system)
+Use design tokens not raw values:
+- Spacing: always use scale (p-4, not p-[17px])
+- Colors: always use semantic names (text-slate-400, not #94a3b8)
+- Never use arbitrary values unless absolutely necessary
+- Dark mode: use dark: prefix consistently
+- Responsive: mobile-first (base → sm → md → lg)
+Extract repeated patterns into components, not utility classes.
+Keep component variants in a `variants` object using `cva()`.
+
+## Next.js + Supabase Auth Patterns (Skill: nextjs-supabase-auth)
+Use `@supabase/ssr` for cookie-based sessions (already configured).
+Never use `supabase.auth.getSession()` in server components —
+use `supabase.auth.getUser()` instead (getSession trusts client).
+Protect routes via ProtectedRoute component (already wired).
+Auth state: always read from `useAuth()` hook, never from localStorage.
+On sign out: call `supabase.auth.signOut()` then navigate to `/login`.
+Session refresh happens automatically via `onAuthStateChange` listener.
+
+## Performance Rules
+Lazy load heavy components with `React.lazy()` and `Suspense`.
+Never import entire icon libraries — import individual icons only.
+Images: always specify width/height to prevent layout shift.
+Lists over 100 items: use virtualization (react-window).
+
+## Google Indexing Standards (Enforce on Every Public Page)
+Source: https://support.google.com/webmasters/answer/9012289
+
+Every public page (/, /founding, /blog, /blog/*) must ship with ALL of:
+
+### Head Tags
+- Unique <title> under 60 chars with target keyword
+- Meta description 120–160 chars with target keyword
+- <link rel="canonical" href="https://prizmvision.com/[path]" />
+- og:type, og:title, og:description, og:url, og:site_name meta tags
+- Twitter card meta tags
+
+### Schema
+- Home: SoftwareApplication (already live)
+- Blog posts: BlogPosting with headline, datePublished, dateModified,
+  author, publisher, url, mainEntityOfPage
+- Validate at: https://search.google.com/test/rich-results
+
+### SPA Pre-rendering (Critical)
+This is a React SPA. Google needs content in static HTML, not just JS.
+- Never use useEffect alone to set meta tags on pages that need SEO
+- Blog posts: add every new post to client/scripts/prerender-blog.mjs
+  so the build generates a static HTML file with full content
+- Marketing pages: if content is JS-only, add a <noscript> fallback
+
+### Sitemap
+- Add every new public URL to client/public/sitemap.xml
+- Set <lastmod> to today's date on any content change
+
+### After Every New Public Page
+1. Sitemap updated
+2. Rich Results Test passes
+3. Tell Stockton to submit URL in Google Search Console
+
 ## How You Respond
 1. Show a description of the UI before coding
 2. Use shadcn/ui components first

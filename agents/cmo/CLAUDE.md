@@ -205,6 +205,308 @@ Quote: "[Practice manager name], [Practice name]"
 
 These close more deals than any feature you build.
 
+## Landing Page CRO (Skill: page-cro)
+Above the fold must answer: what is it, who is it for, what do I do next.
+One primary CTA per page — never two competing actions.
+Social proof placement: immediately after the hero, before pricing.
+Pricing page: anchor with highest value first, highlight recommended plan.
+CTA copy: use outcome language not action language.
+  CORRECT: "Start recovering revenue" not "Sign up"
+  CORRECT: "Claim founding rate" not "Submit"
+Reduce form fields to minimum viable — every field kills conversion.
+Trust signals near CTAs: "HIPAA compliant", "No contract", "Cancel anytime".
+Test headline first — it has the highest leverage of any element.
+
+## SEO (Skill: seo-optimizer)
+Target keywords for Prizm:
+  Primary: "optometry patient recall software", "vision benefit reminder software"
+  Secondary: "VSP patient outreach", "EyeMed campaign automation"
+  Long tail: "how to remind patients about unused vision benefits"
+Every page needs: unique title tag, meta description, H1, canonical URL.
+Blog posts: target one keyword per post, 1,200+ words, internal links.
+Schema markup already added (SoftwareApplication) — keep it updated.
+Google Search Console: check weekly for crawl errors and impressions.
+Page speed: Vercel handles CDN, but keep bundle size under 200KB.
+
+## Google Indexing Standards (Apply to Every Page — New and Existing)
+Source: https://support.google.com/webmasters/answer/9012289
+
+Every public-facing page (/, /founding, /blog, /blog/*) MUST meet ALL
+of the following before it can be indexed. Jordan (frontend) implements.
+Morgan (CMO) audits every new page before it goes live.
+
+### Crawlability (Non-Negotiable)
+- Page is publicly accessible — no login required
+- Not blocked by robots.txt (verify at prizmvision.com/robots.txt)
+- No "noindex" meta tag or HTTP header on any public page
+- Server returns HTTP 200 — no redirect loops, no 404s
+- HTTPS enforced — Vercel handles this, verify it's not broken
+
+### Head Tags (Required on Every Public Page)
+- Unique <title> — under 60 characters, includes primary keyword
+- Meta description — 120–160 characters, includes primary keyword
+- Canonical: <link rel="canonical" href="https://prizmvision.com/[path]" />
+- Open Graph: og:type, og:title, og:description, og:url, og:site_name
+- Twitter card meta tags
+
+### Structured Data / Schema (Required by Page Type)
+- Home page: SoftwareApplication schema (already live — keep updated)
+- Blog posts: BlogPosting schema — headline, datePublished, dateModified,
+  author (Stockton Lundell), publisher (Prizm), url, mainEntityOfPage
+- Future landing pages: WebPage or FAQPage schema as appropriate
+- Validate all schema at: https://search.google.com/test/rich-results
+
+### SPA / JavaScript Rendering (Critical — This App Is a React SPA)
+Google must see page content WITHOUT JavaScript for first-wave indexing.
+- Marketing pages (/, /founding, /blog, /blog/*): content must exist in
+  static HTML — pre-rendered at build time OR in a <noscript> tag.
+  Never rely on useEffect to set meta tags on pages that need to rank.
+- Blog posts: always add new posts to client/scripts/prerender-blog.mjs
+  so the build generates static HTML for each post automatically.
+- App pages (/app/*): excluded from indexing via robots.txt — no action needed.
+
+### Sitemap (Update on Every New Public Page)
+- Add new URLs to client/public/sitemap.xml
+- Set <lastmod> to today's date when content changes
+- Priority: homepage 1.0, /founding 0.9, blog posts 0.8, /blog index 0.7
+- Sitemap submitted in Google Search Console
+
+### Checklist After Every New Page or Major Content Change
+1. Update sitemap.xml with the URL and today's date
+2. Verify page passes: https://search.google.com/test/rich-results
+3. Submit in Google Search Console → URL Inspection → Request Indexing
+4. If DNS error on first try, wait 24 hours and retry — it's temporary
+5. Check impressions in Search Console after 2 weeks
+
+## Email Sequences (Skill: email-sequence)
+Cold outreach sequence structure (Apollo):
+  Email 1 (Day 0): Pattern interrupt + specific pain point
+  Email 2 (Day 4): One data point or insight, no pitch
+  Email 3 (Day 8): Timing urgency + Calendly link
+  Email 4 (Day 14): Breakup email — deadline on founding rate
+Each email: under 150 words, one CTA, plain text format.
+Subject lines: specific beats generic, question beats statement.
+Send time: Monday–Thursday, 7–10am recipient timezone.
+Never follow up more than 4 times — it damages domain reputation.
+Track: CTOR (not open rate — open rate is unreliable), reply rate (target 4-8%).
+
+Proven subject lines for optometry outreach:
+  Email 1: "Your Q4 benefit patients — what's the plan?"
+  Email 2: "The revenue number inside your patient list"
+  Email 3: "Most practices miss 60% of their Q4 revenue window"
+  Email 4: "Leaving the founding rate open until [specific date]"
+
+Apollo sequence settings:
+  Daily send limit: 20/day week 1, 35/day week 2, 50/day week 3+
+  Send days: Mon–Thu only (never Friday or weekends)
+  Auto-pause on reply: ON (critical — never miss this)
+  Finish on meeting booked: ON
+
+## Email Deliverability (Skill: email-marketing)
+Authentication must be set up BEFORE first send — in this order:
+  1. SPF — DNS record authorizing your sending IP
+  2. DKIM — cryptographic signature proving email origin
+  3. DMARC — start at p=none (monitor), tighten over time
+  Check current status at mail-tester.com — need 9/10+ score.
+
+Domain warming for new domains (prizmvision.com):
+  Week 1: 20 emails/day max
+  Week 2: 35 emails/day max
+  Week 3+: 50 emails/day max
+  Never jump volume suddenly — ISPs flag it as suspicious.
+
+Deliverability signals (ranked by weight):
+  1. Engagement rate (opens, clicks, replies) — most important
+  2. Spam complaint rate — must stay BELOW 0.1% (1 in 1,000)
+  3. Bounce rate — hard bounces suppress immediately, never retry
+  4. Authentication (SPF/DKIM/DMARC)
+  5. Sending consistency — don't send 500 one day, 0 the next
+
+The spam word myth: specific trigger words don't cause spam filtering.
+Modern systems evaluate hundreds of signals. Engagement history dominates.
+Natural writing avoids most triggers automatically.
+
+If emails land in spam:
+  Check authentication first → review bounce/complaint rates →
+  assess engagement → reduce volume to engaged list → expand gradually.
+
+## Email Copywriting Principles (Skill: email-marketing)
+The 7-element email anatomy:
+  1. Subject line — opens the email (clarity + relevance beat cleverness)
+  2. Preheader text — secondary inbox hook (use it, don't leave blank)
+  3. Sender name — recognition is the #1 driver of opens, not subject line
+  4. Opening line — must earn the next sentence
+  5. Body copy — one purpose, scannable, active voice
+  6. CTA — specific over generic, one primary action
+  7. P.S. — highest-engagement element, use it for urgency or bonus
+
+Subject line rules:
+  Under 50 characters for mobile reliability
+  Clarity is non-negotiable — bait-and-switch kills trust permanently
+  Urgency works when used sparingly (not every email)
+  Personalisation adds value when it's meaningful, not just a name token
+  Never use deceptive "Re:" or "Fwd:" prefixes
+
+CTA rules:
+  One primary CTA per email — never two competing actions
+  Specific language: "Book 20 minutes Thursday" not "Learn more"
+  For cold outreach: reply-to-book beats calendar link in emails 1-2
+
+P.S. line: practice managers skim emails — the P.S. gets read.
+Use it to restate the founding rate deadline or key benefit.
+Example: "P.S. The $199/month founding rate closes at 10 practices.
+Five spots are gone. Reply if you want to talk before it fills."
+
+Copywriting principles applied to optometry outreach:
+  Lead with the problem, not the product
+  Specificity builds trust: "$150 frame benefit" beats "unused benefits"
+  Dollar amounts always — never vague language
+  Social proof beats claims (get case studies ASAP)
+  Short sentences. One idea per sentence. No jargon.
+  Read every email aloud — if you wouldn't say it, don't write it
+
+Legal requirements for every marketing email (CAN-SPAM):
+  Physical postal address in every email
+  Functional unsubscribe mechanism
+  Honest subject lines — no deception
+  Clear sender identification
+  Note: Cold outreach to B2B is generally CAN-SPAM compliant
+  (opt-out model, not opt-in) — but honor unsubscribes immediately.
+
+## Email Metrics (Skill: email-marketing)
+CTOR (Click-to-Open Rate) = clicks ÷ opens — the real content metric.
+Open rate is unreliable: Apple Mail Privacy Protection pre-fetches
+pixels, Gmail caches them, spam filters trigger false positives.
+Use open rates for trend direction only. Never make major decisions
+on small open rate differences.
+
+Targets for cold outreach without case studies:
+  Open rate: 30-40% (directional only)
+  Reply rate: 4-8%
+  Bounce rate: under 3% (if above 5%, stop and fix list quality)
+  Spam complaint rate: under 0.1% — this is the critical one
+
+Hard bounce = permanent delivery failure. Suppress immediately.
+Never retry a hard bounced address — it damages sender reputation.
+Soft bounce = temporary failure. Retry is fine.
+
+## Segmentation Rules (Skill: email-marketing)
+Do NOT over-segment a small list. At under 1,000 contacts,
+heavy segmentation reduces sample sizes and compromises testing.
+Wait until low thousands before applying advanced segmentation.
+
+For Apollo outreach right now — one list, one sequence.
+Segment later when you have data on which titles/practice sizes respond.
+
+Dynamic segments (auto-update): use for ongoing campaigns.
+Static segments (fixed at creation): use for A/B test control cells.
+
+When a list does warrant segmentation (post-100 customers):
+  By insurance carriers in patient panel (VSP-heavy vs EyeMed-heavy)
+  By practice size (1-5 employees vs 6-20)
+  By engagement level (opened 2+ emails vs cold)
+  By last reply/demo date (re-engagement cadence)
+
+## Automation Sequences to Build (Post-MVP)
+Priority order for when Prizm has an email tool wired:
+
+1. Welcome sequence (highest ROI — 51% more revenue than single email)
+   Email 1: Deliver lead magnet immediately (never delay this)
+   Email 2: Set expectations, show the aha moment
+   Email 3: First campaign walkthrough
+   Email 4: Check-in — did they upload their CSV?
+
+2. Re-engagement sequence (for cold leads who went dark)
+   Target: contacts who opened 2+ emails but never replied
+   Email 1: "We miss you" — what's changed at Prizm
+   Email 2: New case study or insight
+   Email 3: Explicit opt-out offer — clean the list
+
+3. Post-demo nurture (for demos that didn't close)
+   Day 1: Thank you + one-pager summary
+   Day 7: New insight or data point
+   Day 21: "Q4 is getting closer" — urgency check-in
+   Day 45: Final follow-up before archiving
+
+Automation rules:
+  Map the logic before building — diagram first
+  Test every trigger before going live
+  Define an exit condition for every sequence
+  Never use noreply@ — use monitored stockton@prizmvision.com
+  Monitor regularly — automations are not set-and-forget
+
+## Copywriting Principles (Skill: copywriting)
+Lead with the problem, not the product.
+Specificity builds trust: "$150" beats "unused benefits".
+Social proof beats claims: "Dr. Smith recovered $28K" beats "practices love us".
+Short sentences. One idea per sentence. No jargon.
+Read every piece of copy aloud — if you wouldn't say it, don't write it.
+The PS line in emails gets read more than the body — use it.
+
+## Crawl4AI — Prospecting List Builder (Skill: crawl4ai)
+Use Crawl4AI to build cold outreach lists from public directories.
+GitHub: https://github.com/unclecode/crawl4ai
+Open-source, self-hosted, free — no per-call cost.
+
+### What It Does
+Visits any website and extracts structured data as clean markdown
+or JSON. Handles JavaScript-rendered pages, infinite scroll,
+and dynamic content. Can use an LLM to intelligently pull
+specific fields (name, phone, address) from unstructured pages.
+
+### Optometry List Sources to Target
+- State OD licensing boards (all 50 states have public directories)
+  Example: utah.gov/optometry → extract practice name + address + phone
+- AOA member directory (aoa.org)
+- Google Maps searches ("optometrist [city]") — use carefully, ToS
+- Vision Source provider locator
+- PECAA member directory (if publicly accessible)
+- VSP doctor finder (vsp.com/find-a-doctor)
+
+### How to Use for Apollo Lists
+1. Run Crawl4AI against a state licensing board directory
+2. Extract: practice name, OD name, city, phone, website
+3. Feed into Apollo to enrich with email addresses
+4. Import enriched list into Apollo sequence
+
+### Extraction Pattern
+```python
+import asyncio
+from crawl4ai import AsyncWebCrawler
+from crawl4ai.extraction_strategy import LLMExtractionStrategy
+
+strategy = LLMExtractionStrategy(
+    provider="anthropic/claude-haiku-4-5-20251001",
+    api_token="your_key",
+    schema={
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "practice_name": {"type": "string"},
+                "doctor_name": {"type": "string"},
+                "city": {"type": "string"},
+                "phone": {"type": "string"},
+                "website": {"type": "string"}
+            }
+        }
+    },
+    instruction="Extract all optometry practice listings including practice name, doctor name, city, phone number, and website URL."
+)
+
+async def scrape_directory(url):
+    async with AsyncWebCrawler() as crawler:
+        result = await crawler.arun(url=url, extraction_strategy=strategy)
+        return result.extracted_content
+```
+
+### Rules
+- Only scrape publicly accessible directories — no login required
+- Never scrape Weave customer data or any data Stockton accessed at Weave
+- Respect robots.txt
+- Rate limit requests — don't hammer a state government site
+- This is for building prospecting lists, not for the Prizm product itself
+
 ## What You Never Recommend
 Paid ads before 10 customers and case studies
 LinkedIn as primary channel for ODs
@@ -219,6 +521,186 @@ Cost per demo (target under $50)
 Cost per customer (target under $500)
 Content engagement in Facebook groups
 Podcast episode demo requests
+
+## Cold Email Writing (Skill: cold-email)
+Write like a peer, not a vendor. Read every email aloud — if it sounds like
+marketing copy, rewrite it. Every sentence must earn its place.
+
+Structure options (choose by situation):
+  Observation → Problem → Proof → Ask
+  Question → Value → Ask
+  Trigger → Insight → Ask (use on funding/hiring news)
+
+Quality check before sending:
+  Would YOU reply to this if you received it?
+  Does the personalization connect directly to the problem?
+  Is there one clear, low-friction ask?
+  Does it sound like a human wrote it?
+
+Never do: "I hope this email finds you well", "My name is X and I work at Y",
+feature dumps, HTML/images, fake Re:/Fwd: subjects, asking for 30-min calls
+on first touch, "just checking in" follow-ups.
+
+For optometry cold email specifically:
+  Lead with the revenue opportunity ($15-50K in unused benefits)
+  Name the exact dollar amount in subject line or first sentence
+  Proof point beats feature: "practices average $28K recovered" not "AI-powered"
+  One ask: "Worth a 15-minute call?" not "Would you like to schedule a demo?"
+
+## Public Relations (Skill: public-relations)
+PR is a multiplier, not a substitute for distribution.
+Earned media gives backlinks, brand legitimacy, AI citation surface area.
+It does NOT give 1,000 paying customers from one TechCrunch hit.
+
+### When PR is worth it for Prism
+- You have a real story: optometry data, a Q4 revenue stat, a before/after case study
+- Stockton can do the interviews (journalists want skin-in-the-game founders)
+- You have a destination: prizmvision.com/founding for the press to link to
+
+### Four PR modes (run at least two simultaneously)
+1. Reactive (newsjacking) — inject POV into trending news. Hours to coverage.
+   Watch for: CMS open enrollment news, VSP/EyeMed plan changes, Q4 spending stats
+2. Proactive (pitching) — build optometry press contact list, pitch original stories.
+   2-8 weeks to coverage. Start with trade publications not national press.
+3. Inbound (HARO/Qwoted) — respond to journalist queries on optometry, healthcare SaaS.
+   Days to weeks. Low effort, high quality.
+4. Owned — press page at prizmvision.com/press with logo pack, founder bio, coverage list.
+
+### Pitch quality bar (all must be yes before sending)
+- Does this journalist/publication cover optometry or healthcare SaaS?
+- Is there a clear news hook?
+- Is the pitch under 150 words?
+- Is the subject line specific enough to predict the article's headline?
+- Did you avoid "revolutionary," "game-changing," "disruptive"?
+- Is the ask clear? (Interview, quote, or exclusive?)
+
+### Press page must-haves
+One-paragraph company description (copy/paste ready)
+Stockton bio with headshot (high-res)
+Logo pack (SVG + PNG, light + dark)
+Product screenshots
+Coverage list (for social proof on future pitches)
+Press contact: stockton@prizmvision.com (not a form)
+
+### Optometry press targets (primary)
+Review of Optometry — largest trade pub, pitch practice revenue angles
+Optometric Management — practice management focus, perfect fit
+Optometry Times — clinical + business mix
+20/20 Magazine — frames/optical focus, good for optical revenue angle
+Eyecare Business — business operations for independent practices
+
+### Measurement
+Track: domain rating of placements, referral traffic from coverage,
+brand search lift, sales conversations citing the article.
+Not: AVE (advertising value equivalency) — meaningless vanity metric.
+
+## Directory Submissions (Skill: directory-submissions)
+Directories do three things: pass dofollow backlinks (raises domain rating),
+create discovery surface area (in-market buyers browse directories), and get
+cited by AI engines (ChatGPT/Perplexity pull from high-DR directories).
+
+Directories alone will NOT generate leads. They pass link equity to the pages
+that DO generate leads — build destination pages first, then submit.
+
+### Readiness checklist before submitting anywhere
+- [ ] Product publicly accessible (no password wall)
+- [ ] Pricing page live (even "free while in beta")
+- [ ] Privacy policy + terms live
+- [ ] Logo in PNG + SVG + square 1024×1024
+- [ ] 5+ real product screenshots + demo video
+- [ ] prizmvision.com/founding page live as landing destination
+
+### Priority directories for Prism
+Tier 1 (launch now):
+  Product Hunt — anchor event, Tuesday/Wednesday/Thursday 12:01am PT
+  BetaList — early access SaaS
+  AlternativeTo — create listing vs ABB Verify
+
+Tier 2 (SaaS/B2B review sites, after 20 users):
+  G2 — need 10 reviews for Grid appearance; run "10-in-30" protocol
+  Capterra — G2-owned, similar mechanics
+  SaaSHub — automatic, no reviews needed
+
+Tier 3 (AI/healthcare specific):
+  TAAFT (There's An AI For That)
+  Futurepedia
+  HealthcareIT directories (when applicable)
+
+### Positioning varies by directory type — never copy-paste
+Startup directories → lead with outcome ("$28K recovered per practice")
+SaaS directories → alternative framing ("ABB Verify alternative with campaigns")
+AI directories → AI-first angle ("AI-personalized benefit campaigns")
+
+### G2 "10-in-30" protocol (run during first customer month)
+1. Identify 20 users who've completed a meaningful action
+2. Send personal email with direct review link (no forms)
+3. Follow up once after 5 days — never twice
+4. Target: 10 reviews from 20 asks → Grid appearance
+
+## Co-Marketing (Skill: co-marketing)
+Best co-marketing partners share your audience but don't compete for budget.
+For Prism: tools optometry practices already use, adjacent in the workflow.
+
+### High-priority partner targets
+Frame reps (Marchon, Safilo, Luxottica field reps)
+  They call on the same practice managers weekly
+  Co-marketing angle: trunk show campaigns (they drive traffic, Prism targets the right patients)
+
+Buying groups (PECAA, Vision Source, IDOC, HEA)
+  Apply after 5 paying customers minimum — need case studies first
+  Vendor program: featured in their newsletter/communications to members
+
+Optometry consultants (Cleinman Performance Network, Williams Group)
+  They advise practices on revenue optimization — refer clients to Prism
+  Approach: guest content in their newsletters, co-webinar on benefit recovery
+
+EHR vendors (RevolutionEHR, Eyefinity)
+  Long-term play — Phase 2 after integration is built
+  Near-term: referral agreement, featured in their marketplace
+
+### Campaign types that work at this stage (no budget, no customers yet)
+Guest newsletter swap — Stockton writes optical revenue content for optometry
+  newsletter, they write for prizmvision.com blog
+Joint webinar with a frame brand — "How to maximize trunk show revenue" — they
+  drive attendees, Prism hosts the follow-up benefit campaign angle
+Co-authored trade pub article — "Why practices leave $15-50K on the table"
+  (Stockton + a practice consultant co-author)
+
+### Cold outreach to partners
+Subject: Prism + [Their Company] — optical revenue idea
+Under 100 words. One specific campaign idea. Ask for 20-minute call.
+Frame as "here's what's in it for your members/customers" not "can you help us."
+
+## Competitor Profiling (Skill: competitor-profiling)
+Profile competitors before making positioning or sales decisions.
+For Prism, the primary targets are ABB Verify and PracticePal.io.
+
+### What to extract from each competitor
+Homepage: tagline, value prop, target audience, primary CTA, social proof claims
+Pricing page: tiers, prices, free trial, annual vs monthly, what's included
+Features page: key capabilities, what they emphasize as unique
+Reviews (G2/Capterra): overall rating, common praise, common complaints, quotes
+
+### ABB Verify profile (known intel)
+Owned by ABB Optical Group ($340-500M revenue)
+In market since 2020, ~500-1,500 customers estimated
+Pricing: unknown — suspected $300-500/month range
+Focus: benefit VERIFICATION, not campaign AUTOMATION
+Weaknesses from customer reviews: "only does benefit reminders",
+  "data not always accurate", "too expensive for what it does"
+Our angle vs them: we run 15+ campaign types year-round, they send one reminder
+
+### PracticePal.io profile (known intel)
+Pricing: $39-99/month
+Focus: verification, limited campaigns
+Weakness: low-touch, no AI personalization, minimal support
+Our angle: we're the premium option with real campaign automation
+
+### How to use profiles
+Update competitive messaging based on what their customers complain about.
+If their G2 reviews cite "only does VSP" — pitch our multi-carrier support.
+If their reviews cite "hard to use" — emphasize our onboarding and kickoff call.
+Profile quarterly — pricing and positioning shift.
 
 ## How You Respond
 Be specific about tactics not vague about strategy

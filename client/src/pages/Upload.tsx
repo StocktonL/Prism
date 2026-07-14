@@ -11,7 +11,21 @@ import {
   ChevronRight,
   Loader2,
   ArrowLeft,
+  TrendingUp,
+  Users,
+  DollarSign,
 } from 'lucide-react'
+
+const CARRIER_AVERAGES: Record<string, { frame: number; cl: number }> = {
+  'VSP':           { frame: 150, cl: 130 },
+  'EyeMed':        { frame: 200, cl: 150 },
+  'Davis Vision':  { frame: 150, cl: 100 },
+  'Spectera':      { frame: 130, cl: 120 },
+  'UHC Vision':    { frame: 150, cl: 125 },
+  'MetLife Vision':{ frame: 130, cl: 100 },
+  'Anthem':        { frame: 150, cl: 120 },
+  'Humana':        { frame: 140, cl: 110 },
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +40,21 @@ interface ParsedRow {
   group_number: string
   last_visit_date: string
   contact_lens_wearer: boolean
+  // Rx frames
+  last_frame_purchase: string
+  last_frame_brand: string
+  last_frame_model: string
+  // Sunglasses
+  last_sunglasses_purchase: string
+  last_sunglasses_brand: string
+  last_sunglasses_model: string
+  // Contact lenses
+  last_cl_order: string
+  last_cl_brand: string
+  cl_supply_days: number | null
+  // Family / insurance relationship
+  insurance_relationship: string
+  subscriber_name: string
 }
 
 interface ValidationReport {
@@ -41,14 +70,14 @@ function normalizePhone(raw: string): string {
   return raw.replace(/\D/g, '').slice(0, 10)
 }
 
-function normalizeDate(raw: string): string {
-  if (!raw) return ''
+function normalizeDate(raw: string): string | null {
+  if (!raw || !raw.trim()) return null
   // MM/DD/YYYY → YYYY-MM-DD
   const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
   if (mdy) return `${mdy[3]}-${mdy[1].padStart(2, '0')}-${mdy[2].padStart(2, '0')}`
   // already YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
-  return raw
+  return null
 }
 
 const CARRIER_MAP: Record<string, string> = {
@@ -72,6 +101,27 @@ function normalizeCarrier(raw: string): string {
   return CARRIER_MAP[raw.toLowerCase().trim()] ?? raw.trim()
 }
 
+function normalizeCLSupplyDays(raw: string): number | null {
+  if (!raw) return null
+  const lower = raw.toLowerCase()
+  if (lower.includes('annual') || lower.includes('year')) return 365
+  const n = parseInt(raw.replace(/\D/g, ''), 10)
+  if (isNaN(n) || n <= 0) return null
+  if (n <= 30) return 30
+  if (n <= 60) return 60
+  if (n <= 90) return 90
+  return 365
+}
+
+function normalizeRelationship(raw: string): string {
+  const r = raw.toLowerCase().trim()
+  if (['self', 'insured', 'subscriber', 'member'].includes(r)) return 'Self'
+  if (['spouse', 'husband', 'wife', 'partner', 'domestic partner'].includes(r)) return 'Spouse'
+  if (['child', 'dependent', 'son', 'daughter', 'kid', 'student'].includes(r)) return 'Child'
+  if (r) return 'Other'
+  return ''
+}
+
 // ── CSV parsing ───────────────────────────────────────────────────────────────
 
 function parseCSV(text: string): { headers: string[]; rows: Record<string, string>[] } {
@@ -86,37 +136,72 @@ function parseCSV(text: string): { headers: string[]; rows: Record<string, strin
 
 // Column mapping: their header → our field
 const FIELD_OPTIONS = [
-  { value: 'first_name', label: 'First Name' },
-  { value: 'last_name', label: 'Last Name' },
-  { value: 'date_of_birth', label: 'Date of Birth' },
-  { value: 'phone', label: 'Phone' },
-  { value: 'email', label: 'Email' },
-  { value: 'insurance_carrier', label: 'Insurance Carrier' },
-  { value: 'member_id', label: 'Member ID' },
-  { value: 'group_number', label: 'Group Number' },
-  { value: 'last_visit_date', label: 'Last Visit Date' },
-  { value: 'contact_lens_wearer', label: 'Contact Lens Wearer' },
-  { value: '__skip__', label: '— Skip this column —' },
+  // Demographics
+  { value: 'first_name',           label: 'First Name' },
+  { value: 'last_name',            label: 'Last Name' },
+  { value: 'date_of_birth',        label: 'Date of Birth' },
+  { value: 'phone',                label: 'Phone' },
+  { value: 'email',                label: 'Email' },
+  // Insurance
+  { value: 'insurance_carrier',    label: 'Insurance Carrier' },
+  { value: 'member_id',            label: 'Member ID' },
+  { value: 'group_number',         label: 'Group Number' },
+  { value: 'insurance_relationship', label: 'Relationship to Subscriber' },
+  { value: 'subscriber_name',      label: 'Subscriber Name' },
+  // Visit
+  { value: 'last_visit_date',      label: 'Last Visit Date' },
+  // Rx frames
+  { value: 'last_frame_purchase',  label: 'Last Frame Purchase Date' },
+  { value: 'last_frame_brand',     label: 'Last Frame Brand' },
+  { value: 'last_frame_model',     label: 'Last Frame Model / Style' },
+  // Sunglasses
+  { value: 'last_sunglasses_purchase', label: 'Last Sunglasses Purchase Date' },
+  { value: 'last_sunglasses_brand', label: 'Last Sunglasses Brand' },
+  { value: 'last_sunglasses_model', label: 'Last Sunglasses Model' },
+  // Contact lenses
+  { value: 'contact_lens_wearer',  label: 'Contact Lens Wearer' },
+  { value: 'last_cl_order',        label: 'Last CL Order Date' },
+  { value: 'last_cl_brand',        label: 'CL Brand' },
+  { value: 'cl_supply_days',       label: 'CL Supply Days (30 / 60 / 90 / 365)' },
+  { value: '__skip__',             label: '— Skip this column —' },
 ]
 
 const REQUIRED_FIELDS = ['first_name', 'last_name']
 
-// Auto-detect mappings from common header names
+// Auto-detect mappings from common header names across RevolutionEHR, Eyefinity, Crystal PM, etc.
 function autoMap(headers: string[]): Record<string, string> {
   const map: Record<string, string> = {}
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const n = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
   headers.forEach(h => {
-    const n = normalize(h)
-    if (['firstname', 'first', 'fname'].includes(n)) map[h] = 'first_name'
-    else if (['lastname', 'last', 'lname'].includes(n)) map[h] = 'last_name'
-    else if (['dob', 'dateofbirth', 'birthdate', 'birthday'].includes(n)) map[h] = 'date_of_birth'
-    else if (['phone', 'cell', 'mobile', 'phonenumber', 'cellphone'].includes(n)) map[h] = 'phone'
-    else if (['email', 'emailaddress', 'mail'].includes(n)) map[h] = 'email'
-    else if (['carrier', 'insurance', 'insurancecarrier', 'plan', 'insuranceprovider'].includes(n)) map[h] = 'insurance_carrier'
-    else if (['memberid', 'member', 'insid', 'insuranceid', 'policyid'].includes(n)) map[h] = 'member_id'
-    else if (['groupnumber', 'group', 'groupid', 'groupno'].includes(n)) map[h] = 'group_number'
-    else if (['lastvisit', 'lastvisitdate', 'lastappointment', 'lastappt'].includes(n)) map[h] = 'last_visit_date'
-    else if (['contactlens', 'cl', 'contactlenswearer', 'contacts'].includes(n)) map[h] = 'contact_lens_wearer'
+    const k = n(h)
+    // Demographics
+    if      (['firstname', 'first', 'fname'].includes(k))                                       map[h] = 'first_name'
+    else if (['lastname', 'last', 'lname'].includes(k))                                         map[h] = 'last_name'
+    else if (['dob', 'dateofbirth', 'birthdate', 'birthday'].includes(k))                       map[h] = 'date_of_birth'
+    else if (['phone', 'cell', 'mobile', 'phonenumber', 'cellphone', 'homephone'].includes(k)) map[h] = 'phone'
+    else if (['email', 'emailaddress', 'mail'].includes(k))                                     map[h] = 'email'
+    // Insurance core
+    else if (['carrier', 'insurance', 'insurancecarrier', 'plan', 'insuranceprovider', 'visionplan', 'primarycarrier'].includes(k)) map[h] = 'insurance_carrier'
+    else if (['memberid', 'insid', 'insuranceid', 'policyid', 'primarymemberid'].includes(k))  map[h] = 'member_id'
+    else if (['groupnumber', 'group', 'groupid', 'groupno', 'primarygroupnumber'].includes(k)) map[h] = 'group_number'
+    // Insurance relationship / family
+    else if (['relationship', 'insurancerelationship', 'subscriberrelationship', 'insuredrelationship', 'relationshiptosubscriber', 'reltosubscriber', 'patientrelationship'].includes(k)) map[h] = 'insurance_relationship'
+    else if (['subscribername', 'policyholder', 'insuredname', 'subscriber', 'policyholdernaem', 'insuredfirstlast', 'guarantorname'].includes(k)) map[h] = 'subscriber_name'
+    // Visit
+    else if (['lastvisit', 'lastvisitdate', 'lastappointment', 'lastappt', 'lastexam', 'lastexamdate'].includes(k)) map[h] = 'last_visit_date'
+    // Rx frames
+    else if (['lastframepurchase', 'lastframepurchasedate', 'framedate', 'lastframedate', 'framepurchasedate', 'rxframedate'].includes(k)) map[h] = 'last_frame_purchase'
+    else if (['lastframebrand', 'framebrand', 'rxframebrand', 'framemfr', 'framemanufacturer', 'mfr', 'brand'].includes(k)) map[h] = 'last_frame_brand'
+    else if (['lastframemodel', 'framemodel', 'framestyle', 'frameskn', 'style', 'framesku'].includes(k)) map[h] = 'last_frame_model'
+    // Sunglasses
+    else if (['lastsuglasses', 'sunglassesdate', 'lastsg', 'sundate', 'lastsunglassespurchase', 'sgdate'].includes(k)) map[h] = 'last_sunglasses_purchase'
+    else if (['sunglassesbrand', 'sgbrand', 'sunbrand', 'planobrand', 'sunglasbrand'].includes(k)) map[h] = 'last_sunglasses_brand'
+    else if (['sunglassesmodel', 'sgmodel', 'sunmodel', 'sunglasstyle'].includes(k))           map[h] = 'last_sunglasses_model'
+    // Contact lenses
+    else if (['contactlens', 'contactlenswearer', 'clwearer', 'wearscl', 'wearscontacts'].includes(k)) map[h] = 'contact_lens_wearer'
+    else if (['lastclorder', 'lastclorderdate', 'clorderdate', 'contactlensdate', 'lastcontactlens', 'lastcl', 'cldate', 'lastclpurchase'].includes(k)) map[h] = 'last_cl_order'
+    else if (['clbrand', 'contactlensbrand', 'lensbrand', 'contactbrand', 'cllens'].includes(k)) map[h] = 'last_cl_brand'
+    else if (['clsupply', 'clsupplydays', 'supplycldays', 'contactsupply', 'cldays', 'supplydays', 'lensdays', 'clsupplylength'].includes(k)) map[h] = 'cl_supply_days'
     else map[h] = '__skip__'
   })
   return map
@@ -124,11 +209,17 @@ function autoMap(headers: string[]): Record<string, string> {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-type Step = 'upload' | 'mapping' | 'validation' | 'importing'
+type Step = 'upload' | 'mapping' | 'validation' | 'importing' | 'aha'
+
+interface AhaData {
+  totalImported: number
+  withBenefits: number
+  estimatedRevenue: number
+}
 
 export default function UploadPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, session } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [step, setStep] = useState<Step>('upload')
@@ -139,6 +230,7 @@ export default function UploadPage() {
   const [report, setReport] = useState<ValidationReport | null>(null)
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
+  const [ahaData, setAhaData] = useState<AhaData | null>(null)
 
   // ── File handling ──────────────────────────────────────────────────────────
 
@@ -180,17 +272,33 @@ export default function UploadPage() {
         if (field && field !== '__skip__') mapped[field] = row[h] ?? ''
       })
 
+      const contact_lens_wearer = ['true', '1', 'yes', 'y'].includes((mapped.contact_lens_wearer ?? '').toLowerCase())
       const patient: ParsedRow = {
-        first_name: mapped.first_name?.trim() ?? '',
-        last_name: mapped.last_name?.trim() ?? '',
-        date_of_birth: normalizeDate(mapped.date_of_birth ?? ''),
-        phone: normalizePhone(mapped.phone ?? ''),
-        email: mapped.email?.trim() ?? '',
+        first_name:     mapped.first_name?.trim() ?? '',
+        last_name:      mapped.last_name?.trim() ?? '',
+        date_of_birth:  normalizeDate(mapped.date_of_birth ?? ''),
+        phone:          normalizePhone(mapped.phone ?? ''),
+        email:          mapped.email?.trim() ?? '',
         insurance_carrier: normalizeCarrier(mapped.insurance_carrier ?? ''),
-        member_id: mapped.member_id?.trim() ?? '',
-        group_number: mapped.group_number?.trim() ?? '',
+        member_id:      mapped.member_id?.trim() ?? '',
+        group_number:   mapped.group_number?.trim() ?? '',
         last_visit_date: normalizeDate(mapped.last_visit_date ?? ''),
-        contact_lens_wearer: ['true', '1', 'yes', 'y'].includes((mapped.contact_lens_wearer ?? '').toLowerCase()),
+        contact_lens_wearer,
+        // Rx frames
+        last_frame_purchase: normalizeDate(mapped.last_frame_purchase ?? ''),
+        last_frame_brand:    mapped.last_frame_brand?.trim() ?? '',
+        last_frame_model:    mapped.last_frame_model?.trim() ?? '',
+        // Sunglasses
+        last_sunglasses_purchase: normalizeDate(mapped.last_sunglasses_purchase ?? ''),
+        last_sunglasses_brand:    mapped.last_sunglasses_brand?.trim() ?? '',
+        last_sunglasses_model:    mapped.last_sunglasses_model?.trim() ?? '',
+        // Contact lenses
+        last_cl_order:   normalizeDate(mapped.last_cl_order ?? ''),
+        last_cl_brand:   mapped.last_cl_brand?.trim() ?? '',
+        cl_supply_days:  normalizeCLSupplyDays(mapped.cl_supply_days ?? ''),
+        // Family
+        insurance_relationship: normalizeRelationship(mapped.insurance_relationship ?? ''),
+        subscriber_name: mapped.subscriber_name?.trim() ?? '',
       }
 
       if (!patient.first_name || !patient.last_name) return
@@ -231,14 +339,52 @@ export default function UploadPage() {
         ...report.missingInsurance,
       ]
 
+      // Fetch existing patients to deduplicate against the database
+      const { data: existing } = await supabase
+        .from('patients')
+        .select('first_name, last_name, date_of_birth')
+        .eq('practice_id', practice_id)
+
+      const existingKeys = new Set(
+        (existing ?? []).map(p => `${p.first_name?.toLowerCase()}|${p.last_name?.toLowerCase()}|${p.date_of_birth ?? ''}`)
+      )
+
+      const newPatients = allPatients.filter(p => {
+        const key = `${p.first_name?.toLowerCase()}|${p.last_name?.toLowerCase()}|${p.date_of_birth ?? ''}`
+        return !existingKeys.has(key)
+      })
+
       // Insert in batches of 100
-      for (let i = 0; i < allPatients.length; i += 100) {
-        const batch = allPatients.slice(i, i + 100).map(p => ({ ...p, practice_id }))
+      for (let i = 0; i < newPatients.length; i += 100) {
+        const batch = newPatients.slice(i, i + 100).map(p => ({ ...p, practice_id }))
         const { error } = await supabase.from('patients').insert(batch)
         if (error) throw error
       }
 
-      navigate('/app/patients?imported=true')
+      // Calculate aha moment from imported patients
+      let withBenefits = 0
+      let estimatedRevenue = 0
+      for (const p of newPatients) {
+        const avg = CARRIER_AVERAGES[p.insurance_carrier]
+        if (!avg) continue
+        withBenefits++
+        estimatedRevenue += avg.frame
+        if (p.contact_lens_wearer) estimatedRevenue += avg.cl
+      }
+      setAhaData({ totalImported: newPatients.length, withBenefits, estimatedRevenue })
+      setStep('aha')
+
+      // Fire batch eligibility verification in background — don't await
+      if (session?.access_token) {
+        fetch('/api/eligibility-batch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({}),
+        }).catch(() => {})
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Import failed. Please try again.'
       setImportError(msg)
@@ -392,6 +538,63 @@ export default function UploadPage() {
       </div>
     )
   }
+
+  if (step === 'aha' && ahaData) return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 mb-4">
+          <TrendingUp className="h-8 w-8 text-teal-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          {ahaData.withBenefits.toLocaleString()} patients have unused vision benefits
+        </h1>
+        <p className="text-sm text-slate-500">
+          {ahaData.totalImported.toLocaleString()} patients imported from {fileName}
+        </p>
+      </div>
+
+      <div className="rounded-2xl bg-teal-600 p-8 text-white text-center mb-6">
+        <p className="text-sm font-medium text-teal-200 mb-1">Estimated Recoverable Revenue</p>
+        <p className="text-5xl font-bold tracking-tight mb-2">
+          ${ahaData.estimatedRevenue.toLocaleString()}
+        </p>
+        <p className="text-xs text-teal-300">
+          Based on average carrier allowances &middot; Exact amounts verifying now
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 text-center">
+          <div className="flex items-center justify-center h-9 w-9 rounded-full bg-blue-50 mx-auto mb-2">
+            <Users className="h-5 w-5 text-blue-600" />
+          </div>
+          <p className="text-2xl font-bold text-slate-900">{ahaData.totalImported.toLocaleString()}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Total Patients Imported</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 text-center">
+          <div className="flex items-center justify-center h-9 w-9 rounded-full bg-teal-50 mx-auto mb-2">
+            <DollarSign className="h-5 w-5 text-teal-600" />
+          </div>
+          <p className="text-2xl font-bold text-teal-600">{ahaData.withBenefits.toLocaleString()}</p>
+          <p className="text-xs text-slate-500 mt-0.5">With Insurance Benefits</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2.5 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 mb-6">
+        <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+        <p className="text-sm text-blue-700">
+          Verifying exact benefit amounts with insurance carriers in the background&hellip;
+        </p>
+      </div>
+
+      <button
+        onClick={() => navigate('/app/patients')}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-500 py-3.5 text-sm font-bold text-white hover:bg-teal-400 transition-colors"
+      >
+        View Patient List <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  )
 
   return null
 }
